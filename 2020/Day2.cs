@@ -2,12 +2,12 @@ using System.Text.RegularExpressions;
 
 namespace AdventOfCode2020;
 
-class Day2 : IRobotElf
+class Day2 : RobotElf
 {
-    public int Part1(string? path = null)
-    {
-        path = path ?? "input/2.txt";
+    public Day2() : base(2) { }
 
+    public override int Part1()
+    {
         bool checkValid(string line)
         {
             var m = Regex.Match(line, @"([0-9]+)\-([0-9]+) ([a-z])\: ([a-z]+)");
@@ -27,17 +27,15 @@ class Day2 : IRobotElf
         }
 
         var numbers = 
-            from line in File.ReadLines(path)
+            from line in Input
             where checkValid(line)
             select line;
 
         return numbers.Count();
     }
 
-    public int Part2(string? path = null) 
+    public override int Part2() 
     {
-        path = path ?? "input/2.txt";
-
         bool checkValid(string line)
         {
             var m = Regex.Match(line, @"([0-9]+)\-([0-9]+) ([a-z])\: ([a-z]+)");
@@ -55,7 +53,7 @@ class Day2 : IRobotElf
         }
 
         var numbers =
-            from line in File.ReadLines(path)
+            from line in Input
             where checkValid(line)
             select line;
 

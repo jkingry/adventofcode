@@ -1,12 +1,12 @@
 namespace AdventOfCode2020;
 
-class Day1 : IRobotElf
+class Day1 : RobotElf
 {
-    public int Part1(string? path = null)
-    {
-        path = path ?? "input/1.txt";
+    public Day1() : base(1) {}
 
-        var numbers = from line in File.ReadLines(path)
+    public override int Part1()
+    {
+        var numbers = from line in Input
                       select int.Parse(line);
 
         var na = numbers.ToArray();
@@ -21,11 +21,9 @@ class Day1 : IRobotElf
         return find.First();
     }
 
-    public int Part2(string? path = null) 
+    public override int Part2() 
     {
-        path = path ?? "input/1.txt";
-
-        var numbers = from line in File.ReadLines(path)
+        var numbers = from line in Input
                       select int.Parse(line);
 
         var na = numbers.ToArray();

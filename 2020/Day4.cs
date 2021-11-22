@@ -1,8 +1,8 @@
-namespace AdventOfCode2021;
+namespace AdventOfCode2020;
 
-class Day1 : RobotElf
+class Day4 : RobotElf
 {
-    public Day1() : base(1) { }
+    public Day4() : base(4) {}
 
     public override int Part1()
     {
