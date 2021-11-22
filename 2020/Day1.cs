@@ -4,7 +4,7 @@ class Day1 : IRobotElf
 {
     public int Part1(string? path = null)
     {
-        path = path ?? "input/1/a.txt";
+        path = path ?? "input/1.txt";
 
         var numbers = from line in File.ReadLines(path)
                       select int.Parse(line);
@@ -23,7 +23,7 @@ class Day1 : IRobotElf
 
     public int Part2(string? path = null) 
     {
-        path = path ?? "input/1/a.txt";
+        path = path ?? "input/1.txt";
 
         var numbers = from line in File.ReadLines(path)
                       select int.Parse(line);
