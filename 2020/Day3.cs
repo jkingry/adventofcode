@@ -2,21 +2,19 @@ using System.Text;
 
 namespace AdventOfCode2020;
 
-class Day3 : IRobotElf
+class Day3 : RobotElf
 {
-    public int Part1(string? path = null)
+    public Day3() : base(3) { }
+    
+    public override int Part1()
     {
         const int DOWN = 1;
         const int RIGHT = 3;
 
-        path = path ?? "input/3.txt";
-
-        var map = File.ReadLines(path);
-
-        return FindTrees(DOWN, RIGHT, map);
+        return FindTrees(DOWN, RIGHT, Input);
     }
 
-    public int Part2(string? path = null) 
+    public override int Part2() 
     {
         var paths = new (int right, int down)[] {
             (1, 1),
@@ -26,13 +24,9 @@ class Day3 : IRobotElf
             (1, 2)
         };
 
-        path = path ?? "input/3.txt";
-
-        var map = File.ReadLines(path);
-
         var trees = 
             from  p in paths
-            select FindTrees(p.down, p.right, map);
+            select FindTrees(p.down, p.right, Input);
 
         return trees.Aggregate((x, y) => x * y);
     }
