@@ -4,12 +4,12 @@ class Day6 : RobotElf
 {
     public Day6() : base(6) {}
 
-    public override int Part1()
+    public override long Part1()
     {
         return Parse(Input).Select(s => s.Count).Sum();
     }
 
-    public override int Part2()
+    public override long Part2()
     {
         return Parse2(Input).Select(s => s.Count).Sum();
     }

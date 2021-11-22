@@ -20,7 +20,7 @@ class Day7 : RobotElf
         }
     }
 
-    public override int Part1()
+    public override long Part1()
     {
         var rules = Input.Select(Parse).ToDictionary(x => x.Name ?? "");
 
@@ -44,7 +44,7 @@ class Day7 : RobotElf
         return getBags("shiny gold").Count();
     }
 
-    public override int Part2()
+    public override long Part2()
     {
         var rules = Input.Select(Parse).ToDictionary(x => x.Name ?? "");
 

@@ -35,7 +35,7 @@ class Day4 : RobotElf
             { "pid", s => Regex.IsMatch(s, "^[0-9]{9}$") },
         };
 
-    public override int Part1()
+    public override long Part1()
     {   
         bool valid(Dictionary<string, string> passport)         
         {
@@ -74,7 +74,7 @@ class Day4 : RobotElf
         return validPassports.Count();
     }
 
-    public override int Part2()
+    public override long Part2()
     {
         bool valid(Dictionary<string, string> passport)
         {

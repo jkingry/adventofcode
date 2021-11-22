@@ -9,12 +9,12 @@ class Day5 : RobotElf
 
     public Day5() : base(5) {}
 
-    public override int Part1()
+    public override long Part1()
     {
         return Input.Select(Parse).Max();
     }
 
-    public override int Part2()
+    public override long Part2()
     {
         var p = -1;
         foreach(var s in Input.Select(Parse).OrderBy(s => s)) 

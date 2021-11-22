@@ -4,7 +4,7 @@ class Day9 : RobotElf
 {
     public Day9() : base(9) { }
 
-    public override int Part1()
+    public override long Part1()
     {
         var c = new Checker(25);
 
@@ -21,7 +21,7 @@ class Day9 : RobotElf
         return -1;
     }
 
-    public override int Part2()
+    public override long Part2()
     {
         var target = Part1();
 
