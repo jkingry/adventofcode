@@ -30,11 +30,11 @@ class Day7 : RobotElf
 
             foreach (var rule in rules.Values)
             {                
-                if (!possible.Contains(rule.Name) && rule.Contents.ContainsKey(target))
+                if (!possible.Contains(rule.Name ?? "") && rule.Contents.ContainsKey(target))
                 {
                     Console.WriteLine($"{rule.Name}, which can hold {target}");
 
-                    possible = possible.Add(rule.Name).Union(getBags(rule.Name));
+                    possible = possible.Add(rule.Name ?? "").Union(getBags(rule.Name ?? ""));
                 }                    
             }
 
