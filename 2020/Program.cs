@@ -4,4 +4,5 @@ var days = new AdventOfCode2020.IRobotElf[] {
             new AdventOfCode2020.Day1()
         };
 
-Console.WriteLine(days[day].Run());
+Console.WriteLine($"Part1: {days[day].Part1()}");
+Console.WriteLine($"Part2: {days[day].Part2()}");
