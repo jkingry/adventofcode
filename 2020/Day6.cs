@@ -16,7 +16,7 @@ class Day6 : RobotElf
 
     public IEnumerable<HashSet<char>> Parse2(IEnumerable<string> lines)
     {
-        HashSet<char> current = null;
+        HashSet<char>? current = null;
         foreach (var line in lines)
         {
             if (string.IsNullOrWhiteSpace(line))
