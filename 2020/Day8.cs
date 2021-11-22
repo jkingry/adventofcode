@@ -4,7 +4,7 @@ class Day8 : RobotElf
 {
     public Day8() : base(8) { }
 
-    public override int Part1()
+    public override long Part1()
     {
         var p = Input.Select(Parse).ToArray();
 
@@ -13,7 +13,7 @@ class Day8 : RobotElf
         return accumlator;
     }
 
-    public override int Part2()
+    public override long Part2()
     {
         int result;
 

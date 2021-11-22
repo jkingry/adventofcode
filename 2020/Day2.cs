@@ -1,12 +1,10 @@
-using System.Text.RegularExpressions;
-
 namespace AdventOfCode2020;
 
 class Day2 : RobotElf
 {
     public Day2() : base(2) { }
 
-    public override int Part1()
+    public override long Part1()
     {
         bool checkValid(string line)
         {
@@ -34,7 +32,7 @@ class Day2 : RobotElf
         return numbers.Count();
     }
 
-    public override int Part2() 
+    public override long Part2() 
     {
         bool checkValid(string line)
         {

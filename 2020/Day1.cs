@@ -4,7 +4,7 @@ class Day1 : RobotElf
 {
     public Day1() : base(1) {}
 
-    public override int Part1()
+    public override long Part1()
     {
         var numbers = from line in Input
                       select int.Parse(line);
@@ -21,7 +21,7 @@ class Day1 : RobotElf
         return find.First();
     }
 
-    public override int Part2() 
+    public override long Part2() 
     {
         var numbers = from line in Input
                       select int.Parse(line);

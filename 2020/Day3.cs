@@ -6,7 +6,7 @@ class Day3 : RobotElf
 {
     public Day3() : base(3) { }
     
-    public override int Part1()
+    public override long Part1()
     {
         const int DOWN = 1;
         const int RIGHT = 3;
@@ -14,7 +14,7 @@ class Day3 : RobotElf
         return FindTrees(DOWN, RIGHT, Input);
     }
 
-    public override int Part2() 
+    public override long Part2() 
     {
         var paths = new (int right, int down)[] {
             (1, 1),
