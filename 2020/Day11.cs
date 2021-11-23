@@ -6,7 +6,7 @@ class Day11 : RobotElf
 {
     public Day11() : base(11) {}
 
-    string state;
+    string? state;
 
     public override long Part1()
     {
