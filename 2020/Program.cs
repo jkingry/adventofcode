@@ -1,6 +1,5 @@
 ﻿global using System.Text.RegularExpressions;
 global using static System.Math;
-global using static AdventOfCode2020.Util;
 
 using AdventOfCode2020;
 
@@ -18,6 +17,7 @@ var days = new IRobotElf[] {
             new Day11(),
             new Day12(),
             new Day13(),
+            new Day14(),
         };
 
 var day = args.Length > 0 && int.TryParse(args[0], out var temp) ? temp : days.Length;
