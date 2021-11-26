@@ -20,6 +20,7 @@ var days = new IRobotElf[] {
             new Day14(),
             new Day15(),
             new Day16(),
+            new Day17(),
         };
 
 var day = args.Length > 0 && int.TryParse(args[0], out var temp) ? temp : days.Length;
