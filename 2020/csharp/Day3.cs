@@ -27,6 +27,8 @@ class Day3 : RobotElf
         var trees = 
             from  p in paths
             select FindTrees(p.down, p.right, Input);
+        
+        foreach (var t in trees) Console.WriteLine(t);
 
         return trees.Aggregate((x, y) => x * y);
     }
@@ -55,10 +57,9 @@ class Day3 : RobotElf
             var b = new StringBuilder(line);
             b[r] = line[r] == '#' ? 'X' : 'O';
 
-            Console.WriteLine(b);
+            //Console.WriteLine(b);
 
             if (line[r] == '#') trees += 1;
-
         }
     }
 }
