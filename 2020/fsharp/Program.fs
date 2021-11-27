@@ -1,10 +1,10 @@
 ﻿open System
 open System.IO
 
-open Microsoft.FSharp.Reflection
+open AdventOfCode2020.Util
 
 let runProblem d p =
-    let m = Util.getAnswerFunc d p
+    let m = getAnswerFunc d p
 
     let input = File.ReadLines($"../input/%d{d}.txt")
     m.Value.Invoke (null, [| input |]) |> printfn "part%d: %O" p
