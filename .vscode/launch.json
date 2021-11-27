@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+
         {
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
@@ -10,9 +11,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/2020/csharp/bin/Debug/net6.0/2020.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/2020/csharp",
+            "program": "${workspaceFolder}/2020/fsharp/bin/Debug/net6.0/fsharp.dll",
+            "args": ["19", "1"],
+            "cwd": "${workspaceFolder}/2020/fsharp",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
