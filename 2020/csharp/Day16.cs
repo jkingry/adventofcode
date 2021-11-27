@@ -192,6 +192,8 @@ class Day16 : RobotElf
 
         var parsed = new Dictionary<string, int>();
 
+        if (your == null) throw new InvalidOperationException();
+
         foreach (var kv in fieldMask)
         {
             parsed[kv.Value.First()] = your[kv.Key];
