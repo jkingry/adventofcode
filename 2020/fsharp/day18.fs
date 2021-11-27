@@ -1,44 +1,47 @@
-module Day3
+module Day18
 
 open Util
 open System
 open System.Text
+open FParsec
 
-let findTrees down right input =
-    let mutable r = 0
-    let mutable trees = 0
+
+let ws = spaces
+
+let str_ws s = pstring s .>> ws
+
+let rpvalue = pint64
+
+let runParser p str =
+    match run p str with
+        | Success(result, _, _) -> result
+        | Failure(errorMsg, _, _) ->
+            do printfn "Failure: %s" errorMsg
+            -1L
+
+
+let part1 (input : string seq)  =
+    let roppa = new OperatorPrecedenceParser<int64,unit,unit>()
+    let rparithmetic = roppa.ExpressionParser
+    let rterma = (rpvalue .>> ws) <|> between (str_ws "(") (str_ws ")") rparithmetic
+    roppa.TermParser <- rterma
+    roppa.AddOperator(InfixOperator("+", ws, 1, Associativity.Left, fun x y -> x + y))
+    roppa.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, fun x y -> x * y))
 
     input
-    |> Seq.skip 1
-    |> if down > 1 then
-            Seq.mapi (fun i e -> if i % down = (down - 1) then Some e else None)
-            >> Seq.choose id
-        else
-            id 
-    |> Seq.iter (fun (line : string) -> 
-        r <- r + right
-        r <- r % line.Length
-
-        if line.[r] = '#' then trees <- trees + 1 )
-    trees
-
-let part1 input =
-    findTrees 1 3 input
+    |> Seq.map (runParser rparithmetic)
+    |> Seq.sum
     |> bigint
 
-let part2 input =
-    let paths = [
-        (1,1)
-        (3,1)
-        (5,1)
-        (7,1)
-        (1,2)
-    ] 
-    
-    let x = paths |> List.map (fun (right, down) -> findTrees down right input)
-    
-    List.iter (printfn "%d") x
+let part2 (input : string seq) =
+    let roppa = new OperatorPrecedenceParser<int64,unit,unit>()
+    let rparithmetic = roppa.ExpressionParser
+    let rterma = (rpvalue .>> ws) <|> between (str_ws "(") (str_ws ")") rparithmetic
+    roppa.TermParser <- rterma
+    roppa.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, fun x y -> x * y))
+    roppa.AddOperator(InfixOperator("+", ws, 2, Associativity.Left, fun x y -> x + y))
 
-    x
-    |> List.fold (fun a b -> a * b) 1
+    input
+    |> Seq.map (runParser rparithmetic)
+    |> Seq.sum
     |> bigint
