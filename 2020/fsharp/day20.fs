@@ -10,7 +10,7 @@ open System.Collections.Generic
 // Jurassic Jigsaw
 type Tile = 
     { 
-        id : int
+        id : int64
         tile : char[,]
     }
 
@@ -25,7 +25,7 @@ module Day20 =
         match e.MoveNext() with
         | false -> None
         | true -> 
-            let id = Int32.Parse(e.Current.Split(' ').[1].Trim(':'))
+            let id = Int64.Parse(e.Current.Split(' ').[1].Trim(':'))
             let tile = e |> takeWhile |> array2D
             Some ({ id=id; tile=tile }, e)
 
@@ -43,9 +43,6 @@ module Day20 =
         ]
         puzzle.Keys 
         |> Seq.collect (fun (x, y) -> dir |> Seq.map (fun (dx, dy) -> (x + dx, y + dy)))
-            // let ph = (x + dx, y + dy)
-            // printfn "%A + %A = %A" (x,y) (dx, dy) ph
-            // ph))
         |> Seq.filter (puzzle.ContainsKey >> not)
         |> Seq.distinct
         
@@ -113,11 +110,9 @@ module Day20 =
                 |> holes
                 |> Seq.tryPick (fun hole ->
                     let matchtiles = findtiles tiles puzzle hole
-                    printfn "%s %A" (new String (' ', depth)) hole
-                    
+
                     matchtiles
                     |> Seq.tryPick (fun matchtile ->
-                        printfn "%s %A = %d" (new String (' ', depth)) hole matchtile.id
                         let matchindex = tiles |> List.findIndex (fun t -> t.id = matchtile.id)
                         let ntiles = tiles |> List.removeAt matchindex
                         let npuzzle = Map.add hole matchtile puzzle
@@ -126,7 +121,6 @@ module Day20 =
             let t = List.head tiles
             let matchindex = tiles |> List.findIndex (fun t -> t.id = t.id)
             let ntiles = tiles |> List.removeAt matchindex
-            printfn "%d" t.id
             solve ntiles (Map.add (0, 0) t puzzle) (depth + 1)
 
     let corners (p : Map<int * int, Tile>) = 
@@ -143,17 +137,49 @@ module Day20 =
         let e = input.GetEnumerator()
         let tiles = List.unfold parseTile e
 
-
         let solution = solve tiles Map.empty 0
         let result = 
             match solution with
             | None -> -1L
             | Some m -> 
-                corners m |> List.fold (fun (a : int64) b ->
-                    printfn "%d" b.id 
-                    (int64 b.id) * a) 1L
+                corners m |> List.fold (fun a  b -> b.id * a) 1L
         result |> bigint
             
 
     let part2 (input : string seq) =
-        -1
+        let e = input.GetEnumerator()
+        let tiles = List.unfold parseTile e
+
+        let p = (solve tiles Map.empty 0).Value
+        let (ulx, uly) = p |> Map.keys |> Seq.min
+        let (brx, bry) = p |> Map.keys |> Seq.max
+
+        for ty = uly to bry do
+            for tx = ulx to brx do
+                printf "%d " p[(tx, ty)].id
+            printfn ""  
+
+        printfn "ul = %A" (ulx, uly)
+        printfn "br = %A" (brx, bry)
+
+        let n = (tiles |> List.head).tile |> Array2D.length1 
+        let pn = n
+
+        let tw = (1 + brx - ulx)
+        let th = (1 + bry - uly)
+        let w = pn * tw
+        let h = pn * th
+
+        let lookup x y =
+            let tx = ulx + (x / pn)
+            let ty = uly + (y / pn)
+            let ox = (x % pn)
+            let oy = (y % pn)
+
+            p[(ty, tx)].tile[ox, oy]
+
+        let fp = Array2D.init w h lookup
+        for x = 0 to (Array2D.length1 fp) - 1 do
+            let row = fp[x, *]
+            printfn "%s" (new string(row))
+
