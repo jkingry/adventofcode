@@ -2,6 +2,7 @@ namespace AdventOfCode2019
 
 open System
 
+// The Tyranny of the Rocket Equation
 module Day1 =
 
     let part1 (input : string seq) =
