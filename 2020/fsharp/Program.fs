@@ -2,6 +2,14 @@
 open System.IO
 
 open AdventOfCode2020.Util
+let all = [
+    AdventOfCode2020.Day1.part1
+    AdventOfCode2020.Day2.part1
+    AdventOfCode2020.Day3.part1
+    AdventOfCode2020.Day18.part1
+    AdventOfCode2020.Day19.part1
+    AdventOfCode2020.Day20.part1
+    ]
 
 let runProblem d p =
     let m = getAnswerFunc d p
