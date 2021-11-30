@@ -1,10 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>    
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="day1.fs" />
     <Compile Include="day2.fs" />
@@ -13,15 +11,13 @@
     <Compile Include="day18.fs" />
     <Compile Include="day19.fs" />
     <Compile Include="day20.fs" />
+    <Compile Include="day21.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.1.1" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="../../Common/fsharp/AdventOfCode.FSharp.fsproj" />
   </ItemGroup>
-
 </Project>
