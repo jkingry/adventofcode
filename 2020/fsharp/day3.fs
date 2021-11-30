@@ -1,6 +1,6 @@
-namespace AdventOfCode2020
+namespace AdventOfCode.FSharp.Y2020
 
-open Util
+open AdventOfCode.FSharp.Util
 open System
 open System.Text
 

@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Util.fs" />
     <Compile Include="day1.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
@@ -15,4 +14,7 @@
     <PackageReference Include="FParsec" Version="1.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../../Common/fsharp/AdventOfCode.FSharp.fsproj" />
+  </ItemGroup>
 </Project>

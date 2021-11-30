@@ -1,4 +1,4 @@
-namespace AdventOfCode2020
+namespace AdventOfCode.FSharp.Y2020
 
 // Conway Cubes
 module Day17 =    
