@@ -1,6 +1,6 @@
 namespace AdventOfCode2020;
 
-class Day19 : RobotElf
+class Day19 : AdventOfCode.CSharp.RobotElf
 {
     public Day19() : base(19) { }
 
@@ -106,7 +106,7 @@ class Day19 : RobotElf
         return ret;
     }
 
-    public override long Part1()
+    public override object Part1()
     {
         var e = Input.GetEnumerator();
         var rules = Parse(e);
@@ -125,7 +125,7 @@ class Day19 : RobotElf
         return valid;
     }
 
-    public override long Part2() 
+    public override object Part2() 
     {
         return -1;
     }

@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 namespace AdventOfCode2020;
 
 
-class Day7 : RobotElf
+class Day7 :AdventOfCode.CSharp.RobotElf
 {
     public Day7() : base(7) {}
 
@@ -20,7 +20,7 @@ class Day7 : RobotElf
         }
     }
 
-    public override long Part1()
+    public override object Part1()
     {
         var rules = Input.Select(Parse).ToDictionary(x => x.Name ?? "");
 
@@ -44,7 +44,7 @@ class Day7 : RobotElf
         return getBags("shiny gold").Count();
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         var rules = Input.Select(Parse).ToDictionary(x => x.Name ?? "");
 

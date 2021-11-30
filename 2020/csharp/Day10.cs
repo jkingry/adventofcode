@@ -1,10 +1,10 @@
 namespace AdventOfCode2020;
 
-class Day10 : RobotElf
+class Day10 : AdventOfCode.CSharp.RobotElf
 {
     public Day10() : base(10) {}
 
-    public override long Part1()
+    public override object Part1()
     {
         var ma = InputNumbers.Max();
 
@@ -29,7 +29,7 @@ class Day10 : RobotElf
         return d[0] * d[2];
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         var ma = InputNumbers.Max();
         var f = ma + 3;

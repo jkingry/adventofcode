@@ -1,6 +1,6 @@
 namespace AdventOfCode2020;
 
-class Day16 : RobotElf
+class Day16 : AdventOfCode.CSharp.RobotElf
 {
     public Day16() : base(16) { }
 
@@ -17,7 +17,7 @@ class Day16 : RobotElf
         public List<(int min, int max)> Ranges = new List<(int min, int max)>();
     }
 
-    public override long Part1()
+    public override object Part1()
     {
         var mode = parsemode.rules;
 
@@ -79,7 +79,7 @@ class Day16 : RobotElf
     }
 
 
-    public override long Part2()
+    public override object Part2()
     {
         var mode = parsemode.rules;
 

@@ -4,12 +4,12 @@ class Day1 : RobotElf
 {
     public Day1() : base(1) {}
 
-    public override long Part1()
+    public override object Part1()
     {
         return Input.Select(long.Parse).Select(x => Math.Max((x / 3) - 2, 0)).Sum();
     }
 
-    public override long Part2() 
+    public override object Part2() 
     {
         Func<int, int> f = x => Math.Max((x / 3) - 2, 0);
         Func<int, int> g = x => {

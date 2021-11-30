@@ -1,15 +1,15 @@
 namespace AdventOfCode2020;
 
-class Day6 : RobotElf
+class Day6 : AdventOfCode.CSharp.RobotElf
 {
     public Day6() : base(6) {}
 
-    public override long Part1()
+    public override object Part1()
     {
         return Parse(Input).Select(s => s.Count).Sum();
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         return Parse2(Input).Select(s => s.Count).Sum();
     }

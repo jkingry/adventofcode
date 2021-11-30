@@ -6,7 +6,7 @@ class Day2 : RobotElf
 {
     public Day2() : base(2) { }
 
-    public override long Part1()
+    public override object Part1()
     {
         var a2 = 0;
         var a3 = 0;
@@ -24,7 +24,7 @@ class Day2 : RobotElf
         return a2 * a3;
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         return -1;
     }
