@@ -29,20 +29,15 @@ module Day20 =
             let tile = e |> takeWhile |> array2D
             Some ({ id=id; tile=tile }, e)
 
-    let ismatch (a : Tile) (b : Tile) =        
-        let xlen = Array2D.length1 b.tile
-
-        Array.forall2 (fun x y -> x = y) a.tile[*, 0] b.tile[*, xlen - 1]
-    
     let holes (puzzle : Map<int * int, Tile>) : (int * int) seq =
         let dir = [
-            (1, 0)
-            (-1, 0)
-            (0, -1)
             (0, 1)
+            (0, -1)
+            (-1, 0)
+            (1, 0)
         ]
         puzzle.Keys 
-        |> Seq.collect (fun (x, y) -> dir |> Seq.map (fun (dx, dy) -> (x + dx, y + dy)))
+        |> Seq.collect (fun (r, c) -> dir |> Seq.map (fun (dr, dc) -> (r + dr, c + dc)))
         |> Seq.filter (puzzle.ContainsKey >> not)
         |> Seq.distinct
         
@@ -69,16 +64,15 @@ module Day20 =
         }        
 
         
-    let findtiles (tiles : Tile list) (puzzle : Map<int * int, Tile>) (pos : int * int): Tile seq =
-        let xlen = (Seq.head tiles).tile |> Array2D.length1 
-        let ylen = (Seq.head tiles).tile |> Array2D.length2 
+    let findtiles (tiles : Tile seq) (puzzle : Map<int * int, Tile>) (pos : int * int): Tile seq =
+        let n = (Seq.head tiles).tile |> Array2D.length1 
 
-        let x, y = pos
+        let r, c = pos
         let hborders = [
-            puzzle |> Map.tryFind (x - 1, y) |> Option.bind (fun t -> Some t.tile[*, xlen - 1])
-            puzzle |> Map.tryFind (x + 1, y) |> Option.bind (fun t -> Some t.tile[*, 0])
-            puzzle |> Map.tryFind (x, y - 1) |> Option.bind (fun t -> Some t.tile[0, *])
-            puzzle |> Map.tryFind (x, y + 1) |> Option.bind (fun t -> Some t.tile[ylen - 1, *])
+            puzzle |> Map.tryFind (r, c - 1) |> Option.bind (fun t -> Some t.tile[*, n - 1])
+            puzzle |> Map.tryFind (r, c + 1) |> Option.bind (fun t -> Some t.tile[*, 0])
+            puzzle |> Map.tryFind (r - 1, c) |> Option.bind (fun t -> Some t.tile[n - 1, *])
+            puzzle |> Map.tryFind (r + 1, c) |> Option.bind (fun t -> Some t.tile[0, *])
         ]      
 
         let ismatch t =
@@ -86,9 +80,9 @@ module Day20 =
             |> Seq.tryPick (fun tp ->
                 let tborders = [
                     tp.tile[*, 0]
-                    tp.tile[*, xlen - 1]
-                    tp.tile[ylen - 1, *]
+                    tp.tile[*, n - 1]
                     tp.tile[0, *]
+                    tp.tile[n - 1, *]
                 ]       
 
                 let fits = 
@@ -101,27 +95,27 @@ module Day20 =
             )
         tiles |> Seq.choose ismatch
 
-    let rec solve (tiles : Tile list) (puzzle : Map<int * int, Tile>) (depth : int) =
+    let rec solve (tiles : Map<int64, Tile>) (puzzle : Map<int * int, Tile>) =
         if puzzle.Count <> 0 then
-            if tiles.Length = 0 then
+            if tiles.Count = 0 then
                 Some puzzle
             else
                 puzzle 
                 |> holes
                 |> Seq.tryPick (fun hole ->
-                    let matchtiles = findtiles tiles puzzle hole
+                    let matchtiles = findtiles tiles.Values puzzle hole
 
                     matchtiles
-                    |> Seq.tryPick (fun matchtile ->
-                        let matchindex = tiles |> List.findIndex (fun t -> t.id = matchtile.id)
-                        let ntiles = tiles |> List.removeAt matchindex
-                        let npuzzle = Map.add hole matchtile puzzle
-                        solve ntiles npuzzle (depth + 1)))
+                    |> Seq.tryPick (fun mt ->
+                        solve 
+                            (tiles |> Map.remove mt.id) 
+                            (puzzle |> Map.add hole mt)))
         else
-            let t = List.head tiles
-            let matchindex = tiles |> List.findIndex (fun t -> t.id = t.id)
-            let ntiles = tiles |> List.removeAt matchindex
-            solve ntiles (Map.add (0, 0) t puzzle) (depth + 1)
+            // let mt = tiles |> Map.values |> Seq.head
+            let mt = tiles[3079]
+            solve 
+                (tiles |> Map.remove mt.id) 
+                (puzzle |> Map.add (0, 0) mt)
 
     let corners (p : Map<int * int, Tile>) = 
         let (ulx, uly) = p |> Map.keys |> Seq.min
@@ -132,12 +126,16 @@ module Day20 =
             p[(brx, bry)]
             p[(brx, uly)]]
 
-    let part1 (input : string seq) =
-        // let cache = input |> Seq.toList
+    let parse (input : string seq) =
         let e = input.GetEnumerator()
-        let tiles = List.unfold parseTile e
+        List.unfold parseTile e
+            |> List.map (fun t -> (t.id, t))
+            |> Map.ofList
 
-        let solution = solve tiles Map.empty 0
+    let part1 (input : string seq) =
+        let tiles = parse input 
+
+        let solution = solve tiles Map.empty
         let result = 
             match solution with
             | None -> -1L
@@ -147,39 +145,38 @@ module Day20 =
             
 
     let part2 (input : string seq) =
-        let e = input.GetEnumerator()
-        let tiles = List.unfold parseTile e
+        let tiles = parse input 
 
-        let p = (solve tiles Map.empty 0).Value
-        let (ulx, uly) = p |> Map.keys |> Seq.min
-        let (brx, bry) = p |> Map.keys |> Seq.max
+        let p = (solve tiles Map.empty).Value
 
-        for ty = uly to bry do
-            for tx = ulx to brx do
-                printf "%d " p[(tx, ty)].id
+        let (ulr, ulc) = p |> Map.keys |> Seq.min
+        let (brr, brc) = p |> Map.keys |> Seq.max
+
+        for tr = ulr to brr do
+            for tc = ulc to brc do
+                printf "%d " p[(tr, tc)].id
             printfn ""  
 
-        printfn "ul = %A" (ulx, uly)
-        printfn "br = %A" (brx, bry)
+        printfn "ul = %A" (ulr, ulc)
+        printfn "br = %A" (brr, brc)
+        let n = (tiles.Values |> Seq.head).tile |> Array2D.length1 
+        let pn = n - 2
 
-        let n = (tiles |> List.head).tile |> Array2D.length1 
-        let pn = n
-
-        let tw = (1 + brx - ulx)
-        let th = (1 + bry - uly)
+        let tw = (1 + brc - ulc)
+        let th = (1 + brr - ulr)
         let w = pn * tw
         let h = pn * th
 
-        let lookup x y =
-            let tx = ulx + (x / pn)
-            let ty = uly + (y / pn)
-            let ox = (x % pn)
-            let oy = (y % pn)
+        let lookup r c =
+            let tr = ulr + (r / pn)
+            let tc = ulc + (c / pn)
+            let nr = (r % pn) + 1
+            let nc = (c % pn) + 1
+            p[(tr, tc)].tile[nr, nc]
 
-            p[(ty, tx)].tile[ox, oy]
-
-        let fp = Array2D.init w h lookup
-        for x = 0 to (Array2D.length1 fp) - 1 do
-            let row = fp[x, *]
+        let fp = Array2D.init h w lookup
+        for r = 0 to (Array2D.length1 fp) - 1 do
+            let row = fp[r, *]
             printfn "%s" (new string(row))
+        -1
 
