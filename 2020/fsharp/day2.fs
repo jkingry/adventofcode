@@ -1,7 +1,7 @@
-namespace AdventOfCode2020
+namespace AdventOfCode.FSharp.Y2020
 
 open System
-open Util
+open AdventOfCode.FSharp.Util
 
 module Day2 =
     type Pline = {

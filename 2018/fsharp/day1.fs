@@ -1,4 +1,4 @@
-namespace AdventOfCode2018
+namespace AdventOfCode.FSharp.Y2018
 
 open System
 

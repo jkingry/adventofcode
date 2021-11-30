@@ -1,6 +1,6 @@
-namespace AdventOfCode2020
+namespace AdventOfCode.FSharp.Y2020
 
-open Util
+open AdventOfCode.FSharp.Util
 open System
 open System.Text
 open System.Text.RegularExpressions
@@ -156,7 +156,7 @@ module Day20 =
             printfn "%s" (new string(row))     
 
     let markMonster (row : int) (col : int) (theMap : char[,]) =
-        let mapfSlice = theMap[row..row + monsterHeight - 1, col..col + monsterWidth - 1]
+        let mapSlice = theMap[row..row + monsterHeight - 1, col..col + monsterWidth - 1]
         let newMap = monster |> Array2D.mapi (fun r c v -> match v with '#' -> 'O'; | _ -> mapSlice[r, c])
         theMap[row..row + monsterHeight - 1, col..col + monsterWidth - 1] <- newMap
 

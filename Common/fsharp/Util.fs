@@ -1,9 +1,11 @@
-namespace AdventOfCode2020
+namespace AdventOfCode.FSharp
 
 open System
+open System.IO
 open System.Reflection
-open Microsoft.FSharp.Reflection
 open System.Text.RegularExpressions
+
+open Microsoft.FSharp.Reflection
 
 type Answer = seq<string> -> bigint
 
@@ -35,3 +37,38 @@ module Util =
         let m = Regex.Match(input, pattern)
         if m.Success then Some(List.tail [ for g in m.Groups -> g.Value ])
         else None
+
+    let runProblem d p =
+        let m = getAnswerFunc d p
+
+        let input = File.ReadLines($"../input/%d{d}.txt")
+        m.Value.Invoke (null, [| input |]) |> printfn "part%d: %O" p
+
+    let run dayIndex problemIndex =
+        let d = defaultArg dayIndex 1
+        match problemIndex with
+            | Some p -> runProblem d p
+            | None -> do
+                runProblem d 1
+                runProblem d 2
+
+    let tryParse (str:string) =
+        match System.Int32.TryParse str with
+        | true,int -> Some int
+        | _ -> None
+
+    let runCommandLine () =
+        let args = Environment.GetCommandLineArgs() |> Array.tail
+
+        let dayIndex = 
+            args
+            |> Array.tryHead
+            |> Option.bind tryParse
+
+        let problemIndex =
+            args
+            |> Array.tail
+            |> Array.tryHead
+            |> Option.bind tryParse
+
+        run dayIndex problemIndex
