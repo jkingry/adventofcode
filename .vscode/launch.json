@@ -12,7 +12,7 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/2020/fsharp/bin/Debug/net6.0/fsharp.dll",
-            "args": ["20", "1"],
+            "args": ["20", "2"],
             "cwd": "${workspaceFolder}/2020/fsharp",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",

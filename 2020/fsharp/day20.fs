@@ -41,19 +41,19 @@ module Day20 =
         |> Seq.filter (puzzle.ContainsKey >> not)
         |> Seq.distinct
         
-    let rotate (tile : Tile) : Tile =
-        let n = Array2D.length1 tile.tile
-        { tile with tile = tile.tile |> Array2D.mapi (fun x y v -> tile.tile[n - y - 1, x]) }
+    let rotate (tile : char[,]) : char[,] =
+        let n = Array2D.length1 tile
+        tile |> Array2D.mapi (fun x y v -> tile[n - y - 1, x])
 
-    let hflip (tile : Tile) : Tile =
-        let n = Array2D.length1 tile.tile
-        { tile with tile = tile.tile |> Array2D.mapi (fun x y v -> tile.tile[n - x - 1, y]) }
+    let hflip (tile : char[,]) : char[,] =
+        let n = Array2D.length1 tile
+        tile |> Array2D.mapi (fun x y v -> tile[n - x - 1, y])
 
-    let vflip (tile : Tile) : Tile =
-        let n = Array2D.length1 tile.tile
-        { tile with tile = tile.tile |> Array2D.mapi (fun x y v -> tile.tile[x, n - y- 1]) }
+    let vflip (tile : char[,]) : char[,] =
+        let n = Array2D.length1 tile
+        tile |> Array2D.mapi (fun x y v -> tile[x, n - y- 1])
 
-    let permute (tile : Tile) : Tile seq =
+    let permute (tile : char[,]) : char[,] seq =
         seq {
             let mutable t = tile
             for r = 1 to 4 do            
@@ -76,7 +76,8 @@ module Day20 =
         ]      
 
         let ismatch t =
-            permute t
+            permute t.tile
+            |> Seq.map (fun tile -> { t with tile = tile })
             |> Seq.tryPick (fun tp ->
                 let tborders = [
                     tp.tile[*, 0]
@@ -111,8 +112,7 @@ module Day20 =
                             (tiles |> Map.remove mt.id) 
                             (puzzle |> Map.add hole mt)))
         else
-            // let mt = tiles |> Map.values |> Seq.head
-            let mt = tiles[3079]
+            let mt = tiles |> Map.values |> Seq.head
             solve 
                 (tiles |> Map.remove mt.id) 
                 (puzzle |> Map.add (0, 0) mt)
@@ -143,6 +143,40 @@ module Day20 =
                 corners m |> List.fold (fun a  b -> b.id * a) 1L
         result |> bigint
             
+    let monster = [
+        "                  # "
+        "#    ##    ##    ###"
+        " #  #  #  #  #  #   "] |> array2D
+    let monsterHeight = Array2D.length1 monster
+    let monsterWidth = Array2D.length2 monster 
+
+    let printMap markedMap =
+        for r = 0 to (Array2D.length1 markedMap) - 1 do
+            let row = markedMap[r, *]
+            printfn "%s" (new string(row))     
+
+    let markMonster (row : int) (col : int) (theMap : char[,]) =
+        let mapSlice = theMap[row..row + monsterHeight - 1, col..col + monsterWidth - 1]
+        let newMap = monster |> Array2D.mapi (fun r c v -> match v with '#' -> 'O'; | _ -> mapSlice[r, c])
+        theMap[row..row + monsterHeight - 1, col..col + monsterWidth - 1] <- newMap
+
+    let isMonster (row : int) (col : int) (theMap : char[,]) =
+        let monsterCoords = seq {
+            for r = 0 to monsterHeight - 1 do
+                for c = 0 to monsterWidth - 1 do
+                    if monster[r,c] = '#' then yield (r, c)
+        }
+
+        let mapSlice = theMap[row..row + monsterHeight - 1, col..col + monsterWidth - 1]
+
+        monsterHeight = (Array2D.length1 mapSlice)  &&
+            monsterWidth = (Array2D.length2 mapSlice) &&
+            monsterCoords |> Seq.forall (fun (r, c) -> mapSlice[r, c] = '#')
+        
+    let markMap (theMap : char[,]) = 
+        theMap |> Array2D.iteri (fun r c v -> 
+            if isMonster r c theMap then
+                markMonster r c theMap)                    
 
     let part2 (input : string seq) =
         let tiles = parse input 
@@ -175,8 +209,17 @@ module Day20 =
             p[(tr, tc)].tile[nr, nc]
 
         let fp = Array2D.init h w lookup
-        for r = 0 to (Array2D.length1 fp) - 1 do
-            let row = fp[r, *]
-            printfn "%s" (new string(row))
-        -1
+
+        let countSymbol symbol input =
+            let mutable count = 0
+            input |> Array2D.iter (fun v -> if v = symbol then count <- count + 1)
+            count
+
+        let markedMap = fp |> permute |> Seq.pick (fun pfp ->
+            markMap pfp
+            if (pfp |> countSymbol 'O') > 0 then Some pfp else None)
+        
+        printMap markedMap
+
+        markedMap |> countSymbol '#'
 
