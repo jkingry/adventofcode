@@ -156,7 +156,7 @@ module Day20 =
             printfn "%s" (new string(row))     
 
     let markMonster (row : int) (col : int) (theMap : char[,]) =
-        let mapSlice = theMap[row..row + monsterHeight - 1, col..col + monsterWidth - 1]
+        let mapfSlice = theMap[row..row + monsterHeight - 1, col..col + monsterWidth - 1]
         let newMap = monster |> Array2D.mapi (fun r c v -> match v with '#' -> 'O'; | _ -> mapSlice[r, c])
         theMap[row..row + monsterHeight - 1, col..col + monsterWidth - 1] <- newMap
 
