@@ -2,7 +2,7 @@ namespace AdventOfCode2020;
 
 using System.Text.Json;
 
-class Day4 : RobotElf
+class Day4 : AdventOfCode.CSharp.RobotElf
 {
     public Day4() : base(4) {}
     
@@ -35,7 +35,7 @@ class Day4 : RobotElf
             { "pid", s => Regex.IsMatch(s, "^[0-9]{9}$") },
         };
 
-    public override long Part1()
+    public override object Part1()
     {   
         bool valid(Dictionary<string, string> passport)         
         {
@@ -74,7 +74,7 @@ class Day4 : RobotElf
         return validPassports.Count();
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         bool valid(Dictionary<string, string> passport)
         {

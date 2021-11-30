@@ -1,10 +1,10 @@
 namespace AdventOfCode2020;
 
-class Day8 : RobotElf
+class Day8 : AdventOfCode.CSharp.RobotElf
 {
     public Day8() : base(8) { }
 
-    public override long Part1()
+    public override object Part1()
     {
         var p = Input.Select(Parse).ToArray();
 
@@ -13,7 +13,7 @@ class Day8 : RobotElf
         return accumlator;
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         int result;
 

@@ -1,6 +1,6 @@
 namespace AdventOfCode2020;
 
-class Day5 : RobotElf
+class Day5 : AdventOfCode.CSharp.RobotElf
 {
     const int ROWS = 128;
     const int COLUMNS = 8;
@@ -9,12 +9,12 @@ class Day5 : RobotElf
 
     public Day5() : base(5) {}
 
-    public override long Part1()
+    public override object Part1()
     {
         return Input.Select(Parse).Max();
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         var p = -1;
         foreach(var s in Input.Select(Parse).OrderBy(s => s)) 

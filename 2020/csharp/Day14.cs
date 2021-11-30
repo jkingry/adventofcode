@@ -1,10 +1,10 @@
 namespace AdventOfCode2020;
 
-class Day14 : RobotElf
+class Day14 : AdventOfCode.CSharp.RobotElf
 {
     public Day14() : base(14) { }
 
-    public override long Part1()
+    public override object Part1()
     {
         long setmask = 0;
         long unsetmask = 0;
@@ -45,7 +45,7 @@ class Day14 : RobotElf
         return a.Values.Sum();
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         long setmask = 0;
         long floatmask = 0;

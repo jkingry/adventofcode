@@ -1,10 +1,10 @@
 namespace AdventOfCode2020;
 
-class Day9 : RobotElf
+class Day9 : AdventOfCode.CSharp.RobotElf
 {
     public Day9() : base(9) { }
 
-    public override long Part1()
+    public override object Part1()
     {
         var c = new Checker(25);
 
@@ -21,9 +21,9 @@ class Day9 : RobotElf
         return -1;
     }
 
-    public override long Part2()
+    public override object Part2()
     {
-        var target = Part1();
+        var target = (long)Part1();
 
         var window = new List<int>();     
 

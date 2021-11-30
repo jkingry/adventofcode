@@ -2,13 +2,13 @@ using System.Text;
 
 namespace AdventOfCode2020;
 
-class Day11 : RobotElf
+class Day11 : AdventOfCode.CSharp.RobotElf
 {
     public Day11() : base(11) {}
 
     string? state;
 
-    public override long Part1()
+    public override object Part1()
     {
         state = string.Join("|", Input); 
 
@@ -31,7 +31,7 @@ class Day11 : RobotElf
 
 
 
-    public override long Part2()
+    public override object Part2()
     {
         state = string.Join("|", Input);
 

@@ -1,10 +1,10 @@
 namespace AdventOfCode2020;
 
-class Day13 : RobotElf
+class Day13 : AdventOfCode.CSharp.RobotElf
 {
     public Day13() : base(13) { }
 
-    public override long Part1()
+    public override object Part1()
     {
         var target = int.Parse(Input.First());
 
@@ -31,7 +31,7 @@ class Day13 : RobotElf
         return minb * (mindepart - target);
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         var busses = Input.Skip(1).First().Split(',');
 

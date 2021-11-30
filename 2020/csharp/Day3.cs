@@ -2,11 +2,11 @@ using System.Text;
 
 namespace AdventOfCode2020;
 
-class Day3 : RobotElf
+class Day3 : AdventOfCode.CSharp.RobotElf
 {
     public Day3() : base(3) { }
     
-    public override long Part1()
+    public override object Part1()
     {
         const int DOWN = 1;
         const int RIGHT = 3;
@@ -14,7 +14,7 @@ class Day3 : RobotElf
         return FindTrees(DOWN, RIGHT, Input);
     }
 
-    public override long Part2() 
+    public override object Part2() 
     {
         var paths = new (int right, int down)[] {
             (1, 1),

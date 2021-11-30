@@ -1,15 +1,15 @@
 namespace AdventOfCode2020;
 
-class Day15 : RobotElf
+class Day15 : AdventOfCode.CSharp.RobotElf
 {
     public Day15() : base(15) { }
 
-    public override long Part1()
+    public override object Part1()
     {
         return Solve(2020);
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         return Solve(30000000);
     }

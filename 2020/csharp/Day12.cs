@@ -1,10 +1,10 @@
 namespace AdventOfCode2020;
 
-class Day12 : RobotElf
+class Day12 : AdventOfCode.CSharp.RobotElf
 {
     public Day12() : base(12) {}
 
-    public override long Part1()
+    public override object Part1()
     {
         int facing = 0;
 
@@ -46,7 +46,7 @@ class Day12 : RobotElf
         return Abs(x) + Abs(y);
     }
 
-    public override long Part2()
+    public override object Part2()
     {
         int x = 0;
         int y = 0;

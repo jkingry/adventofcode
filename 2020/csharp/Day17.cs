@@ -1,6 +1,6 @@
 namespace AdventOfCode2020;
 
-class Day17 : RobotElf
+class Day17 : AdventOfCode.CSharp.RobotElf
 {
     public Day17() : base(17) { }
 
@@ -196,7 +196,7 @@ class Day17 : RobotElf
 
         return p;
     }
-    public override long Part1() {
+    public override object Part1() {
         var p = new Pocket(3);
 
         var x = 0;
@@ -216,7 +216,7 @@ class Day17 : RobotElf
         return np.GetAll(1).Where(x => x.Item2 == '#').Count();
     }
 
-    public override long Part2() 
+    public override object Part2() 
     {
         var p = new Pocket(4);
 

@@ -1,10 +1,10 @@
 namespace AdventOfCode2020;
 
-class Day2 : RobotElf
+class Day2 : AdventOfCode.CSharp.RobotElf
 {
     public Day2() : base(2) { }
 
-    public override long Part1()
+    public override object Part1()
     {
         bool checkValid(string line)
         {
@@ -32,7 +32,7 @@ class Day2 : RobotElf
         return numbers.Count();
     }
 
-    public override long Part2() 
+    public override object Part2() 
     {
         bool checkValid(string line)
         {
