@@ -9,26 +9,16 @@ module Day1 =
         |> Seq.map Int32.Parse
         |> Seq.toArray
 
-
     let part1 input =
-        let x = 
-            input
-            |> parse
-
-        Array.allPairs x x 
-        |> Seq.filter (fun (a, b) -> a <> b && (a + b) = 2020)
-        |> Seq.map (fun (a, b) -> a * b)
-        |> Seq.head
-        |> bigint
+        input 
+        |> Seq.map Int32.Parse
+        |> Seq.pairwise
+        |> Seq.fold (fun t (a,b) -> t + if b > a then 1 else 0) 0
 
     let part2 input = 
-        let x = 
-            input
-            |> parse
-
-        Array.allPairs x x
-        |> Array.allPairs x
-        |> Seq.filter (fun (a, (b, c)) -> a <> b && a <> c && (a + b + c) = 2020)
-        |> Seq.map (fun (a, (b, c)) -> a * b * c)
-        |> Seq.head
-        |> bigint
+        input
+        |> Seq.map Int32.Parse
+        |> Seq.windowed 3
+        |> Seq.map Seq.sum
+        |> Seq.pairwise
+        |> Seq.fold (fun t (a,b) -> t + if b > a then 1 else 0) 0

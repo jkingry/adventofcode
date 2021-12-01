@@ -6,63 +6,38 @@ class Day1 : AdventOfCode.CSharp.RobotElf
 
     public override object Part1()
     {
-        var numbers = from line in Input
-                      select int.Parse(line);
-        
-        var n = numbers.ToArray();
+        var numbers = Input.Select(int.Parse);
 
-        Console.WriteLine($"Count: {n.Length}");
-        // Console.WriteLine($"Sum: {n.Sum()}");
-        // Console.WriteLine($"Avg: {n.Average()}");
-        // Console.WriteLine($"Min: {n.Min()}");
-        // Console.WriteLine($"Max: {n.Max()}");
-
-        var sum = 0;
-        var min = int.MaxValue;
-        var max = int.MinValue;
-
-        var freq = new Dictionary<int, int>();
-        var set = new HashSet<int>();
-        var res = 0;
-
-        for (var i=0; i < n.Length; ++i) {
-            var v = n[i];
-
-
-            sum += v;
-            if (v < min) min = v;
-            if (v > max) max = v;
-
-            if (set.Add(v)) {
-
-            }
-
-            freq[v] = (freq.TryGetValue(v, out var vc) ? vc : 0) + 1;
-        }
-        res = sum;
-
-        Console.WriteLine("-----------");
-        Console.WriteLine($"set.Count = {set.Count}");
-        Console.WriteLine("-----------");
-        Console.WriteLine($"Sum: {n.Sum()}");
-        Console.WriteLine($"Avg: {n.Average()}");
-        Console.WriteLine($"Min: {n.Min()}");
-        Console.WriteLine($"Max: {n.Max()}");
-        Console.WriteLine("-----------");
-        Console.WriteLine($"freq.Values.Max = {freq.Values.Max()}");
-        foreach(var kv in freq.OrderBy(k => k.Key)) {
-            // Console.WriteLine($"{kv.Key} = {kv.Value}");
-        }
-        Console.WriteLine("-----------");
-
-
-
-        return res;
+        return Increasing(numbers);
     }
 
     public override object Part2() 
     {
+        var windows = Window(Input.Select(int.Parse), 3);
 
-        return -1;
+        return Increasing(windows.Select(w => w.Sum()));
     }
+
+    int Increasing(IEnumerable<int> numbers)
+    {
+        var last = int.MaxValue;
+        var total = 0;
+        foreach (var n in numbers)
+        {
+            if (n > last) total += 1;
+            last = n;
+        }
+        return total;
+    }
+
+    IEnumerable<List<T>> Window<T>(IEnumerable<T> input, int window)
+    {
+        var w = new Queue<T>(window);
+        foreach (var x in input)
+        {
+            w.Enqueue(x);
+            if (w.Count > window) w.Dequeue();
+            if (w.Count == window) yield return w.ToList();
+        }
+    }    
 }
