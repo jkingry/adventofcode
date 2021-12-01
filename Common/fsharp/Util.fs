@@ -20,7 +20,7 @@ module Util =
     let getAnswerFunc day part =
         let a = Assembly.GetEntryAssembly()
         a.GetTypes ()    
-        |> Array.tryFind (fun t -> FSharpType.IsModule t && t.Name = $"Day%d{day}")      
+        |> Array.tryFind (fun t -> FSharpType.IsModule t && t.Name = $"Day%02d{day}")      
         |> Option.map (fun modl -> modl.GetMethods()) // Get all functions inside that module
         |> Option.bind                                // Find method matching the name and signature
             (Array.tryFind (fun method ->
@@ -41,7 +41,7 @@ module Util =
     let runProblem d p =
         let m = getAnswerFunc d p
 
-        let input = File.ReadLines($"../input/%d{d}.txt")
+        let input = File.ReadLines($"../input/%02d{d}.txt")
         m.Value.Invoke (null, [| input |]) |> printfn "day %d: part%d: %O" d p
 
     let run dayIndex problemIndex =
@@ -62,14 +62,11 @@ module Util =
         let args = Environment.GetCommandLineArgs() |> Array.tail
 
         let dayIndex = 
-            args
-            |> Array.tryHead
+            if args.Length > 0 then Some args[0] else None
             |> Option.bind tryParse
 
         let problemIndex =
-            args
-            |> Array.tail
-            |> Array.tryHead
+            if args.Length > 1 then Some args[1] else None
             |> Option.bind tryParse
 
         run dayIndex problemIndex
