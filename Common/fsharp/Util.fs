@@ -42,10 +42,11 @@ module Util =
         let m = getAnswerFunc d p
 
         let input = File.ReadLines($"../input/%d{d}.txt")
-        m.Value.Invoke (null, [| input |]) |> printfn "part%d: %O" p
+        m.Value.Invoke (null, [| input |]) |> printfn "day %d: part%d: %O" d p
 
     let run dayIndex problemIndex =
         let d = defaultArg dayIndex 1
+        
         match problemIndex with
             | Some p -> runProblem d p
             | None -> do
