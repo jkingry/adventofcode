@@ -1,5 +1,7 @@
 namespace AdventOfCode.CSharp.Y2021;
 
+using Microsoft.FSharp.Collections;
+
 class Day1 : AdventOfCode.CSharp.RobotElf
 {
     public Day1() : base(1) {}
@@ -13,9 +15,12 @@ class Day1 : AdventOfCode.CSharp.RobotElf
 
     public override object Part2() 
     {
-        var windows = Window(Input.Select(int.Parse), 3);
+        var windows = 
+            SeqModule
+                .Windowed(3, Input.Select(int.Parse))
+                .Select(s => s.Sum());
 
-        return Increasing(windows.Select(w => w.Sum()));
+        return Increasing(windows);
     }
 
     int Increasing(IEnumerable<int> numbers)
@@ -28,16 +33,5 @@ class Day1 : AdventOfCode.CSharp.RobotElf
             last = n;
         }
         return total;
-    }
-
-    IEnumerable<List<T>> Window<T>(IEnumerable<T> input, int window)
-    {
-        var w = new Queue<T>(window);
-        foreach (var x in input)
-        {
-            w.Enqueue(x);
-            if (w.Count > window) w.Dequeue();
-            if (w.Count == window) yield return w.ToList();
-        }
-    }    
+    }  
 }

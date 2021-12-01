@@ -4,10 +4,6 @@ open System
 
 module Day1 =
 
-    let parse input =
-        input
-        |> Seq.map Int32.Parse
-        |> Seq.toArray
 
     let part1 input =
         input 
