@@ -6,7 +6,7 @@ module Day01 =
     let increasing input =
         input
         |> Seq.pairwise
-        |> Seq.filter (fun (a,b) -> b > a)
+        |> Seq.filter (fun (a,b) -> (b > a))
         |> Seq.length
 
     let part1 input =

@@ -1,7 +1,4 @@
 namespace AdventOfCode.CSharp.Y2021;
-
-using Microsoft.FSharp.Collections;
-
 class Day01 : AdventOfCode.CSharp.RobotElf
 {
     public Day01() : base(1) {}
@@ -15,10 +12,11 @@ class Day01 : AdventOfCode.CSharp.RobotElf
 
     public override object Part2() 
     {
-        var windows = 
-            SeqModule
-                .Windowed(3, Input.Select(int.Parse))
-                .Select(s => s.Sum());
+        var windows = Input
+            .Select(int.Parse)
+            .ToArray()
+            .Window(3)
+            .Select(s => s.Sum());
 
         return Increasing(windows);
     }
@@ -33,5 +31,5 @@ class Day01 : AdventOfCode.CSharp.RobotElf
             last = n;
         }
         return total;
-    }  
+    }
 }
