@@ -2,9 +2,7 @@ namespace AdventOfCode.FSharp.Y2021
 
 open System
 
-module Day1 =
-
-
+module Day01 =
     let part1 input =
         input 
         |> Seq.map Int32.Parse

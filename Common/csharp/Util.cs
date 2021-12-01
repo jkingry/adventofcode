@@ -12,7 +12,7 @@ public static class Util
 
         Func<IEnumerable<Type>, Type> query = 
             day.HasValue
-            ? (tlist => tlist.FirstOrDefault(t => typeof(IRobotElf).IsAssignableFrom(t) && t.Name == ("Day" + day)))
+            ? (tlist => tlist.FirstOrDefault(t => typeof(IRobotElf).IsAssignableFrom(t) && t.Name == $"Day{day:00}"))
             : (tlist => tlist.Where(t => typeof(IRobotElf).IsAssignableFrom(t) && t.Name.StartsWith("Day")).OrderBy(t => t.Name).LastOrDefault());
 
         Type? t = query(Assembly.GetEntryAssembly()?.GetTypes());
