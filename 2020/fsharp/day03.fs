@@ -4,7 +4,7 @@ open AdventOfCode.FSharp.Util
 open System
 open System.Text
 
-module Day3 =
+module Day03=
     let findTrees down right input =
         let mutable r = 0
         let mutable trees = 0

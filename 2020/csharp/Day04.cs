@@ -1,10 +1,10 @@
-namespace AdventOfCode2020;
+namespace AdventOfCode.CSharp.Y2020;
 
 using System.Text.Json;
 
-class Day4 : AdventOfCode.CSharp.RobotElf
+class Day04 : RobotElf
 {
-    public Day4() : base(4) {}
+    public Day04() : base(4) {}
     
     enum EyeColor
     {

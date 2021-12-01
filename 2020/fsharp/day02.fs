@@ -3,7 +3,7 @@ namespace AdventOfCode.FSharp.Y2020
 open System
 open AdventOfCode.FSharp.Util
 
-module Day2 =
+module Day02=
     type Pline = {
         min: int
         max: int

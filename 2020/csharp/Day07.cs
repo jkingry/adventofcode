@@ -1,11 +1,11 @@
 using System.Collections.Immutable;
 
-namespace AdventOfCode2020;
+namespace AdventOfCode.CSharp.Y2020;
 
 
-class Day7 :AdventOfCode.CSharp.RobotElf
+class Day07 :RobotElf
 {
-    public Day7() : base(7) {}
+    public Day07() : base(7) {}
 
     record Rule
     {

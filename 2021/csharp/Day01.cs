@@ -2,9 +2,9 @@ namespace AdventOfCode.CSharp.Y2021;
 
 using Microsoft.FSharp.Collections;
 
-class Day1 : AdventOfCode.CSharp.RobotElf
+class Day01 : AdventOfCode.CSharp.RobotElf
 {
-    public Day1() : base(1) {}
+    public Day01() : base(1) {}
 
     public override object Part1()
     {

@@ -2,7 +2,7 @@ namespace AdventOfCode.FSharp.Y2020
 
 open System
 
-module Day1 =
+module Day01=
 
     let parse input =
         input
