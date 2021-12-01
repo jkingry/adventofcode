@@ -21,9 +21,6 @@ module Day1 =
         |> Seq.head
         |> bigint
 
-    let list3tuple (l : 'a list list ) =
-        l |> List.map (fun x -> x.[0], x.[1], x.[2] )
-
     let part2 input = 
         let x = 
             input

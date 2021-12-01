@@ -23,9 +23,12 @@ class Day1 : AdventOfCode.CSharp.RobotElf
 
         var freq = new Dictionary<int, int>();
         var set = new HashSet<int>();
+        var res = 0;
 
         for (var i=0; i < n.Length; ++i) {
             var v = n[i];
+
+
             sum += v;
             if (v < min) min = v;
             if (v > max) max = v;
@@ -36,6 +39,8 @@ class Day1 : AdventOfCode.CSharp.RobotElf
 
             freq[v] = (freq.TryGetValue(v, out var vc) ? vc : 0) + 1;
         }
+        res = sum;
+
         Console.WriteLine("-----------");
         Console.WriteLine($"set.Count = {set.Count}");
         Console.WriteLine("-----------");
@@ -52,7 +57,7 @@ class Day1 : AdventOfCode.CSharp.RobotElf
 
 
 
-        return -1;
+        return res;
     }
 
     public override object Part2() 
