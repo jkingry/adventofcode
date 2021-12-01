@@ -1,8 +1,6 @@
-using System.Text;
+namespace AdventOfCode.CSharp.Y2020;
 
-namespace AdventOfCode2020;
-
-class Day11 : AdventOfCode.CSharp.RobotElf
+class Day11 : RobotElf
 {
     public Day11() : base(11) {}
 

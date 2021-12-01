@@ -1,10 +1,8 @@
-using System.Text;
+namespace AdventOfCode.CSharp.Y2020;
 
-namespace AdventOfCode2020;
-
-class Day3 : AdventOfCode.CSharp.RobotElf
+class Day03 : RobotElf
 {
-    public Day3() : base(3) { }
+    public Day03() : base(3) { }
     
     public override object Part1()
     {

@@ -1,6 +1,6 @@
-namespace AdventOfCode2020;
+namespace AdventOfCode.CSharp.Y2020;
 
-class Day14 : AdventOfCode.CSharp.RobotElf
+class Day14 : RobotElf
 {
     public Day14() : base(14) { }
 

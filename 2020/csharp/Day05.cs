@@ -1,13 +1,13 @@
-namespace AdventOfCode2020;
+namespace AdventOfCode.CSharp.Y2020;
 
-class Day5 : AdventOfCode.CSharp.RobotElf
+class Day05 : RobotElf
 {
     const int ROWS = 128;
     const int COLUMNS = 8;
 
     int SeatId(int row, int col) => (row * COLUMNS) + col;
 
-    public Day5() : base(5) {}
+    public Day05() : base(5) {}
 
     public override object Part1()
     {
