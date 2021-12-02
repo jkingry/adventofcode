@@ -5,39 +5,37 @@ open System.Text
 open System.Text.RegularExpressions
 open AdventOfCode.FSharp.Util
 
+type Pos = 
+    {
+        depth : int
+        h : int
+        aim : int
+    }
+
 module Day02 =
-    let increasing input =
-        input
-        |> Seq.pairwise
-        |> Seq.filter (fun (a,b) -> (b > a))
-        |> Seq.length
+    let executeInput exec (input : string seq) =
+        let { depth = depth; h = h } = 
+            input
+            |> Seq.map (fun line -> let p = line.Split(' ') in (p[0], Int32.Parse p[1]))
+            |> Seq.fold exec { depth = 0; h = 0; aim = 0 }
+        depth * h    
 
-    let part1 (input : string seq)=        
-        let mutable depth = 0
-        let mutable h = 0
-        let mutable aim = 0
+    let part1 (input : string seq) =
+        let executeCommand p (direction, x) =
+            match direction with 
+            | "down" -> { p with depth = p.depth + x }
+            | "up" -> { p with depth = p.depth - x }
+            | "forward" -> { p with h = p.h + x }
+            | s -> failwith (sprintf "Unexpected command '%s'" s)
 
-        input 
-        |> Seq.iter (fun line -> 
-            let p = line.Split(' ')
-            let d = Int32.Parse(p[1])
-            match p[0] with 
-            | "down" ->
-                 aim <- aim + d
-            | "up" ->
-                aim <- aim - d
-
-            | "forward" -> 
-                h <- h + d
-                depth <- depth + (aim * d))
-
-        h * depth
-
+        input |> executeInput executeCommand
+ 
     let part2 input = 
-        input
-        |> Seq.map Int32.Parse
-        |> Seq.windowed 3
-        |> Seq.map Seq.sum
-        |> Seq.pairwise
-        |> Seq.filter (fun (a,b) -> (b > a))
-        |> Seq.length
+        let executeCommand p (direction, x) =
+            match direction with 
+            | "down" -> { p with aim = p.aim + x }
+            | "up" -> { p with aim = p.aim - x }
+            | "forward" -> { p with h = p.h + x ; depth = p.depth + (p.aim * x) }
+            | s -> failwith (sprintf "Unexpected command '%s'" s)
+
+        input |> executeInput executeCommand
