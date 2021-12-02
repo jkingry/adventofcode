@@ -1,1 +1,1 @@
-AdventOfCode.FSharp.Util.runCommandLine ()
+exit (AdventOfCode.FSharp.NorthPole.runCommandLine ())
