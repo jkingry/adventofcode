@@ -1,1 +1,2 @@
-AdventOfCode.FSharp.Util.runCommandLine ()
+let res = AdventOfCode.FSharp.NorthPole.runCommandLine ()
+exit res
