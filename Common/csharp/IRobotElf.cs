@@ -2,6 +2,7 @@ namespace AdventOfCode.CSharp;
 
 public interface IRobotElf
 {
+    public int Day { get; }
     object Part1();
     object Part2();
 }
