@@ -128,6 +128,5 @@ module Day21 =
         let danger = fres |> Map.toSeq |> Seq.sortBy fst |> Seq.map snd
         let dangerlist = System.String.Join (',', danger)
         
-        printfn "%s" dangerlist
-        -1
+        dangerlist
 
