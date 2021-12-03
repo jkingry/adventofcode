@@ -30,6 +30,16 @@ module Day22 =
         let mutable gameWinner = None
 
         let mutable pastStates = Set.empty
+        
+        let generateState (state : Decks) : Decks =
+            let winner = round state
+            let loser = if winner = 1 then 2 else 1
+
+            let tails = state |> Map.map (fun _ v -> v.Tail)
+            let heads = state |> Map.map (fun _ v -> v.Head)
+            let winnings = [ heads[winner] ; heads[loser] ]
+            
+            tails |> Map.add winner (tails[winner] @ winnings)
 
         while Option.isNone gameWinner do 
             if pastStates |> Set.contains state then gameWinner <- Some 1 else
