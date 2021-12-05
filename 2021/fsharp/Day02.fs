@@ -5,14 +5,14 @@ open System.Text
 open System.Text.RegularExpressions
 open AdventOfCode.FSharp.Util
 
-type Pos = 
-    {
-        depth : int
-        h : int
-        aim : int
-    }
-
 module Day02 =
+    type Pos = 
+        {
+            depth : int
+            h : int
+            aim : int
+        }
+        
     let executeInput exec (input : string seq) =
         let { depth = depth; h = h } = 
             input
