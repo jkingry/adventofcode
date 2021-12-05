@@ -1,4 +1,4 @@
-namespace AdventOfCode.FSharp.Y2021.Day03
+namespace AdventOfCode.FSharp.Y2021
 
 open System
 open System.Text

@@ -1,4 +1,4 @@
-namespace AdventOfCode.FSharp.Y2021.Day04
+namespace AdventOfCode.FSharp.Y2021
 
 open System
 
