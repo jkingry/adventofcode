@@ -32,6 +32,7 @@ module Day03 =
 
         let gamma = new string(gammaChars) |> fromBinary 
 
+        printfn "%d" gamma
         let digits = (List.head cache).Length
         let mask = (1 <<< digits) - 1
         let epsilon = (~~~gamma) &&& mask

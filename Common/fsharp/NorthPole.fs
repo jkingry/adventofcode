@@ -45,7 +45,11 @@ module NorthPole =
             if writeType then printfn "%s" m.DeclaringType.FullName
             let path = $"../input/%02d{day}.txt"
             if File.Exists path then
-                let input = File.ReadLines path
+                let input : obj =
+                    if m.GetParameters().[0].ParameterType = typeof<string> then
+                        File.ReadAllText path
+                    else
+                        File.ReadLines path
                 m.Invoke (null, [| input |]) |> printfn "day %d, part %d: %O" day p
                 Ok 0
             else Error (sprintf "Could not find %s" path)
