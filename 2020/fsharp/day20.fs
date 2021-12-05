@@ -1,20 +1,15 @@
 namespace AdventOfCode.FSharp.Y2020
 
-open AdventOfCode.FSharp.Util
 open System
-open System.Text
-open System.Text.RegularExpressions
-open FParsec
 open System.Collections.Generic
 
 // Jurassic Jigsaw
-type Tile = 
-    { 
-        id : int64
-        tile : char[,]
-    }
-
 module Day20 =
+    type Tile = 
+        { 
+            id : int64
+            tile : char[,]
+        }
 
     let parseTile (e : IEnumerator<string>) =
         let takeWhile (x : IEnumerator<string>) = 

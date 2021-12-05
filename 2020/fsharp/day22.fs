@@ -2,16 +2,12 @@ namespace AdventOfCode.FSharp.Y2020
 
 open AdventOfCode.FSharp.Util
 open System
-open System.Text
-open System.Text.RegularExpressions
-open FParsec
 open System.Collections.Generic
-open AdventOfCode.FSharp.Util
-
-type Decks = Map<int, int list>
 
 // Crab Combat
 module Day22 =
+    type Decks = Map<int, int list>
+    
     let parse (input : string seq) : Decks =
         let parsePlayer (e: IEnumerator<string>) =
             if e.MoveNext() = false then None else

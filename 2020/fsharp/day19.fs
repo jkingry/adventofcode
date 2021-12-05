@@ -1,9 +1,6 @@
 namespace AdventOfCode.FSharp.Y2020
 
-open AdventOfCode.FSharp.Util
 open System
-open System.Text
-open FParsec
 open System.Collections.Generic
 
 module Day19 =
