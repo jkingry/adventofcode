@@ -1,9 +1,9 @@
 namespace AdventOfCode.FSharp.Y2020
 
-type Deck = (Set<string> * Set<string>) list
-
 // Allergen Assessment
 module Day21 =
+    type Deck = (Set<string> * Set<string>) list
+    
     let possible (d : Deck) =
         seq {
             for (i, a) in d do

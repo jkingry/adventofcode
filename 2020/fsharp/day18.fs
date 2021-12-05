@@ -1,8 +1,5 @@
 namespace AdventOfCode.FSharp.Y2020
 
-open AdventOfCode.FSharp.Util
-open System
-open System.Text
 open FParsec
 
 module Day18 =
