@@ -63,5 +63,28 @@ module Day23 =
         String.Join("", ss)
 
     let part2 (input : string) =
-        -1
+        let nn = 
+            input 
+            |> Seq.map (fun c -> c.ToString() |> Int32.Parse)
+            
+        let init =
+            Seq.append nn [10..1000000] 
+            |> Seq.map (fun n -> { prev = None; v = n; next = None })
+            |> Seq.toArray
+        let n = init.Length
+
+        init |> Array.pairwise |> Array.iter (fun (a, b) -> a.next <- Some b; b.prev <- Some a)
+        init[0].prev <- Some init[n - 1]
+        init[n - 1].next <- Some init[0]
+
+        let cups = init |> Array.map (fun c -> (c.v, c)) |> Map.ofArray
+
+        let mutable c = init[0].v
+
+        for i = 1 to 10000000 do
+            c <- move c cups n
+
+        let [a ; b] = cs 1 cups |> Seq.skip 1 |> Seq.take (2) |> Seq.map int64 |> Seq.toList
+
+        a * b
 
