@@ -1,20 +1,17 @@
 namespace AdventOfCode.FSharp.Y2021
 
 open System
+open AdventOfCode.FSharp.Util
 
 // Day 4: Giant Squid
 module Day04 =    
-    let ints (s : string) =
-        s.Split(' ',',') 
-        |> Array.filter (not << String.IsNullOrWhiteSpace)
-        |> Array.map (fun s -> s.Trim() |> Int32.Parse) 
-
     let parse (input : string) =
-        let (callsText::boardsText) = input.Split([|"\n\n"|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList
-        
-        let calls = callsText |> ints
-        let boards = boardsText |> List.map (fun lines -> lines.Split('\n') |> Array.map ints |> array2D)
-        calls, boards
+        match input |> dblLineSplit |> Array.toList with
+        | callsText::boardsText ->        
+            let calls = callsText |> ints
+            let boards = boardsText |> List.map (fun lines -> lines |> lineSplit |> Array.map ints |> array2D)
+            calls, boards
+        | _ -> failwith "Invalid"
 
     let isWin calls board =
         seq { for i in 1..Array2D.length1 board do 
