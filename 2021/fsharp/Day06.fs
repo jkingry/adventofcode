@@ -4,7 +4,7 @@ open System
 open AdventOfCode.FSharp.Util
 
 // Day 5: Hydrothermal Venture
-module Day05 =    
+module Day06 =    
     let parseLine text =
         match text with
         | Regex @"(\d+),(\d+) -> (\d+),(\d+)" [x1;y1;x2;y2] -> 
@@ -32,12 +32,8 @@ module Day05 =
 
     let part1 (input : string) =
         let lines = input |> lineSplit |> Seq.map parseLine
+        -1
  
-        lines
-        |> Seq.filter (fun (p1, p2) -> p1[0] = p2[0] || p1[1] = p2[1]) 
-        |> countPoints
 
     let part2 (input : string) =
-        let lines = input |> lineSplit |> Seq.map parseLine 
-        lines |> countPoints
-
+        -1
