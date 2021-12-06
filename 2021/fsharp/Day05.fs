@@ -21,30 +21,25 @@ module Day05 =
                 yield n
         }
 
-    let incr v =
-        match v with 
-        | Some s -> Some (s + 1)
-        | _ -> Some 1
+    let countPoints lines =
+        lines
+        |> Seq.map points
+        |> Seq.concat
+        |> Seq.groupBy id
+        |> Seq.map snd
+        |> Seq.filter (fun v -> (Seq.length v) > 1)
+        |> Seq.length
 
-    let part1 (input : string seq) =
-        let lines = input |> Seq.map parseLine
+
+    let part1 (input : string) =
+        let lines = input |> lineSplit |> Seq.map parseLine
  
-        let marked =
-            lines
-            |> Seq.filter (fun (p1, p2) -> p1[0] = p2[0] || p1[1] = p2[1]) 
-            |> Seq.map points 
-            |> Seq.concat
-            |> Seq.fold (fun m s -> m |> Map.change s incr) Map.empty
+        lines
+        |> Seq.filter (fun (p1, p2) -> p1[0] = p2[0] || p1[1] = p2[1]) 
+        |> countPoints
 
-        marked.Values |> Seq.filter (fun v -> v > 1) |> Seq.length
-
-    let part2 (input : string seq) =
-        let lines = input |> Seq.map parseLine
+    let part2 (input : string) =
+        let lines = input |> lineSplit |> Seq.map parseLine
  
-        let marked =
-            lines
-            |> Seq.map points 
-            |> Seq.concat
-            |> Seq.fold (fun m s -> m |> Map.change s incr) Map.empty
+        lines |> countPoints
 
-        marked.Values |> Seq.filter (fun v -> v > 1) |> Seq.length
