@@ -50,19 +50,30 @@ module Day06 =
  
 
     let part2 (input : string) =
-        let mutable m  = ints(input) |> Array.map (fun v -> int64 v) |> Array.toList |> List.groupBy id |> List.map (fun (k,v) -> (k,List.length v |> int64) ) |> Map.ofList
+        let mutable ages : int64[] = Array.zeroCreate 9
+        let mutable ages' : int64[] = Array.zeroCreate 9
 
+        let mutable m  = 
+            ints(input) 
+            |> Array.groupBy id 
+            |> Array.iter (fun (k,v) -> ages[k] <- v.LongLength) 
 
-
-        for d=1 to 256 do
-            let mutable mm : Map<int64, int64> = Map.empty
-            for x in m do
-                let k : int64 = x.Key
-                let v : int64 = x.Value
-                if k = 0 then   
-                    mm <- mm |> Map.change 8 (fun vv -> match vv with | Some n -> Some (n + v) | _ -> Some v)         
-                    mm <- mm |> Map.change 6 (fun vv -> match vv with | Some n -> Some (n + v) | _ -> Some v)            
+        let day () =
+            for i= 8 downto 0 do
+                ages'[i] <- 0
+            
+            for i= 8 downto 0 do
+                let v = ages[i]
+                if i = 0 then
+                    ages'[8] <- v
+                    ages'[6] <- ages'[6] + v
                 else
-                    mm <- mm |> Map.change (k - 1L) (fun vv -> match vv with | Some n -> Some (n + v) | _ -> Some v)            
-            m <- mm
-        m.Values |> Seq.sum
+                    ages'[i-1] <- v
+            let temp = ages
+            ages <- ages'
+            ages' <- temp
+
+        for i=1 to 256 do
+            day ()
+        
+        ages |> Array.sum
