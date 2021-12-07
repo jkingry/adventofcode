@@ -24,9 +24,17 @@ module Day07 =
         let cost x q =
             q |> Map.fold (fun a k v -> a + sint(abs(k - x)) * v) 0
 
-        let (sol, solcost) = [imin..imax] |> List.fold (fun (a,c) i ->
-            let cc = cost i input
-            if cc < c then (i,cc) else (a,c)) (-1, Int32.MaxValue)
+        let (sol, solcost) = 
+            [imin..imax] 
+            |> List.fold (
+                fun (a,c) i ->
+                    let cc = cost i input
+                    if cc < c then 
+                        printfn "%d %d" i cc
+                        (i,cc) 
+                    else 
+                        (a,c)) 
+                (-1, Int32.MaxValue)
 
         solcost
 
