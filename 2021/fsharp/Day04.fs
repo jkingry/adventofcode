@@ -1,10 +1,9 @@
 namespace AdventOfCode.FSharp.Y2021
 
-open System
-open AdventOfCode.FSharp.Util
-
 // Day 4: Giant Squid
 module Day04 =    
+    open AdventOfCode.FSharp.Util
+
     let parse (input : string) =
         match input |> dblLineSplit |> Array.toList with
         | callsText::boardsText ->        

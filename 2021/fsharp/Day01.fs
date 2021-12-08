@@ -2,6 +2,7 @@ namespace AdventOfCode.FSharp.Y2021
 
 open System
 
+// Day 1: Sonar Sweep
 module Day01 =
     let increasing input =
         input
