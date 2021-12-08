@@ -5,10 +5,10 @@ module Day04 =
     open AdventOfCode.FSharp.Util
 
     let parse (input : string) =
-        match input |> dblLineSplit |> Array.toList with
+        match input |> splitDoubleLine |> Array.toList with
         | callsText::boardsText ->        
             let calls = callsText |> ints
-            let boards = boardsText |> List.map (fun lines -> lines |> lineSplit |> Array.map ints |> array2D)
+            let boards = boardsText |> List.map (fun lines -> lines |> splitLine |> Array.map ints |> array2D)
             calls, boards
         | _ -> failwith "Invalid"
 
