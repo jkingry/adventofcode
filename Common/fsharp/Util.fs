@@ -39,10 +39,32 @@ module Util =
     let remove (key : 'T) (counter : Map<'T, int>) : Map<'T, int> =
         addValue key -1 counter
 
+    let split (split : string) (s : string) = s.Split([|split|], StringSplitOptions.RemoveEmptyEntries)
 
-    let lineSplit (s : string) = s.Split([|"\r\n";"\n"|], StringSplitOptions.RemoveEmptyEntries)
+    let splitLine (s : string) = s.Split([|"\r\n";"\n"|], StringSplitOptions.RemoveEmptyEntries)
+
+    let splitSpace (s : string) = s.Split([|" "|], StringSplitOptions.RemoveEmptyEntries)
  
-    let dblLineSplit (s : string) = s.Split([|"\r\n\r\n";"\n\n"|], StringSplitOptions.RemoveEmptyEntries)
+    let splitDoubleLine (s : string) = s.Split([|"\r\n\r\n";"\n\n"|], StringSplitOptions.RemoveEmptyEntries)
+
+    let rec distribute e = function
+    | [] -> [[e]]
+    | x::xs' as xs -> (e::xs)::[for xs in distribute e xs' -> x::xs]
+
+    let rec permute = function
+    | [] -> [[]]
+    | e::xs -> List.collect (distribute e) (permute xs)
+
+    let rec fromChoices (input : 'a list list) : 'a list list =
+        match input with 
+        | [x] -> x |> List.map (fun y -> [y])
+        | x::xs -> 
+            x 
+            |> List.map (fun y -> 
+                (fromChoices xs) 
+                |> List.map (fun yy -> [y] @ yy))
+            |> List.concat
+
 
     let mapIncr (key: 'Key) (m : Map<'Key, int>) = m |> Map.change key (fun v -> Some (1 + Option.defaultValue 0 v))
         
