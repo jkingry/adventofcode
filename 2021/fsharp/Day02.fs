@@ -1,10 +1,6 @@
 namespace AdventOfCode.FSharp.Y2021
 
-open System
-open System.Text
-open System.Text.RegularExpressions
-open AdventOfCode.FSharp.Util
-
+// Day 2: Dive! 
 module Day02 =
     type Pos = 
         {
@@ -16,7 +12,7 @@ module Day02 =
     let executeInput exec (input : string seq) =
         let { depth = depth; h = h } = 
             input
-            |> Seq.map (fun line -> let p = line.Split(' ') in (p[0], Int32.Parse p[1]))
+            |> Seq.map (fun line -> let p = line.Split(' ') in (p[0], int p[1]))
             |> Seq.fold exec { depth = 0; h = 0; aim = 0 }
         depth * h    
 

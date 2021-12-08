@@ -1,16 +1,8 @@
 namespace AdventOfCode.FSharp.Y2021
 
-open System
-open System.Text
-open System.Text.RegularExpressions
-open AdventOfCode.FSharp.Util
-
+// Day 3: Binary Diagnostic
 module Day03 =
-    let fromBinary (s : string) = 
-        let mutable n = 0
-        for i = 0 to s.Length - 1 do
-            if s[s.Length - i - 1] = '1' then n <- n + (1 <<< i)
-        n
+    let fromBinary (s : string) = int ("0b" + s)
 
     let part1 (input : string seq) =        
         let mapIncr (i : int) (m : Map<int, int>) = m |> Map.change i (fun x -> Some (1 + Option.defaultValue 0 x))

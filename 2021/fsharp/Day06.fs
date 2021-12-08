@@ -1,15 +1,16 @@
 namespace AdventOfCode.FSharp.Y2021
 
-open AdventOfCode.FSharp.Util
-
 // Day 6: Lanternfish
 module Day06 =    
-    let simulate days gestationTime (ages : int64 array) =
+    open AdventOfCode.FSharp.Util
+    
+    let simulate days gestationTime ages =
+        let maxAge = Array.length ages
         for day = 0 to days - 1 do
-            let offspringDay = day % ages.Length 
-            let nextOffspringDay = (day + gestationTime) % ages.Length
+            let birthDay = day % maxAge
+            let nextBirthDay = (day + gestationTime) % maxAge
 
-            ages[nextOffspringDay] <- ages[nextOffspringDay] + ages[offspringDay]
+            ages[nextBirthDay] <- ages[nextBirthDay] + ages[birthDay]
 
     let part1 (input : string) =
         let ages : int64[] = Array.zeroCreate 9

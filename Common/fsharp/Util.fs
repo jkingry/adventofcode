@@ -9,6 +9,7 @@ open Microsoft.FSharp.Reflection
 
 module Util = 
     open System.Collections.Generic
+
     let rec comb n l = 
         match n, l with
         | 0, _ -> [[]]
@@ -18,7 +19,26 @@ module Util =
     let ints (s : string) =
         s.Split(' ',',') 
         |> Array.filter (not << String.IsNullOrWhiteSpace)
-        |> Array.map (fun s -> s.Trim() |> Int32.Parse) 
+        |> Array.map int 
+
+    let createCounter (input : seq<'T>) : Map<'T, int> =
+        input 
+        |> Seq.groupBy id
+        |> Seq.map (fun (k,v) -> (k, Seq.length v))
+        |> Map.ofSeq
+    
+    let addValue (key : 'T) (value : int)  (counter : Map<'T, int>) : Map<'T, int> =
+        counter |> Map.change key (fun o -> Some (-1 + defaultArg o 0))
+
+    let removeValue (key : 'T) (value : int)  (counter : Map<'T, int>) : Map<'T, int> =
+        addValue key -value counter
+
+    let add (key : 'T) (counter : Map<'T, int>) : Map<'T, int> =
+        addValue key 1 counter
+
+    let remove (key : 'T) (counter : Map<'T, int>) : Map<'T, int> =
+        addValue key -1 counter
+
 
     let lineSplit (s : string) = s.Split([|"\r\n";"\n"|], StringSplitOptions.RemoveEmptyEntries)
  

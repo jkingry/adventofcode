@@ -1,42 +1,52 @@
 namespace AdventOfCode.FSharp.Y2021
 
-open AdventOfCode.FSharp.Util
-open System
 // Day 7
 module Day07 =    
+    open AdventOfCode.FSharp.Util
+    open Checked
 
     let part1 (text : string) =
         let input = 
-            text |> ints |> Array.groupBy id 
-            |> Array.map (fun (k,v) -> (k, Array.length v))
-            |> Map.ofArray
+            text |> ints |> Array.map int64 |> Array.sort
         
-        let total = input |> Map.fold (fun a k v -> a + (k * v) ) 0
-        let avg = total / (input.Values |> Seq.sum)
+        let median = input[input.Length / 2]
 
-        let imin = input.Keys |> Seq.min
-        let imax = input.Keys |> Seq.max
+        let cost x y = abs(x - y)
 
-        printfn "min %d" imin
-        printfn "max %d" imax
+        input |> Array.map (cost median) |> Array.sum
 
-        let sint n = n * (n+1) / 2
-        let cost x q =
-            q |> Map.fold (fun a k v -> a + sint(abs(k - x)) * v) 0
+    let localMin f minlow maxhigh =
+        let rec localMinUtil low high =
+            let mid = low + (high - low) / 2L
 
-        let (sol, solcost) = 
-            [imin..imax] 
-            |> List.fold (
-                fun (a,c) i ->
-                    let cc = cost i input
-                    if cc < c then 
-                        printfn "%d %d" i cc
-                        (i,cc) 
-                    else 
-                        (a,c)) 
-                (-1, Int32.MaxValue)
+            let midv = f mid
+            let lowv = f (mid - 1L)
+            let highv = f (mid + 1L)
 
-        solcost
+            if (mid = minlow || lowv > midv) && (mid = maxhigh || midv < highv) then 
+                mid 
+            elif mid > minlow && lowv < midv then
+                localMinUtil low (mid - 1L)
+            else
+                localMinUtil (mid + 1L) high
+        
+        localMinUtil minlow maxhigh        
 
-    let part2 (input : string) =
-        -1
+    let part2 (text : string) =
+        let input =
+            text |> ints |> Array.map int64 |> Array.sort
+
+        let median = input[input.Length / 2]
+
+        let cost x y =
+            let n = abs(x - y)
+            n * (n + 1L) / 2L
+
+        let totalCost p =
+            input |> Array.map (cost p) |> Array.sum    
+
+        let min = localMin totalCost 0L (Array.max input)       
+
+        totalCost min
+    
+

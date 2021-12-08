@@ -1,14 +1,13 @@
 namespace AdventOfCode.FSharp.Y2021
 
-open System
-open AdventOfCode.FSharp.Util
-
 // Day 5: Hydrothermal Venture
 module Day05 =    
+    open AdventOfCode.FSharp.Util
+    
     let parseLine text =
         match text with
         | Regex @"(\d+),(\d+) -> (\d+),(\d+)" [x1;y1;x2;y2] -> 
-            ([Int32.Parse x1;Int32.Parse y1], [Int32.Parse x2;Int32.Parse y2])
+            ([int x1;int y1], [int x2;int y2])
         | _ -> failwith "Invalid"
         
     let points (p1, p2) =
