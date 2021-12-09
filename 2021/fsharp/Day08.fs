@@ -68,6 +68,8 @@ module Day08 =
         |> Array.sum
 
     let part2 (text : string) =
+        printfn "%A" (fook |> Seq.toList)
+
         let stringToMap s =
             Seq.zip s "abcdefg" |> Map.ofSeq
         let success e cmap =
