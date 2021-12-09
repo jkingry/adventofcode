@@ -17,7 +17,29 @@ module Day08 =
             "acf"
             "abcdefg"
             "abcdfg"
-        ] |> List.indexed |> List.map (fun (a,b) -> (b,a.ToString()[0])) |> Map.ofList 
+        ] |> List.indexed |> List.map (fun (a,b) -> (b,a.ToString()[0])) |> Map.ofList
+
+    let charArrayToString (a : char[]) = new System.String(a)
+
+    let fastPermute (e : string seq) =
+        let one = e |> Seq.find (fun s -> s |> String.length = 2) |> List.ofSeq
+        let seven = e |> Seq.find (fun s -> s |> String.length = 3) |> List.ofSeq
+        let four = e |> Seq.find (fun s -> s |> String.length = 4) |> List.ofSeq
+        let all = "abcdefg" |> List.ofSeq
+        let input : char list list =
+            [
+                seven|> List.except one  // a
+                four |> List.except one  // b
+                one                      // c
+                four |> List.except one  // d
+                all  |> List.except four // e
+                one                      // f
+                all  |> List.except four // g 
+            ]
+
+        input
+        |> fromChoices
+        |> List.map (fun l -> l |> List.toArray |> charArrayToString)
 
     let parse (input : string) =
         input
@@ -25,7 +47,6 @@ module Day08 =
         |> Array.map (fun line -> 
             let parts = line |> split "|" |> Array.map splitSpace
             parts[0], parts[1])
-    let charArrayToString (a : char[]) = new System.String(a)
     
     let translate cmap input =
         let segments : string =
@@ -52,17 +73,22 @@ module Day08 =
         let success e cmap =
             e |> Seq.forall ((translate cmap) >> Option.isSome)
 
-        parse text
-        |> Array.map (fun (e,o) ->
-            let cmap : Map<char,char> = 
-                "abcdefg" 
-                |> Seq.toList 
-                |> permute
-                |> List.map stringToMap 
-                |> Seq.find (success e)
-            o |> Seq.map (fun oo -> 
-                (oo |> translate cmap).Value) 
-                |> Seq.toArray 
-                |> charArrayToString 
-                |> int)
-        |> Array.sum
+        let mutable p = 0
+        let res = 
+            parse text
+            |> Array.map (fun (e,o) ->
+                let cmap : Map<char,char> = 
+                    fastPermute e
+                    |> List.map (fun s -> p <- p + 1; s)                
+                    |> List.map stringToMap 
+                    |> Seq.find (success e)
+
+                o |> Seq.map (fun oo -> 
+                    (oo |> translate cmap).Value) 
+                    |> Seq.toArray 
+                    |> charArrayToString 
+                    |> int)
+            |> Array.sum
+        
+        printfn "%i" p
+        res

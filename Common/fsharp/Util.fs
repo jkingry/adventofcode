@@ -55,13 +55,15 @@ module Util =
     | [] -> [[]]
     | e::xs -> List.collect (distribute e) (permute xs)
 
-    let rec fromChoices (input : 'a list list) : 'a list list =
+    let rec fromChoices (input : char list list) : char list list =
         match input with 
         | [x] -> x |> List.map (fun y -> [y])
         | x::xs -> 
             x 
-            |> List.map (fun y -> 
-                (fromChoices xs) 
+            |> List.map (fun y ->
+                // remove y from all remaining choices
+                let noy_xs = xs |> List.map (List.except [y]) 
+                (fromChoices noy_xs) 
                 |> List.map (fun yy -> [y] @ yy))
             |> List.concat
 
