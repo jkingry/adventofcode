@@ -1,45 +1,47 @@
 namespace AdventOfCode.FSharp.Y2021
 
 
-// Day 10
+// Day 10: Syntax Scoring
 module Day10 =    
     open AdventOfCode.FSharp.Util
     open Checked
 
+    let errorMap = [')',3L;']',57L;'}',1197L;'>',25137L] |> Map.ofList
+    let score = ['(',1L;'[',2L;'{',3L;'<',4L] |> Map.ofList
+
+    let lineStack line = 
+        line
+        |> Seq.fold (fun a c ->
+            match a with
+            | Error _ -> a
+            | Ok s ->
+                match c with
+                |'('|'['|'{'|'<' -> Ok (c::s)
+                |')'|']'|'}'|'>' -> 
+                    match s with
+                    | [] -> Error errorMap[c]
+                    | x::xs -> 
+                        // dirty ASCII tricks
+                        if abs((int c) - (int x)) <= 2 then 
+                            Ok xs
+                        else
+                            Error errorMap[c]
+                | _ -> a) (Ok [])
+
+
     let part1 (text : string) =   
-        let points = 
-            [
-                '(', 1L
-                '[', 2L
-                '{',3L
-                '<',4L
-            ] |> Map.ofList
-        let mutable bad = 0
-        let mutable totals : int64 list = []
-
-        for line in text |> splitLine do
-            let mutable s = []
-            let mutable foundbad = false
-            for c in line do                
-                if not foundbad then
-                    match c with
-                    | '[' -> s <- c::s
-                    | '<' -> s <- c::s
-                    | '{' -> s <- c::s
-                    | '(' -> s <- c::s
-
-                    | ')' -> let h::xs = s in if h <> '(' then foundbad <- true else s <- xs
-                    | '>' -> let h::xs = s in if h <> '<' then foundbad <- true else s <- xs 
-                    | '}' -> let h::xs = s in if h <> '{' then foundbad <- true  else s <- xs
-                    | ']' -> let h::xs = s in if h <> '[' then foundbad <- true  else s <- xs
-                    | _ -> ()
-
-            if not foundbad then
-                let t : int64 = s |> List.map (fun cc -> points |> Map.find cc)  |> List.fold (fun a rr -> (a * 5L) + rr) 0
-                printfn "%A %d" (s) t                
-                totals <- t::totals
-        totals <- totals |> List.sort
-        totals[totals.Length / 2]
+        text 
+        |> splitLine
+        |> Array.map lineStack
+        |> Array.map (function | Error v -> v | _ -> 0L)
+        |> Array.sum
 
     let part2 (text : string) =
-        -1
+        let totals = 
+            text 
+            |> splitLine
+            |> Array.map lineStack
+            |> Array.choose (function | Error _ -> None | Ok s -> Some s)
+            |> Array.map (fun s -> s |> List.fold (fun a v -> (a*5L)+score[v]) 0L)
+            |> Array.sort
+        totals[totals.Length / 2]
