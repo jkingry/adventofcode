@@ -69,6 +69,7 @@ module Util =
 
 
     let mapIncr (key: 'Key) (m : Map<'Key, int>) = m |> Map.change key (fun v -> Some (1 + Option.defaultValue 0 v))
+    let mapDecr (key: 'Key) (m : Map<'Key, int>) = m |> Map.change key (fun v -> Some (-1 + Option.defaultValue 0 v))
         
     let (|Regex|_|) pattern input =
         let m = Regex.Match(input, pattern)
