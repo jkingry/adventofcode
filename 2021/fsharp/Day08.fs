@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2021
 
-// Day 8
+// Day 8: Seven Segment Search
 module Day08 =    
     open AdventOfCode.FSharp.Util
 
