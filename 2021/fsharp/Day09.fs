@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2021
 
-// Day 9
+// Day 9: Smoke Basin
 module Day09 =    
     open AdventOfCode.FSharp.Util
 

@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2021
 
-// Day 7
+// Day 7: The Treachery of Whales
 module Day07 =    
     open AdventOfCode.FSharp.Util
     open Checked
