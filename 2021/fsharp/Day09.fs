@@ -57,7 +57,7 @@ module Day09 =
 
                             let next = 
                                 neighbors (x,y) grid
-                                |> List.filter (fun p -> not (Set.contains p mapped))
+                                |> List.filter (fun (x,y) -> grid[x,y] > v && not (Set.contains (x,y) mapped))
 
                             q <- q @ next
             basin
