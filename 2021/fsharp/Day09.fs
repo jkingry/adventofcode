@@ -9,16 +9,16 @@ module Day09 =
         |> List.map (fun (dx, dy) -> dx + x,dy + y)
         |> List.filter (fun (nx, ny) -> nx >= 0 && ny >= 0 && nx < Array2D.length1 grid && ny < Array2D.length2 grid)
 
+    let isLow x y v grid = 
+        neighbors (x,y) grid 
+        |> List.forall (fun (nx, ny) -> grid[nx,ny] > v)
+ 
     let part1 (text : string) =
         let grid = 
             text 
             |> splitLine
             |> Array.map (fun line -> line |> Seq.map (string >> int))
             |> array2D
-
-        let isLow x y v grid = 
-            neighbors (x,y) grid 
-            |> List.forall (fun (nx, ny) -> grid[nx,ny] > v)
         
         let mutable riskValue = 0
 
@@ -62,12 +62,11 @@ module Day09 =
                             q <- q @ next
             basin
 
-        let mutable basins = []
-
+        let mutable lows = []
         grid 
-        |> Array2D.iteri (fun x y v -> 
-            if v <> 9 && not (mapped |> Set.contains (x,y)) then
-                let b = findBasin x y
-                basins <- b::basins)
+        |> Array2D.iteri (fun x y v -> if isLow x y v grid then lows <- (x,y)::lows)
+
+        let basins =
+            lows |> List.fold (fun b (x,y) -> (findBasin x y)::b) []
 
         basins |> List.map Set.count |> List.sortDescending |> List.take 3 |> List.reduce (fun a b -> a * b) 
