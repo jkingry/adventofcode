@@ -30,7 +30,7 @@ module Day05 =
         |> Seq.length
 
     let part1 (input : string) =
-        let lines = input |> splitLine |> Seq.map parseLine
+        let lines = input |> splitLine |> Array.map parseLine
  
         lines
         |> Seq.filter (fun (p1, p2) -> p1[0] = p2[0] || p1[1] = p2[1]) 
@@ -38,6 +38,6 @@ module Day05 =
         |> string
 
     let part2 (input : string) =
-        let lines = input |> splitLine |> Seq.map parseLine 
+        let lines = input |> splitLine |> Array.map parseLine 
         lines |> countPoints |> string
 
