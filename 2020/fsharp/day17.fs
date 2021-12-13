@@ -2,6 +2,10 @@ namespace AdventOfCode.FSharp.Y2020
 
 // Conway Cubes
 module Day17 =    
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
+    
     let print (p : 'a[,,]) =
         for z = 0 to (Array3D.length3 p) - 1 do
             let slice = p[*, *, z]
@@ -55,15 +59,15 @@ module Day17 =
         Array3D.mapi cycle' p' |> trim
 
 
-    let part1 (input : string seq) =
-        let init = array2D input
+    let part1 (input : string) =
+        let init = input |> splitLine |> array2D 
         let mutable p = Array3D.create (Array2D.length1 init) (Array2D.length2 init) 1 '.'
         p[*,*,0] <- init
 
         for i = 1 to 6 do
             p <- cycle p
 
-        p |> countOn
+        p |> countOn |> string
 
     let Array4D_iteri (f : int -> int -> int -> int -> 'a -> unit) (a : 'a[,,,]) = 
         for x = 0 to (Array4D.length1 a)- 1 do
@@ -126,12 +130,12 @@ module Day17 =
 
         Array4D_mapi cycle' p' |> trim4        
         
-    let part2 (input : string seq) =
-        let init = array2D input
+    let part2 (input : string) =
+        let init = input |> splitLine |> array2D 
         let mutable p = Array4D.create (Array2D.length1 init) (Array2D.length2 init) 1 1 '.'
         p[*,*,0, 0] <- init
 
         for i = 1 to 6 do
             p <- cycle4 p
 
-        p |> countOn4
+        p |> countOn4 |> string

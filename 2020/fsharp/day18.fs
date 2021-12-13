@@ -1,8 +1,10 @@
 namespace AdventOfCode.FSharp.Y2020
-
-open FParsec
-
 module Day18 =
+    open FParsec
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
+    
     let ws = spaces
 
     let str_ws s = pstring s .>> ws
@@ -17,7 +19,7 @@ module Day18 =
                 -1L
 
 
-    let part1 (input : string seq)  =
+    let part1 (input : string)  =
         let roppa = new OperatorPrecedenceParser<int64,unit,unit>()
         let rparithmetic = roppa.ExpressionParser
         let rterma = (rpvalue .>> ws) <|> between (str_ws "(") (str_ws ")") rparithmetic
@@ -26,11 +28,12 @@ module Day18 =
         roppa.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, fun x y -> x * y))
 
         input
+        |> splitLine
         |> Seq.map (runParser rparithmetic)
         |> Seq.sum
-        |> bigint
+        |> string
 
-    let part2 (input : string seq) =
+    let part2 (input : string) =
         let roppa = new OperatorPrecedenceParser<int64,unit,unit>()
         let rparithmetic = roppa.ExpressionParser
         let rterma = (rpvalue .>> ws) <|> between (str_ws "(") (str_ws ")") rparithmetic
@@ -39,6 +42,7 @@ module Day18 =
         roppa.AddOperator(InfixOperator("+", ws, 2, Associativity.Left, fun x y -> x + y))
 
         input
+        |> splitLine
         |> Seq.map (runParser rparithmetic)
         |> Seq.sum
-        |> bigint
+        |> string
