@@ -43,18 +43,18 @@ module NorthPole =
     let run (dayIndex: int option) (partIndex: int option) (days: Day list) =  
         let days = findDays dayIndex partIndex days     
         match days with
-        | [r] -> [ Some (r.day, r.part), runDay r 1 ]
-        | [] -> [ None, sprintf "Could not find function for day %A, part %A" dayIndex partIndex |> Error ]
+        | [r] -> seq { yield Some (r.day, r.part), runDay r 1 }
+        | [] -> seq { yield None, sprintf "Could not find function for day %A, part %A" dayIndex partIndex |> Error }
         | manyDays -> 
             let maxDay = manyDays |> List.map (fun r -> r.day) |> List.max
             let parts = manyDays |> List.filter (fun r -> r.day = maxDay)
-            parts |> List.map (fun r -> Some (r.day, r.part), runDay r 1)
+            parts |> List.toSeq |> Seq.map (fun r -> Some (r.day, r.part), runDay r 1)
 
     let test (dayIndex: int option) (partIndex: int option) (repeats: int option) (days: Day list) =  
         let repeats = defaultArg repeats 1
         let days = findDays dayIndex partIndex days     
 
-        days |> List.map (fun r -> Some (r.day, r.part), runDay r repeats)
+        days |> List.toSeq |> Seq.map (fun r -> Some (r.day, r.part), runDay r repeats)
 
     let tryParse (str:string) =
         match System.Int32.TryParse str with
@@ -106,4 +106,4 @@ module NorthPole =
                 days |> test dayIndex problemIndex repeats
             | _ -> failwith "Unreachable"
     
-        result |> List.iter (printfn "%A")        
+        result |> Seq.iter (printfn "%A")        
