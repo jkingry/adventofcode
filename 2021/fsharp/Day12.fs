@@ -48,7 +48,7 @@ module Day12 =
 
     let inline small (k: string) = k.ToLower() = k 
 
-    let part1Visitor visited node =
+    let inline part1Visitor visited node =
         if not (small node) then Some visited 
         elif visited |> Set.contains node then None
         else Some (visited |> Set.add node)
@@ -57,7 +57,7 @@ module Day12 =
         let caves = parse text
         caves |> Graph.findPaths ["start"] "end" part1Visitor Set.empty |> Seq.length |> string
 
-    let part2Visitor (visited, doubleCave) node =
+    let inline part2Visitor (visited, doubleCave) node =
         match part1Visitor visited node, doubleCave with
         | Some state,_ -> Some (state, doubleCave)
         | None, false -> Some (visited, true)

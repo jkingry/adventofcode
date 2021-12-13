@@ -3,46 +3,48 @@ open AdventOfCode.FSharp.Y2021
 
 open Checked
 
+let inline E v = v |> string |> Some 
+
 let days = 
     [
-        01,1,Day01.part1,1676|>string|>Some
-        01,2,Day01.part2,1706|>string|>Some
+        01,1,Day01.part1,E 1676
+        01,2,Day01.part2,E 1706
 
-        02,1,Day02.part1,2036120|>string|>Some
-        02,2,Day02.part2,2015547716|>string|>Some
+        02,1,Day02.part1,E 2036120
+        02,2,Day02.part2,E 2015547716
 
-        03,1,Day03.part1,738234|>string|>Some
-        03,2,Day03.part2,3969126|>string|>Some
-        
-        04,1,Day04.part1,89001|>string|>Some
-        04,2,Day04.part2,7296|>string|>Some
+        03,1,Day03.part1,E 738234
+        03,2,Day03.part2,E 3969126
 
-        05,1,Day05.part1,4993|>string|>Some
-        05,2,Day05.part2,21101|>string|>Some
-        
-        06,1,Day06.part1,363101|>string|>Some
-        06,2,Day06.part2,"1644286074024"|>Some
+        04,1,Day04.part1,E 89001
+        04,2,Day04.part2,E 7296
 
-        07,1,Day07.part1,344605|>string|>Some
-        07,2,Day07.part2,93699985|>string|>Some
+        05,1,Day05.part1,E 4993
+        05,2,Day05.part2,E 21101
 
-        08,1,Day08.part1,245|>string|>Some
-        08,2,Day08.part2,983026|>string|>Some
+        06,1,Day06.part1,E 363101
+        06,2,Day06.part2,Some "1644286074024"
 
-        09,1,Day09.part1,456|>string|>Some
-        09,2,Day09.part2,1047744|>string|>Some
+        07,1,Day07.part1,E 344605
+        07,2,Day07.part2,E 93699985
 
-        10,1,Day10.part1,442131|>string|>Some
-        10,2,Day10.part2,"3646451424"|>Some
+        08,1,Day08.part1,E 245
+        08,2,Day08.part2,E 983026
 
-        11,1,Day11.part1,1747|>string|>Some
-        11,2,Day11.part2,505|>string|>Some
+        09,1,Day09.part1,E 456
+        09,2,Day09.part2,E 1047744
 
-        12,1,Day12.part1,4659|>string|>Some
-        12,2,Day12.part2,148962|>string|>Some
+        10,1,Day10.part1,E 442131
+        10,2,Day10.part2,Some "3646451424"
 
-        13,1,Day13.part1,737|>string|>Some
-        13,1,Day13.part2,Some """
+        11,1,Day11.part1,E 1747
+        11,2,Day11.part2,E 505
+
+        12,1,Day12.part1,E 4659
+        12,2,Day12.part2,E 148962
+
+        13,1,Day13.part1,E 737
+        13,2,Day13.part2,Some """
 ####.#..#...##.#..#..##..####.#..#.###.
 ...#.#..#....#.#..#.#..#.#....#..#.#..#
 ..#..#..#....#.#..#.#..#.###..####.#..#
