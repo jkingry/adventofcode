@@ -35,9 +35,9 @@ module Day22 =
 
             let tails = state |> Map.map (fun _ v -> v.Tail)
             let heads = state |> Map.map (fun _ v -> v.Head)
-            let winnings = [ heads[winner] ; heads[loser] ]
+            let winnings = [ heads.[winner] ; heads.[loser] ]
             
-            tails |> Map.add winner (tails[winner] @ winnings)
+            tails |> Map.add winner (tails.[winner] @ winnings)
 
         while Option.isNone gameWinner do 
             if pastStates |> Set.contains state then gameWinner <- Some 1 else
@@ -49,8 +49,8 @@ module Day22 =
             let tails = state |> Map.map (fun _ v -> v.Tail)
             let heads = state |> Map.map (fun _ v -> v.Head)
 
-            let winnings = [ heads[winner] ; heads[loser] ]
-            state <- tails |> Map.add winner (tails[winner] @ winnings)
+            let winnings = [ heads.[winner] ; heads.[loser] ]
+            state <- tails |> Map.add winner (tails.[winner] @ winnings)
 
             if state[loser].Length = 0 then gameWinner <- Some winner
 
