@@ -5,20 +5,21 @@ open System
 // Day 1: Sonar Sweep
 module Day01 =
     open AdventOfCode.FSharp.Util
+
     let increasing input =
         input
         |> Seq.pairwise
-        |> Seq.filter (fun (a,b) -> (b > a))
+        |> Seq.filter (fun (a, b) -> (b > a))
         |> Seq.length
 
     let part1 input =
-        input 
+        input
         |> splitLine
         |> Seq.map Int32.Parse
         |> increasing
         |> string
 
-    let part2 input = 
+    let part2 input =
         input
         |> splitLine
         |> Seq.map Int32.Parse
