@@ -9,6 +9,24 @@ open Microsoft.FSharp.Reflection
 
 module Util = 
     open System.Collections.Generic
+    module Counter =
+        let create (input : #seq<'T>) : Map<'T, int> =
+            input 
+            |> Seq.groupBy id
+            |> Seq.map (fun (k,v) -> (k, Seq.length v))
+            |> Map.ofSeq
+        
+        let add (key : 'T) (value : int)  (counter : Map<'T, int>) : Map<'T, int> =
+            counter |> Map.change key (fun o -> value + defaultArg o 0 |> Some)
+
+        let remove (key : 'T) (value : int)  (counter : Map<'T, int>) : Map<'T, int> =
+            add key -value counter
+
+        let incr (key : 'T) (counter : Map<'T, int>) : Map<'T, int> =
+            add key 1 counter
+
+        let decr (key : 'T) (counter : Map<'T, int>) : Map<'T, int> =
+            add key -1 counter
 
     let rec comb n l = 
         match n, l with
@@ -20,24 +38,6 @@ module Util =
         s.Split(' ',',') 
         |> Array.filter (not << String.IsNullOrWhiteSpace)
         |> Array.map int 
-
-    let createCounter (input : seq<'T>) : Map<'T, int> =
-        input 
-        |> Seq.groupBy id
-        |> Seq.map (fun (k,v) -> (k, Seq.length v))
-        |> Map.ofSeq
-    
-    let addValue (key : 'T) (value : int)  (counter : Map<'T, int>) : Map<'T, int> =
-        counter |> Map.change key (fun o -> Some (-1 + defaultArg o 0))
-
-    let removeValue (key : 'T) (value : int)  (counter : Map<'T, int>) : Map<'T, int> =
-        addValue key -value counter
-
-    let add (key : 'T) (counter : Map<'T, int>) : Map<'T, int> =
-        addValue key 1 counter
-
-    let remove (key : 'T) (counter : Map<'T, int>) : Map<'T, int> =
-        addValue key -1 counter
 
     let split (split : string) (s : string) = s.Split([|split|], StringSplitOptions.RemoveEmptyEntries)
 
@@ -57,6 +57,7 @@ module Util =
 
     let rec fromChoices (input : char list list) : char list list =
         match input with 
+        | [] -> failwith "Invalid input"
         | [x] -> x |> List.map (fun y -> [y])
         | x::xs -> 
             x 

@@ -48,9 +48,9 @@ module Day04 =
         let unpicked = unpickedSum called firstWinner
         let lastCall = called |> List.head
 
-        lastCall * unpicked
+        lastCall * unpicked |> string
 
-    let part2 (input : string) : int =     
+    let part2 (input : string) =     
         let (calls, boards) = parse input
         
         let (called, lastWinners) =
@@ -61,4 +61,4 @@ module Day04 =
         let unpicked = unpickedSum called lastWinner
         let lastCall = called |> List.head
 
-        lastCall * unpicked
+        lastCall * unpicked |> string

@@ -35,6 +35,7 @@ module Day10 =
         |> Array.map lineStack
         |> Array.map (function | Error v -> v | _ -> 0L)
         |> Array.sum
+        |> string
 
     let part2 (text : string) =
         let totals = 
@@ -44,4 +45,4 @@ module Day10 =
             |> Array.choose (function | Error _ -> None | Ok s -> Some s)
             |> Array.map (fun s -> s |> List.fold (fun a v -> (a*5L)+score[v]) 0L)
             |> Array.sort
-        totals[totals.Length / 2]
+        totals[totals.Length / 2] |> string

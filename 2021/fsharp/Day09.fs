@@ -25,7 +25,7 @@ module Day09 =
         grid 
         |> Array2D.iteri (fun x y v -> if isLow x y v grid then riskValue <- riskValue + v + 1)
 
-        riskValue
+        riskValue |> string
 
     let part2 (text : string) =
         let grid = 
@@ -70,3 +70,4 @@ module Day09 =
             lows |> List.fold (fun b (x,y) -> (findBasin x y)::b) []
 
         basins |> List.map Set.count |> List.sortDescending |> List.take 3 |> List.reduce (fun a b -> a * b) 
+        |> string

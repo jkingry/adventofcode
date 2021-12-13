@@ -21,7 +21,7 @@ module Day06 =
 
         simulate 80 7 ages
         
-        Array.sum ages 
+        Array.sum ages |> string
 
     let part2 (input : string) =
         let ages : int64[] = Array.zeroCreate 9
@@ -32,4 +32,4 @@ module Day06 =
 
         simulate 256 7 ages
         
-        Array.sum ages
+        Array.sum ages |> string
