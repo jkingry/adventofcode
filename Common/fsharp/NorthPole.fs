@@ -67,8 +67,9 @@ module NorthPole =
     
     let tryParseCommand (str:string) : Command option =
         match System.Enum.TryParse (str, true) with
-        | true,e -> Some e
+        | true,e when System.Enum.IsDefined(e) -> Some e
         | _ -> None
+        
 
     let runCommandLine (days : Day list) =
         let args = Environment.GetCommandLineArgs() |> Array.tail
@@ -99,11 +100,33 @@ module NorthPole =
             if args.Length > n + 1 then Some args[n + 1] else None
             |> Option.bind tryParse
 
+        let mutable hideValue = false
+
         let result = 
             match command with 
             | Command.Run -> days |> run dayIndex problemIndex
             | Command.Test -> 
+                hideValue <- true
                 days |> test dayIndex problemIndex repeats
-            | _ -> failwith "Unreachable"
+            | x -> sprintf "Unreachable %A" x |> failwith
     
-        result |> Seq.iter (printfn "%A")        
+        let seconds time =
+            (float time) / (1000.0 * float (defaultArg repeats 1))
+
+        let mutable total = 0.0
+
+        let printResult a =
+            match a with
+            | (Some (day,part), Ok (_, time)) when hideValue -> 
+                printfn "%3d %4d %6.5f" day part (seconds time)
+                total <- total + (seconds time)
+            | (Some (day,part), Ok (value, time)) -> 
+                printfn "%3d %4d %6.3f %s" day part (seconds time) value
+            | _ -> 
+                printfn "%A" a
+
+        if hideValue then printfn "Day Part Time" else printfn "Day Part Time   Value"
+
+        result |> Seq.iter printResult  
+
+        if hideValue then printfn "         %6.5f" total else ()

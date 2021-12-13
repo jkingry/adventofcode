@@ -9,7 +9,7 @@ module Day13 =
             (text |> splitDoubleLine)[0] 
             |> splitLine
             |> Array.map ints
-            |> Array.map (fun [|x;y|] -> (x,y))
+            |> Array.map (function | [|x;y|] -> (x,y) | _ -> failwith "Bad format")
             |> Set.ofArray                
         let folds =
             (text |> splitDoubleLine)[1]
@@ -17,7 +17,7 @@ module Day13 =
             |> Array.map (fun line -> 
                 match line with
                 | Regex @"fold along (y|x)=(\d+)" [axis;num] -> (axis, int num)
-                | _ -> failwith "Invalid")
+                | _ -> failwith "Bad format")
         dots,folds
 
     let foldy fold dots  = 
@@ -47,12 +47,9 @@ module Day13 =
     let part2 text =   
         let (dots, folds) = parse text
 
-        let foldedDots =
-            folds
-            |> Array.fold fold dots
+        let foldedDots = folds |> Array.fold fold dots
 
-        let maxx = foldedDots |> Seq.map (fun (x,_) -> x) |> Seq.max
-        let maxy = foldedDots |> Seq.map (fun (_,y) -> y) |> Seq.max
+        let (maxx, maxy) = foldedDots |> Seq.reduce(fun (mx,my) (x,y) -> max mx x,max my y)
 
         let mutable result = System.Environment.NewLine
 
