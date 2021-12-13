@@ -1,11 +1,11 @@
 namespace AdventOfCode.FSharp.Y2020
 
-open AdventOfCode.FSharp.Util
-open System
-open System.Collections.Generic
 
 // Day 24: Lobby Layout
 module Day24 = 
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
 
     let swapTile k m =
         if Set.contains k m then
@@ -33,11 +33,11 @@ module Day24 =
 
         let m = 
             input 
-            |> lineSplit 
+            |> splitLine 
             |> Seq.map delta 
             |> Seq.fold(fun m c -> m |> swapTile c) Set.empty
 
-        m.Count
+        m.Count |> string
 
     let part2 (input : string) =
         let mutable y = 0
@@ -56,7 +56,7 @@ module Day24 =
 
         let mutable m = 
             input 
-            |> lineSplit 
+            |> splitLine 
             |> Seq.map delta 
             |> Seq.fold(fun m c -> m |> swapTile c) Set.empty
         
@@ -90,7 +90,7 @@ module Day24 =
             printfn "%d" i
             m <- doFlips m
 
-        m.Count
+        m.Count |> string
 
         
 

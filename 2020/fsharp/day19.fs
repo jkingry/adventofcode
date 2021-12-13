@@ -1,9 +1,10 @@
 namespace AdventOfCode.FSharp.Y2020
 
-open System
-open System.Collections.Generic
-
 module Day19 =
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
+
     type Rule = 
         | Literal of char
         | Single of int list
@@ -45,11 +46,9 @@ module Day19 =
 
             if np = message.Length then state <- State.Good
         
-        printfn "%s %A" message state
-
         state = State.Good
 
-    let parse (input : string seq) =
+    let parse (input : string) =
         let parseList (s : string) =
             s.Trim().Split(' ')
             |> Array.map (fun x -> x.Trim() )
@@ -68,38 +67,34 @@ module Day19 =
                     Single (parseList b[0])
 
         input
+        |> splitLine
         |> Seq.map (fun s -> s.Split(':'))
         |> Seq.fold 
             (fun m a -> Map.add (Int32.Parse a[0]) (parseRule a[1]) m) 
             Map.empty    
 
     let parseInput input =
-        let inputCache = Seq.toList input
+        let sections = input |> splitDoubleLine
 
-        let breakLine s = String.IsNullOrEmpty(s) = false
+        let rules = sections.[0] |> parse
 
-        let rules = inputCache |> Seq.takeWhile breakLine |> parse
-
-        let messages = inputCache |> Seq.skipWhile breakLine |> Seq.skip 1
+        let messages = sections.[1] |> splitLine
 
         (rules, messages)
 
 
     let validateCount rules messages =
-        printfn "%A" rules
-
         messages 
         |> Seq.filter (fun m -> validate rules m) 
         |> Seq.length
-        |> bigint
 
-    let part1 (input : string seq) =
+    let part1 (input : string) =
         let rules, messages = parseInput input
         
-        validateCount rules messages
+        validateCount rules messages |> string
 
 
-    let part2 (input : string seq) =
+    let part2 (input : string) =
         let rules, messages = parseInput input
         
         let newRules =
@@ -107,4 +102,4 @@ module Day19 =
             |> Map.add 8 (Double ([42], [42; 8]))
             |> Map.add 11 (Double ([42; 31], [42; 11; 31]))
         
-        validateCount newRules messages
+        validateCount newRules messages |> string

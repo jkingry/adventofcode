@@ -1,11 +1,16 @@
 namespace AdventOfCode.FSharp.Y2020
 
 module Day03=
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
+    
     let findTrees down right input =
         let mutable r = 0
         let mutable trees = 0
 
         input
+        |> splitLine
         |> Seq.skip 1
         |> if down > 1 then
                 Seq.mapi (fun i e -> if i % down = (down - 1) then Some e else None)
@@ -21,7 +26,7 @@ module Day03=
 
     let part1 input =
         findTrees 1 3 input
-        |> bigint
+        |> string
 
     let part2 input =
         let paths = [
@@ -34,8 +39,6 @@ module Day03=
         
         let x = paths |> List.map (fun (right, down) -> findTrees down right input)
         
-        List.iter (printfn "%d") x
-
         x
         |> List.fold (fun a b -> a * b) 1
-        |> bigint
+        |> string

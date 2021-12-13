@@ -1,24 +1,26 @@
 namespace AdventOfCode.FSharp.Y2020
 
-open AdventOfCode.FSharp.Util
-open System
-open System.Collections.Generic
-
 // Crab Combat
 module Day22 =
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
+    
     type Decks = Map<int, int list>
     
-    let parse (input : string seq) : Decks =
-        let parsePlayer (e: IEnumerator<string>) =
-            if e.MoveNext() = false then None else
+    let parse (input : string) : Decks =
+        let parsePlayer input =
+            let lines = input |> splitLine
 
-            let p = Int32.Parse(e.Current.Split(' ').[1].Trim(':'))
-            let cards = e |> takeWhile |> Seq.map Int32.Parse |> Seq.toList
+            let p = lines.[0].Split(' ').[1].Trim(':') |> int
+            let cards = lines |> Array.skip 1 |> Array.map int |> Array.toList
             
-            Some ((p, cards), e)
+            (p, cards)
 
-        let e = input.GetEnumerator ()
-        Seq.unfold parsePlayer e |> Map.ofSeq
+        input
+        |> splitDoubleLine
+        |> Array.map parsePlayer
+        |> Map.ofArray
 
     let combatGame (round : Decks -> int) (mp : Decks) : int * int list =
         let mutable state = mp
@@ -57,13 +59,13 @@ module Day22 =
     let combatRound (mp : Decks) =
         if mp[1].Head > mp[2].Head then 1 else 2
         
-    let part1 (input : string seq) =
+    let part1 (input : string) =
         let mp = parse input
         
         let (_, winnerDeck) = mp |> combatGame combatRound
 
         let n = winnerDeck.Length
-        winnerDeck |> List.mapi (fun i v -> (n - i) * v ) |> List.sum
+        winnerDeck |> List.mapi (fun i v -> (n - i) * v ) |> List.sum |> string
 
     let rec recCombatRound (mp : Decks) =
         let tails = mp |> Map.map (fun _ v -> v.Tail)
@@ -75,11 +77,11 @@ module Day22 =
         else
             if heads[1] > heads[2] then 1 else 2
     
-    let part2 (input : string seq) =
+    let part2 (input : string) =
         let mp = parse input
         
         let (_, winnerDeck) = mp |> combatGame recCombatRound
 
         let n = winnerDeck.Length
-        winnerDeck |> List.mapi (fun i v -> (n - i) * v ) |> List.sum
+        winnerDeck |> List.mapi (fun i v -> (n - i) * v ) |> List.sum |> string
 

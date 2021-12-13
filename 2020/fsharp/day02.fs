@@ -1,9 +1,10 @@
 namespace AdventOfCode.FSharp.Y2020
 
-open System
-open AdventOfCode.FSharp.Util
-
 module Day02=
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
+    
     type Pline = {
         min: int
         max: int
@@ -22,23 +23,27 @@ module Day02=
             }
         | _ -> None
 
-    let part1 (input : string seq) : bigint =
+    let part1 input =
         let valid p =
             let ccount = p.p |> Seq.where (fun x -> x = p.c) |> Seq.length
             ccount >= p.min && ccount <= p.max
 
         input 
+        |> splitLine
         |> Seq.choose parse
         |> Seq.where valid
         |> Seq.length
         |> bigint
+        |> string
 
     let part2 input =
         let valid p =
             (p.p.[p.min - 1] = p.c) <> (p.p.[p.max - 1] = p.c)
 
         input
+        |> splitLine
         |> Seq.choose parse 
         |> Seq.where valid
         |> Seq.length
         |> bigint
+        |> string

@@ -1,11 +1,11 @@
 namespace AdventOfCode.FSharp.Y2020
 
-open AdventOfCode.FSharp.Util
-open System
-open System.Collections.Generic
-
 // Crab Cups
 module Day23 = 
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
+
     type Node =
         {
             mutable prev : Node option
@@ -86,5 +86,5 @@ module Day23 =
 
         let [a ; b] = cs 1 cups |> Seq.skip 1 |> Seq.take (2) |> Seq.map int64 |> Seq.toList
 
-        a * b
+        a * b |> string
 

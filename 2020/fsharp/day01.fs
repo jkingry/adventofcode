@@ -1,11 +1,13 @@
 namespace AdventOfCode.FSharp.Y2020
 
-open System
-
 module Day01=
-
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
+    
     let parse input =
         input
+        |> splitLine
         |> Seq.map Int32.Parse
         |> Seq.toArray
 
@@ -22,6 +24,7 @@ module Day01=
         |> Seq.map (fun (a, b) -> a * b)
         |> Seq.head
         |> bigint
+        |> string
 
     let list3tuple (l : 'a list list ) =
         l |> List.map (fun x -> x.[0], x.[1], x.[2] )
@@ -37,3 +40,4 @@ module Day01=
         |> Seq.map (fun (a, (b, c)) -> a * b * c)
         |> Seq.head
         |> bigint
+        |> string

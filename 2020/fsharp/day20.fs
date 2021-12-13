@@ -5,24 +5,21 @@ open System.Collections.Generic
 
 // Jurassic Jigsaw
 module Day20 =
+    open AdventOfCode.FSharp.Util
+    open System
+    open System.Collections.Generic
+    
     type Tile = 
         { 
             id : int64
             tile : char[,]
         }
 
-    let parseTile (e : IEnumerator<string>) =
-        let takeWhile (x : IEnumerator<string>) = 
-            seq {
-                while x.MoveNext() && (String.IsNullOrEmpty(x.Current) = false) do
-                    yield e.Current
-            }
-        match e.MoveNext() with
-        | false -> None
-        | true -> 
-            let id = Int64.Parse(e.Current.Split(' ').[1].Trim(':'))
-            let tile = e |> takeWhile |> array2D
-            Some ({ id=id; tile=tile }, e)
+    let parseTile input =
+        let lines = splitLine input
+        let id = lines.[0].Split(' ').[1].Trim(':') |> int64
+        let tile = lines |> Array.skip 1 |> array2D
+        { id=id; tile=tile }
 
     let holes (puzzle : Map<int * int, Tile>) : (int * int) seq =
         let dir = [
@@ -121,13 +118,14 @@ module Day20 =
             p[(brx, bry)]
             p[(brx, uly)]]
 
-    let parse (input : string seq) =
-        let e = input.GetEnumerator()
-        List.unfold parseTile e
-            |> List.map (fun t -> (t.id, t))
-            |> Map.ofList
+    let parse (input : string) =
+        input
+        |> splitDoubleLine
+        |> Array.map parseTile
+        |> Array.map (fun t -> (t.id, t))
+        |> Map.ofArray
 
-    let part1 (input : string seq) =
+    let part1 (input : string) =
         let tiles = parse input 
 
         let solution = solve tiles Map.empty
@@ -136,7 +134,7 @@ module Day20 =
             | None -> -1L
             | Some m -> 
                 corners m |> List.fold (fun a  b -> b.id * a) 1L
-        result |> bigint
+        result |> string
             
     let monster = [
         "                  # "
@@ -173,7 +171,7 @@ module Day20 =
             if isMonster r c theMap then
                 markMonster r c theMap)                    
 
-    let part2 (input : string seq) =
+    let part2 (input : string) =
         let tiles = parse input 
 
         let p = (solve tiles Map.empty).Value
@@ -181,13 +179,13 @@ module Day20 =
         let (ulr, ulc) = p |> Map.keys |> Seq.min
         let (brr, brc) = p |> Map.keys |> Seq.max
 
-        for tr = ulr to brr do
-            for tc = ulc to brc do
-                printf "%d " p[(tr, tc)].id
-            printfn ""  
+        // for tr = ulr to brr do
+        //     for tc = ulc to brc do
+        //         printf "%d " p[(tr, tc)].id
+        //     printfn ""  
 
-        printfn "ul = %A" (ulr, ulc)
-        printfn "br = %A" (brr, brc)
+        // printfn "ul = %A" (ulr, ulc)
+        // printfn "br = %A" (brr, brc)
         let n = (tiles.Values |> Seq.head).tile |> Array2D.length1 
         let pn = n - 2
 
@@ -214,7 +212,7 @@ module Day20 =
             markMap pfp
             if (pfp |> countSymbol 'O') > 0 then Some pfp else None)
         
-        printMap markedMap
+        // printMap markedMap
 
-        markedMap |> countSymbol '#'
+        markedMap |> countSymbol '#' |> string
 
