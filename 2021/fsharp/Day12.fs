@@ -55,7 +55,7 @@ module Day12 =
 
     let part1 (text : string) =   
         let caves = parse text
-        caves |> Graph.findPaths ["start"] "end" part1Visitor Set.empty |> Seq.length
+        caves |> Graph.findPaths ["start"] "end" part1Visitor Set.empty |> Seq.length |> string
 
     let part2Visitor (visited, doubleCave) node =
         match part1Visitor visited node, doubleCave with
@@ -65,4 +65,4 @@ module Day12 =
 
     let part2 (text : string) =   
         let caves = parse text
-        caves |> Graph.findPaths ["start"] "end" part2Visitor (Set.empty, false) |> Seq.length
+        caves |> Graph.findPaths ["start"] "end" part2Visitor (Set.empty, false) |> Seq.length |> string

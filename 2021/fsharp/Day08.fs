@@ -22,6 +22,7 @@ module Day08 =
             e |> Array.filter (fun s -> uniqueNumbers |> Set.contains s.Length))
         |> Array.map Array.length
         |> Array.sum
+        |> string
 
     let solve (x : string seq, o : string seq) =
         let l = seq { for s in x -> s.Length, set s } |> Map.ofSeq
@@ -49,3 +50,4 @@ module Day08 =
         parse text
         |> Array.map solve
         |> Array.sum
+        |> string

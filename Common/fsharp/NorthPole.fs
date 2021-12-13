@@ -10,76 +10,100 @@ open Microsoft.FSharp.Reflection
 type Answer = seq<string> -> obj
 
 module NorthPole = 
+    type Day = 
+        {
+            day : int
+            part : int
+            run : string -> string
+            expected : string option    
+        }
 
-    let hasName (name : string) (methodInfo : MethodInfo) : bool =
-        methodInfo.Name = name
+    let findDays (dayIndex: int option) (partIndex: int option) (days: Day list) =
+        days 
+        |> List.choose (fun r -> match dayIndex with | None -> Some r | Some d when d = r.day -> Some r | _ -> None)
+        |> List.choose (fun r -> match partIndex with | None -> Some r | Some p when p = r.part -> Some r | _ -> None)
 
-    let implementsSignature (signature : Type)  (methodInfo : MethodInfo) : bool =
-        signature.IsAssignableFrom (methodInfo.GetType ())
+    let runDay (r: Day) (repeat: int) =
+        let path = $"../input/%02d{r.day}.txt"
+        if File.Exists path then
+            let input = File.ReadAllText path
 
-    let getAnswerFunc dayOption part =
-        let a = Assembly.GetEntryAssembly()
-        let moduleFind = 
-            match dayOption with
-            | None -> 
-                Array.filter (fun (t : Type) -> t.Name.StartsWith "Day")
-                >> Array.sortByDescending (fun (t : Type) -> t.Name) 
-                >> Array.tryHead
-            | Some day -> Array.tryFind (fun (t : Type) -> t.Name = $"Day%02d{day}")  
+            let mutable res = "" 
+            let w = System.Diagnostics.Stopwatch.StartNew ()
+            for i=1 to repeat do
+                res <- r.run input
+            w.Stop ()
+            match r.expected with
+            | None -> Ok (res, w.ElapsedMilliseconds) 
+            | Some e when e = res -> Ok (res, w.ElapsedMilliseconds) 
+            | Some e -> sprintf "Expected '%s' <> '%s'" e res |> Error
+        else
+            sprintf $"Could not find %s{path}" |> Error
 
-        a.GetTypes ()    
-        |> Array.filter FSharpType.IsModule 
-        |> moduleFind       
-        |> Option.map (fun modl -> modl.GetMethods()) // Get all functions inside that module
-        |> Option.bind                                // Find method matching the name and signature
-            (Array.tryFind (fun method ->
-                hasName $"part%d{part}" method))
-                // && implementsSignature typeof<Answer> method))
+    let run (dayIndex: int option) (partIndex: int option) (days: Day list) =  
+        let days = findDays dayIndex partIndex days     
+        match days with
+        | [r] -> [ Some (r.day, r.part), runDay r 1 ]
+        | [] -> [ None, sprintf "Could not find function for day %A, part %A" dayIndex partIndex |> Error ]
+        | manyDays -> 
+            let maxDay = manyDays |> List.map (fun r -> r.day) |> List.max
+            let parts = manyDays |> List.filter (fun r -> r.day = maxDay)
+            parts |> List.map (fun r -> Some (r.day, r.part), runDay r 1)
 
-    let runProblem d p writeType =
-        match getAnswerFunc d p with 
-        | None -> Error (sprintf "Could not find function for day %A, problem %d" d p)         
-        | Some m ->
-            let day = 
-                d |> Option.defaultWith (fun () -> m.DeclaringType.Name.Substring (m.DeclaringType.Name.Length - 2, 2) |> Int32.Parse)
-            if writeType then printfn "%s" m.DeclaringType.FullName
-            let path = $"../input/%02d{day}.txt"
-            if File.Exists path then
-                let input : obj =
-                    if m.GetParameters().[0].ParameterType = typeof<string> then
-                        File.ReadAllText path
-                    else
-                        File.ReadLines path
-                m.Invoke (null, [| input |]) |> printfn "day %d, part %d: %O" day p
-                Ok 0
-            else Error (sprintf "Could not find %s" path)
+    let test (dayIndex: int option) (partIndex: int option) (repeats: int option) (days: Day list) =  
+        let repeats = defaultArg repeats 1
+        let days = findDays dayIndex partIndex days     
 
-
-    let run dayIndex problemIndex =        
-        match problemIndex with
-            | Some p -> runProblem dayIndex p true
-            | None -> 
-                [ 
-                    runProblem dayIndex 1 true
-                    runProblem dayIndex 2 false 
-                ] |> List.fold (fun a r -> a |> function | Ok _ -> r; | _ -> a) (Ok 0)
+        days |> List.map (fun r -> Some (r.day, r.part), runDay r repeats)
 
     let tryParse (str:string) =
         match System.Int32.TryParse str with
         | true,int -> Some int
         | _ -> None
 
-    let runCommandLine () =
+    type Command = 
+        | Run = 0
+        | Test = 1
+    
+    let tryParseCommand (str:string) : Command option =
+        match System.Enum.TryParse (str, true) with
+        | true,e -> Some e
+        | _ -> None
+
+    let runCommandLine (days : Day list) =
         let args = Environment.GetCommandLineArgs() |> Array.tail
 
-        let dayIndex = 
+        let mutable n = 0
+
+        let command =
             if args.Length > 0 then Some args[0] else None
+            |> Option.bind tryParseCommand
+            |> function 
+            | Some command -> 
+                n <- n + 1
+                command
+            | _ -> Command.Run
+
+        let repeats =
+            if command = Command.Test && args.Length > n then 
+                n <- n + 1
+                tryParse args[n-1] 
+            else 
+                None
+        
+        let dayIndex = 
+            if args.Length > n then Some args[n] else None
             |> Option.bind tryParse
 
         let problemIndex =
-            if args.Length > 1 then Some args[1] else None
+            if args.Length > n + 1 then Some args[n + 1] else None
             |> Option.bind tryParse
 
-        match run dayIndex problemIndex with
-        | Error e -> eprintfn "%s" e; 1
-        | Ok result -> result
+        let result = 
+            match command with 
+            | Command.Run -> days |> run dayIndex problemIndex
+            | Command.Test -> 
+                days |> test dayIndex problemIndex repeats
+            | _ -> failwith "Unreachable"
+    
+        result |> List.iter (printfn "%A")        

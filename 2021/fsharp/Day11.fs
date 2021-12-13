@@ -40,7 +40,7 @@ module Day11 =
             |> Array.map (fun line -> line |> Seq.map (string >> int))
             |> array2D
 
-        [1..100] |> List.map(fun _ -> step grid) |> List.sum
+        [1..100] |> List.map(fun _ -> step grid) |> List.sum |> string
 
     let part2 (text : string) =
         let grid = 
@@ -53,3 +53,4 @@ module Day11 =
 
         Seq.initInfinite (fun i -> i, step grid) 
         |> Seq.pick (fun (i, v) -> if v = n then Some (i+1) else None)
+        |> string

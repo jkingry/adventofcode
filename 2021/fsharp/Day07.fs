@@ -13,7 +13,7 @@ module Day07 =
 
         let cost x y = abs(x - y)
 
-        input |> Array.map (cost median) |> Array.sum
+        input |> Array.map (cost median) |> Array.sum |> string
 
     let localMin f minlow maxhigh =
         let rec localMinUtil low high =
@@ -47,6 +47,6 @@ module Day07 =
 
         let min = localMin totalCost 0L (Array.max input)       
 
-        totalCost min
+        totalCost min |> string
     
 
