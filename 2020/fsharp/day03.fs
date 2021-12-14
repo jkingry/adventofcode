@@ -2,8 +2,6 @@ namespace AdventOfCode.FSharp.Y2020
 
 module Day03 =
     open AdventOfCode.FSharp.Util
-    open System
-    open System.Collections.Generic
 
     let findTrees down right input =
         let mutable r = 0
