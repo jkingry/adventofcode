@@ -5,23 +5,43 @@ module Util =
     open System.Text.RegularExpressions
     open System.Collections.Generic
     module Counter =
-        let create (input : #seq<'T>) : Map<'T, int> =
+        let create (input : #seq<'T>) : Map<'T, int64> =
             input 
             |> Seq.groupBy id
-            |> Seq.map (fun (k,v) -> (k, Seq.length v))
+            |> Seq.map (fun (k,v) -> (k, Seq.length v |> int64))
             |> Map.ofSeq
         
-        let add (key : 'T) (value : int)  (counter : Map<'T, int>) : Map<'T, int> =
-            counter |> Map.change key (fun o -> value + defaultArg o 0 |> Some)
+        let add (key : 'T) (value : int64)  (counter : Map<'T, int64>) : Map<'T, int64> =
+            counter |> Map.change key (fun o -> value + defaultArg o 0L |> Some)
 
-        let remove (key : 'T) (value : int)  (counter : Map<'T, int>) : Map<'T, int> =
+        let remove (key : 'T) (value : int64)  (counter : Map<'T, int64>) : Map<'T, int64> =
             add key -value counter
 
-        let incr (key : 'T) (counter : Map<'T, int>) : Map<'T, int> =
+        let incr (key : 'T) (counter : Map<'T, int64>) : Map<'T, int64> =
             add key 1 counter
 
-        let decr (key : 'T) (counter : Map<'T, int>) : Map<'T, int> =
+        let decr (key : 'T) (counter : Map<'T, int64>) : Map<'T, int64> =
             add key -1 counter
+
+    module Counter2 =
+        let create (input : #seq<'T*'T>) : Map<'T*'T, int64> =
+            input 
+            |> Seq.groupBy id
+            |> Seq.map (fun (k,v) -> (k, Seq.length v |> int64))
+            |> Map.ofSeq
+        
+        let add (key : 'T*'T) (value : int64)  (counter : Map<'T*'T, int64>) : Map<'T*'T, int64> =
+            counter |> Map.change key (fun o -> value + defaultArg o 0L |> Some)
+
+        let remove (key : 'T*'T) (value : int64)  (counter : Map<'T*'T, int64>) : Map<'T*'T, int64> =
+            add key -value counter
+
+        let incr (key : 'T*'T) (counter : Map<'T*'T, int64>) : Map<'T*'T, int64> =
+            add key 1 counter
+
+        let decr (key : 'T*'T) (counter : Map<'T*'T, int64>) : Map<'T*'T, int64> =
+            add key -1 counter
+
 
     let rec comb n l = 
         match n, l with
