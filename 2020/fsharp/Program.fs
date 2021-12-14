@@ -1,9 +1,11 @@
 open AdventOfCode.FSharp.NorthPole
 open AdventOfCode.FSharp.Y2020
 
+let inline E v = v |> string |> Some
+
 let days =
-    [ 1, 1, Day01.part1, None
-      1, 2, Day01.part2, None
+    [ 1, 1, Day01.part1, E 32064
+      1, 2, Day01.part2, E 193598720
 
       2, 1, Day02.part1, None
       2, 2, Day02.part2, None

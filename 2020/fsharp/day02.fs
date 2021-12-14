@@ -2,8 +2,6 @@ namespace AdventOfCode.FSharp.Y2020
 
 module Day02 =
     open AdventOfCode.FSharp.Util
-    open System
-    open System.Collections.Generic
 
     type Pline =
         { min: int
@@ -15,8 +13,8 @@ module Day02 =
         match line with
         | Regex @"(\d+)\-(\d+) ([a-z])\: ([a-z]+)" [ mint; maxt; ct; p ] ->
             Some
-                { min = Int32.Parse mint
-                  max = Int32.Parse maxt
+                { min = int mint
+                  max = int maxt
                   c = ct.[0]
                   p = p }
         | _ -> None
@@ -33,7 +31,6 @@ module Day02 =
         |> Seq.choose parse
         |> Seq.where valid
         |> Seq.length
-        |> bigint
         |> string
 
     let part2 input =
@@ -45,5 +42,4 @@ module Day02 =
         |> Seq.choose parse
         |> Seq.where valid
         |> Seq.length
-        |> bigint
         |> string

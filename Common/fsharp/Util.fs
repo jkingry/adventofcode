@@ -1,13 +1,8 @@
 namespace AdventOfCode.FSharp
 
-open System
-open System.IO
-open System.Reflection
-open System.Text.RegularExpressions
-
-open Microsoft.FSharp.Reflection
-
 module Util = 
+    open System
+    open System.Text.RegularExpressions
     open System.Collections.Generic
     module Counter =
         let create (input : #seq<'T>) : Map<'T, int> =
