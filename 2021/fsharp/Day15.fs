@@ -40,7 +40,6 @@ module Day15 =
         
         let mutable found = None
 
-
         let mutable visited = 0L
 
         while (Option.isNone found) && (not (Heap.isEmpty openSet)) do
