@@ -5,62 +5,38 @@ open Checked
 
 let inline E v = v |> string |> Some
 
+let inline old (part1: string -> string) (part2: string -> string) =
+  fun text -> part1 text, part2 text
+
 let days =
-    [ 1, 1, Day01.part1, E 1676
-      1, 2, Day01.part2, E 1706
-
-      2, 1, Day02.part1, E 2036120
-      2, 2, Day02.part2, E 2015547716
-
-      3, 1, Day03.part1, E 738234
-      3, 2, Day03.part2, E 3969126
-
-      4, 1, Day04.part1, E 89001
-      4, 2, Day04.part2, E 7296
-
-      5, 1, Day05.part1, E 4993
-      5, 2, Day05.part2, E 21101
-
-      6, 1, Day06.part1, E 363101
-      6, 2, Day06.part2, Some "1644286074024"
-
-      7, 1, Day07.part1, E 344605
-      7, 2, Day07.part2, E 93699985
-
-      8, 1, Day08.part1, E 245
-      8, 2, Day08.part2, E 983026
-
-      9, 1, Day09.part1, E 456
-      9, 2, Day09.part2, E 1047744
-
-      10, 1, Day10.part1, E 442131
-      10, 2, Day10.part2, Some "3646451424"
-
-      11, 1, Day11.part1, E 1747
-      11, 2, Day11.part2, E 505
-
-      12, 1, Day12.part1, E 4659
-      12, 2, Day12.part2, E 148962
-
-      13, 1, Day13.part1, E 737
-      13, 2, Day13.part2, Some
-          """
+    [ 
+      01, Day01.run, E 1676, E 1706
+      02, old Day02.part1 Day02.part2, E 2036120, E 2015547716
+      03, old Day03.part1 Day03.part2, E 738234, E 3969126
+      04, old Day04.part1 Day04.part2, E 89001, E 7296
+      05, old Day05.part1 Day05.part2, E 4993, E 21101
+      06, old Day06.part1 Day06.part2, E 363101, Some "1644286074024"
+      07, old Day07.part1 Day07.part2, E 344605, E 93699985
+      08, old Day08.part1 Day08.part2, E 245, E 983026
+      09, old Day09.part1 Day09.part2, E 456, E 1047744
+      10, old Day10.part1 Day10.part2, E 442131, Some "3646451424"
+      11, old Day11.part1 Day11.part2, E 1747, E 505
+      12, old Day12.part1 Day12.part2, E 4659, E 148962
+      13, old Day13.part1 Day13.part2, E 737, Some """
 ####.#..#...##.#..#..##..####.#..#.###.
 ...#.#..#....#.#..#.#..#.#....#..#.#..#
 ..#..#..#....#.#..#.#..#.###..####.#..#
 .#...#..#....#.#..#.####.#....#..#.###.
 #....#..#.#..#.#..#.#..#.#....#..#.#...
 ####..##...##...##..#..#.#....#..#.#...
-""" 
-      14, 1, Day14.part1, E 2447
-      14, 2, Day14.part2, Some "3018019237563"
-
+"""
+      14, old Day14.part1 Day14.part2, E 2447, Some "3018019237563"
+      15, Day15.run, None, None
     ]
-    |> List.map
-        (fun (d, p, r, e) ->
+    |> List.map (fun (d, r, e1, e2) ->
             { day = d
-              part = p
               run = r
-              expected = e })
+              part1 = e1
+              part2 = e2 })
 
 runCommandLine days
