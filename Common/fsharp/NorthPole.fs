@@ -13,48 +13,50 @@ module NorthPole =
     type Day = 
         {
             day : int
-            part : int
-            run : string -> string
-            expected : string option    
+            run : string -> string * string
+            part1 : string option    
+            part2: string option    
         }
 
-    let findDays (dayIndex: int option) (partIndex: int option) (days: Day list) =
+    let findDays (dayIndex: int option) (days: Day list) =
         days 
         |> List.choose (fun r -> match dayIndex with | None -> Some r | Some d when d = r.day -> Some r | _ -> None)
-        |> List.choose (fun r -> match partIndex with | None -> Some r | Some p when p = r.part -> Some r | _ -> None)
 
     let runDay (r: Day) (repeat: int) =
         let path = $"../input/%02d{r.day}.txt"
-        if File.Exists path then
-            let input = File.ReadAllText path
+        let input = File.ReadAllText path
 
-            let mutable res = "" 
-            let w = System.Diagnostics.Stopwatch.StartNew ()
-            for i=1 to repeat do
-                res <- r.run input
-            w.Stop ()
-            match r.expected with
-            | None -> Ok (res, w.ElapsedMilliseconds) 
-            | Some e when e = res -> Ok (res, w.ElapsedMilliseconds) 
-            | Some e -> sprintf "Expected '%s' <> '%s'" e res |> Error
-        else
-            sprintf $"Could not find %s{path}" |> Error
+        let mutable output = ("", "")
+        let w = System.Diagnostics.Stopwatch.StartNew ()
+        for i=1 to repeat do
+            output <- r.run input
+        w.Stop ()
 
-    let run (dayIndex: int option) (partIndex: int option) (days: Day list) =  
-        let days = findDays dayIndex partIndex days     
+        let (o1, o2) = output
+
+        let toResult n e o =
+            match e with
+            | None -> Ok o
+            | Some ev when o = ev -> Ok o
+            | Some ev -> sprintf "Part %d: Expected '%s', Given '%s'" n ev o |> Error
+
+        (r.day, (toResult 1 r.part1 o1), (toResult 2 r.part2 o2), w.ElapsedMilliseconds)
+
+
+    let run (dayIndex: int option) (days: Day list) =  
+        let days = findDays dayIndex days     
         match days with
-        | [r] -> seq { yield Some (r.day, r.part), runDay r 1 }
-        | [] -> seq { yield None, sprintf "Could not find function for day %A, part %A" dayIndex partIndex |> Error }
+        | [r] -> seq { yield runDay r 1 }
+        | [] -> sprintf "Could not find function for %A" dayIndex |> failwith
         | manyDays -> 
-            let maxDay = manyDays |> List.map (fun r -> r.day) |> List.max
-            let parts = manyDays |> List.filter (fun r -> r.day = maxDay)
-            parts |> List.toSeq |> Seq.map (fun r -> Some (r.day, r.part), runDay r 1)
+            let maxDay = manyDays |> List.maxBy (fun r -> r.day)
+            seq { yield runDay maxDay 1 }            
 
-    let test (dayIndex: int option) (partIndex: int option) (repeats: int option) (days: Day list) =  
+    let test (dayIndex: int option) (repeats: int option) (days: Day list) =  
         let repeats = defaultArg repeats 1
-        let days = findDays dayIndex partIndex days     
+        let days = findDays dayIndex days     
 
-        days |> List.toSeq |> Seq.map (fun r -> Some (r.day, r.part), runDay r repeats)
+        days |> List.toSeq |> Seq.map (fun r -> runDay r repeats)
 
     let tryParse (str:string) =
         match System.Int32.TryParse str with
@@ -70,7 +72,6 @@ module NorthPole =
         | true,e when System.Enum.IsDefined(e) -> Some e
         | _ -> None
         
-
     let runCommandLine (days : Day list) =
         let args = Environment.GetCommandLineArgs() |> Array.tail
 
@@ -96,18 +97,14 @@ module NorthPole =
             if args.Length > n then Some args[n] else None
             |> Option.bind tryParse
 
-        let problemIndex =
-            if args.Length > n + 1 then Some args[n + 1] else None
-            |> Option.bind tryParse
-
         let mutable hideValue = false
 
         let result = 
             match command with 
-            | Command.Run -> days |> run dayIndex problemIndex
+            | Command.Run -> days |> run dayIndex
             | Command.Test -> 
                 hideValue <- true
-                days |> test dayIndex problemIndex repeats
+                days |> test dayIndex repeats
             | x -> sprintf "Unreachable %A" x |> failwith
     
         let seconds time =
@@ -117,11 +114,13 @@ module NorthPole =
 
         let printResult a =
             match a with
-            | (Some (day,part), Ok (_, time)) when hideValue -> 
-                printfn "%3d %4d %6.5f" day part (seconds time)
+            | day, Ok p1, Ok p2, time when hideValue -> 
+                printfn "%3d %4d" day 1
+                printfn "%3d %4d %6.5f" day 2 (seconds time)
                 total <- total + (seconds time)
-            | (Some (day,part), Ok (value, time)) -> 
-                printfn "%3d %4d %6.3f %s" day part (seconds time) value
+            | day, Ok p1, Ok p2, time -> 
+                printfn "%3d %4d %6s %s" day 1 "" p1
+                printfn "%3d %4d %6.3f %s" day 2 (seconds time) p2
             | _ -> 
                 printfn "%A" a
 

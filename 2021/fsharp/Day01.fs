@@ -27,3 +27,22 @@ module Day01 =
         |> Seq.map Seq.sum
         |> increasing
         |> string
+        
+    let run input =
+        let numbers =
+            input
+            |> splitLine
+            |> Array.map Int32.Parse
+
+        let part1 =
+            numbers
+            |> increasing
+            |> string
+        let part2 =
+            numbers
+            |> Seq.windowed 3
+            |> Seq.map Seq.sum
+            |> increasing
+            |> string
+            
+        (part1,part2)
