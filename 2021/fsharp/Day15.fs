@@ -37,32 +37,29 @@ module Day15 =
 
         let mutable openSet = [start]
         let mutable cameFrom = Map.empty
-        let mutable gScore = Map.empty |> Map.add start 0
+        let (sx,sy) = start
+        let gScore = Array2D.create (Array2D.length1 grid) (Array2D.length2 grid) System.Int32.MaxValue
+        gScore[sx,sy] <- 0
 
-        let mutable fScore = Map.empty |> Map.add start (h start)
+        let fScore = Array2D.create (Array2D.length1 grid) (Array2D.length2 grid) System.Int32.MaxValue
+        fScore[sx,sy] <- (h start)
         
         let mutable found = None
         let mutable mx = 0
         let mutable my = 0
 
-        let getGScore x =
-            match gScore |> Map.tryFind x with
-            | Some v -> v
-            | _ -> System.Int32.MaxValue / 2
-
         let mutable visited = 0L
 
         while (Option.isNone found) && (not (List.isEmpty openSet)) do
-            let current::nextCurrent = openSet
+            let (cx,cy)::nextCurrent = openSet
 
-            if current = goal then found <- Some current else
+            if cx = gx && cy = gy  then found <- Some (cx,cy) else
 
-            let (x,y) = current
-            if x > mx then
-                mx <- x
+            if cx > mx then
+                mx <- cx
                 printfn "mx %d" mx
-            if y > my then
-                my <- y
+            if cy > my then
+                my <- cy
                 printfn "my %d" my
 
 
@@ -70,19 +67,17 @@ module Day15 =
             visited <- visited + 1L
 
             openSet <- nextCurrent
-            for neighbor in (neighbors current grid) do
-                let (nx,ny) = neighbor
-                let tentative_gScore = (getGScore current) + grid.[nx, ny]
-                if tentative_gScore < (getGScore neighbor) then
-                    cameFrom <- cameFrom |> Map.add neighbor current
-                    gScore <- gScore |> Map.add neighbor tentative_gScore
-                    fScore <- fScore |> Map.add neighbor (tentative_gScore + (h neighbor))
-                    openSet <- (neighbor::openSet) 
+            for (nx, ny) in (neighbors (cx,cy) grid) do
+                let tentative_gScore = gScore[cx,cy] + grid.[nx, ny]
+                if tentative_gScore < gScore[nx,ny] then
+                    cameFrom <- cameFrom |> Map.add (nx,ny) (cx,cy)
+                    gScore[nx,ny] <- tentative_gScore
+                    fScore[nx,ny] <- tentative_gScore + (h (nx,ny))
+                    openSet <- (nx,ny)::openSet
             openSet <- 
                 openSet
                 |> List.distinct
-                |> List.sortBy (fun n -> 
-                    fScore |> Map.tryFind n |> function | Some v -> v | _ -> System.Int32.MaxValue) 
+                |> List.sortBy (fun (x,y) -> fScore[x,y])
 
         printfn "visited = %d" visited
         match found with
