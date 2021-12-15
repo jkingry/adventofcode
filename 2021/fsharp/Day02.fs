@@ -13,31 +13,34 @@ module Day02 =
 
         depth * h
 
-    let part1 input =
-        let executeCommand p (direction, x) =
+    let run input =
+        let executeCommand1 p (direction, x) =
             match direction with
             | "down" -> { p with depth = p.depth + x }
             | "up" -> { p with depth = p.depth - x }
             | "forward" -> { p with h = p.h + x }
             | s -> failwith (sprintf "Unexpected command '%s'" s)
 
-        input
-        |> splitLine
-        |> executeInput executeCommand
-        |> string
+        let commands = input |> splitLine
 
-    let part2 input =
-        let executeCommand p (direction, x) =
+        let part1 =
+            commands
+            |> executeInput executeCommand1
+            |> string
+
+        let executeCommand2 p (direction, x) =
             match direction with
             | "down" -> { p with aim = p.aim + x }
             | "up" -> { p with aim = p.aim - x }
             | "forward" ->
                 { p with
-                      h = p.h + x
-                      depth = p.depth + (p.aim * x) }
+                    h = p.h + x
+                    depth = p.depth + (p.aim * x) }
             | s -> failwith (sprintf "Unexpected command '%s'" s)
+        
+        let part2 = 
+            commands
+            |> executeInput executeCommand2
+            |> string
 
-        input
-        |> splitLine
-        |> executeInput executeCommand
-        |> string
+        (part1, part2)
