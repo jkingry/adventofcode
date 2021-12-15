@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.1.1" />
+    <PackageReference Include="fsharpx.collections" Version="3.0.1" />
     <PackageReference Include="RoyT.AStar" Version="3.0.2" />
   </ItemGroup>
   <ItemGroup>
