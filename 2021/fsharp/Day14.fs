@@ -43,27 +43,30 @@ module Day14 =
                 | _ -> poly', atoms')
             (polymer, atoms)
 
-    let run reactor polymerString n =
+    let atomicValue atoms =
+        let (most, least) =
+            atoms 
+            |> Map.values
+            |> Seq.fold (fun (mv, lv) v -> (max v mv), (min v lv)) (System.Int64.MinValue, System.Int64.MaxValue)
+        most - least
+
+    let run (text: string) =
+        let (rules, polymerString) = parse text
+        let reactor = react rules
+
         let mutable polymer = pairCounts polymerString
         let mutable atoms = polymerString |> Counter.create
 
-        for _ = 1 to n do
+        for _ = 1 to 10 do
             let (npolymer, natoms) = (polymer, atoms) |> reactor
             polymer <- npolymer
-            atoms <- natoms
+            atoms <- natoms            
+        let part1 = atomicValue atoms            
 
-        let (most, least) =
-            atoms.Values
-            |> Seq.fold (fun (mv, lv) v -> (max v mv), (min v lv)) (System.Int64.MinValue, System.Int64.MaxValue)
+        for _ = 11 to 40 do
+            let (npolymer, natoms) = (polymer, atoms) |> reactor
+            polymer <- npolymer
+            atoms <- natoms            
+        let part2 = atomicValue atoms            
 
-        most - least
-
-    let part1 (text: string) =
-        let (rules, polymerString) = parse text
-        let reactor = react rules
-        run reactor polymerString 10 |> string
-
-    let part2 (text: string) =
-        let (rules, polymerString) = parse text
-        let reactor = react rules
-        run reactor polymerString 40 |> string
+        (part1 |> string, part2 |> string)

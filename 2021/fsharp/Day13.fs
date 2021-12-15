@@ -44,22 +44,20 @@ module Day13 =
         | ("y", n) -> foldy n dots
         | _ -> failwith "unreachable"
 
-    let part1 text =
+    let run text =
         let (dots, folds) = parse text
 
         let firstFold = folds |> Array.head
-        fold dots firstFold |> Set.count |> string
-
-    let part2 text =
-        let (dots, folds) = parse text
-
-        let foldedDots = folds |> Array.fold fold dots
+        let firstDots = fold dots firstFold
+        let part1 = firstDots |> Set.count
+        
+        let foldedDots = folds |> Array.tail |> Array.fold fold firstDots
 
         let (maxx, maxy) =
             foldedDots
             |> Seq.reduce (fun (mx, my) (x, y) -> max mx x, max my y)
 
-        let mutable result = System.Environment.NewLine
+        let mutable part2 = System.Environment.NewLine
 
         for y = 0 to maxy do
             let s =
@@ -71,6 +69,6 @@ module Day13 =
             for (x, _) in row do
                 s.[x] <- '#'
 
-            result <- result + (string s) + System.Environment.NewLine
+            part2 <- part2 + (string s) + System.Environment.NewLine
 
-        result
+        (part1 |> string, part2)
