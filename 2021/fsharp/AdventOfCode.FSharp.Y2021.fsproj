@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.1.1" />
+    <PackageReference Include="RoyT.AStar" Version="3.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../Common/fsharp/AdventOfCode.FSharp.fsproj" />
