@@ -6,7 +6,9 @@ open Checked
 let inline E v = v |> string |> Some
 
 let inline old (part1: string -> string) (part2: string -> string) =
-  fun text -> part1 text, part2 text
+  fun text output ->
+    part1 text |> output 1
+    part2 text |> output 2
 
 let days =
     [ 
@@ -36,7 +38,6 @@ let days =
     |> List.map (fun (d, r, e1, e2) ->
             { day = d
               run = r
-              part1 = e1
-              part2 = e2 })
+              expected = [ (1,e1); (2,e2) ] |> Map.ofList })
 
 runCommandLine days

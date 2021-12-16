@@ -28,7 +28,7 @@ module Day01 =
         |> increasing
         |> string
         
-    let run input =
+    let run input (output: int -> string -> unit) =
         let numbers =
             input
             |> splitLine
@@ -38,11 +38,12 @@ module Day01 =
             numbers
             |> increasing
             |> string
+        output 1 part1
+
         let part2 =
             numbers
             |> Seq.windowed 3
             |> Seq.map Seq.sum
             |> increasing
             |> string
-            
-        (part1,part2)
+        output 2 part2

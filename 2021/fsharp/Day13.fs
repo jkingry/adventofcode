@@ -44,12 +44,12 @@ module Day13 =
         | ("y", n) -> foldy n dots
         | _ -> failwith "unreachable"
 
-    let run text =
+    let run text output =
         let (dots, folds) = parse text
 
         let firstFold = folds |> Array.head
         let firstDots = fold dots firstFold
-        let part1 = firstDots |> Set.count
+        firstDots |> Set.count |> string |> output 1
         
         let foldedDots = folds |> Array.tail |> Array.fold fold firstDots
 
@@ -71,4 +71,4 @@ module Day13 =
 
             part2 <- part2 + (string s) + System.Environment.NewLine
 
-        (part1 |> string, part2)
+        part2 |> output 2

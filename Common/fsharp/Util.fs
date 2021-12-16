@@ -4,6 +4,9 @@ module Util =
     open System
     open System.Text.RegularExpressions
     open System.Collections.Generic
+
+    exception Unreachable
+    
     module Counter =
         let create (input : #seq<'T>) : Map<'T, int64> =
             input 
