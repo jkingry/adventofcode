@@ -13,7 +13,7 @@ module Day02 =
 
         depth * h
 
-    let run input =
+    let run input output =
         let executeCommand1 p (direction, x) =
             match direction with
             | "down" -> { p with depth = p.depth + x }
@@ -27,6 +27,7 @@ module Day02 =
             commands
             |> executeInput executeCommand1
             |> string
+        output 1 part1
 
         let executeCommand2 p (direction, x) =
             match direction with
@@ -42,5 +43,4 @@ module Day02 =
             commands
             |> executeInput executeCommand2
             |> string
-
-        (part1, part2)
+        output 2 part2

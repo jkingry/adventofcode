@@ -10,12 +10,12 @@ open Microsoft.FSharp.Reflection
 type Answer = seq<string> -> obj
 
 module NorthPole = 
+    open Util
     type Day = 
         {
             day : int
-            run : string -> string * string
-            part1 : string option    
-            part2: string option    
+            run : string -> (int -> string -> unit) -> unit
+            expected : Map<int, string option>
         }
 
     let findDays (dayIndex: int option) (days: Day list) =
@@ -28,19 +28,31 @@ module NorthPole =
 
         let mutable output = ("", "")
         let w = System.Diagnostics.Stopwatch.StartNew ()
+
+        let mutable actuals = Map.empty
+        let output part result = 
+            actuals <- actuals |> Map.add part result
+
         for i=1 to repeat do
-            output <- r.run input
+            r.run input output
         w.Stop ()
 
-        let (o1, o2) = output
+        let toResult part =
+            let e = r.expected |> Map.tryFind part |> Option.flatten
+            let a = actuals |> Map.tryFind part
+            match e,a with
+            | None, None -> raise Unreachable
+            | Some ev, Some av when ev = av -> part, Ok av
+            | Some ev, _ -> part, sprintf "Part %d: Expected '%s', Given '%A'" part ev a |> Error
+            | _, Some av -> part, Ok av
+        
+        let results =
+            Seq.append (Map.keys r.expected) (Map.keys actuals)
+            |> Seq.distinct
+            |> Seq.map toResult
+            |> Seq.toList
 
-        let toResult n e o =
-            match e with
-            | None -> Ok o
-            | Some ev when o = ev -> Ok o
-            | Some ev -> sprintf "Part %d: Expected '%s', Given '%s'" n ev o |> Error
-
-        (r.day, (toResult 1 r.part1 o1), (toResult 2 r.part2 o2), w.ElapsedMilliseconds)
+        (r.day, results, w.ElapsedMilliseconds)
 
 
     let run (dayIndex: int option) (days: Day list) =  
@@ -112,17 +124,22 @@ module NorthPole =
 
         let mutable total = 0.0
 
-        let printResult a =
-            match a with
-            | day, Ok p1, Ok p2, time when hideValue -> 
-                printfn "%3d %4d" day 1
-                printfn "%3d %4d %6.5f" day 2 (seconds time)
-                total <- total + (seconds time)
-            | day, Ok p1, Ok p2, time -> 
-                printfn "%3d %4d %6s %s" day 1 "" p1
-                printfn "%3d %4d %6.3f %s" day 2 (seconds time) p2
-            | _ -> 
-                printfn "%A" a
+        let printResult (day, results, time) =
+            let mutable first = true
+            for r in results do
+                match r with
+                | _, Ok _ when hideValue && first -> 
+                    printfn "%3d %4s %6.5f" day "" (seconds time)
+                    total <- total + (seconds time)
+                    first <- false
+                | p, Ok v when first -> 
+                    printfn "%3d %4d %6.3f %s" day p (seconds time) v
+                    first <- false
+                | p, Ok v when not first && not hideValue -> 
+                    printfn "%3d %4d %6s %s" day p "" v
+                | p, Ok _ -> ()
+                | p, e -> 
+                    printfn "%3d %4d %A" day p e
 
         if hideValue then printfn "Day Part Time" else printfn "Day Part Time   Value"
 

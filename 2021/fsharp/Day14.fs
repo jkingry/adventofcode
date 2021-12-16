@@ -50,7 +50,7 @@ module Day14 =
             |> Seq.fold (fun (mv, lv) v -> (max v mv), (min v lv)) (System.Int64.MinValue, System.Int64.MaxValue)
         most - least
 
-    let run (text: string) =
+    let run (text: string) output =
         let (rules, polymerString) = parse text
         let reactor = react rules
 
@@ -61,12 +61,10 @@ module Day14 =
             let (npolymer, natoms) = (polymer, atoms) |> reactor
             polymer <- npolymer
             atoms <- natoms            
-        let part1 = atomicValue atoms            
-
+        atomicValue atoms |> string |> output 1     
+            
         for _ = 11 to 40 do
             let (npolymer, natoms) = (polymer, atoms) |> reactor
             polymer <- npolymer
             atoms <- natoms            
-        let part2 = atomicValue atoms            
-
-        (part1 |> string, part2 |> string)
+        atomicValue atoms |> string |> output 2            
