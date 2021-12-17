@@ -41,7 +41,7 @@ module NorthPole =
             let e = r.expected |> Map.tryFind part |> Option.flatten
             let a = actuals |> Map.tryFind part
             match e,a with
-            | None, None -> raise Unreachable
+            | None, None -> part, Ok "BLANK"
             | Some ev, Some av when ev = av -> part, Ok av
             | Some ev, _ -> part, sprintf "Part %d: Expected '%s', Given '%A'" part ev a |> Error
             | _, Some av -> part, Ok av
