@@ -3,19 +3,22 @@ namespace AdventOfCode.FSharp.Y2021
 // Day 17: Trick Shot
 module Day17 =
     open AdventOfCode.FSharp.Util
-    open Checked
     
     let run (input: string) (output: int -> string -> unit) =
+        let (x1,x2,y1,y2) =
+            match input with
+            | Regex "target area: x=(\d+)\.\.(\d+), y=(-?\d+)\.\.(-?\d+)" [a;b;c;d]
+                -> (int64 a, int64 b, int64 c, int64 d)
+            | _ -> failwith "Bad input"
 
-        let simulate (xv:int64) (yv:int64) (x1,y1) (x2,y2) =
-            let mutable xp = 0L
-            let mutable yp = 0L
+        let simulate (xv:int64) (yv:int64) =
             let mutable xvv = xv
             let mutable yvv = yv
             let mutable found = false
             let mutable maxy = 0L
-
         
+            let mutable xp = 0L
+            let mutable yp = 0L
             while xp < x2 && yp > y1 && not found do
                 xp <- xp + xvv
                 yp <- yp + yvv
@@ -31,14 +34,11 @@ module Day17 =
                 Some maxy
             else
                 None
-        
-        // let foo = simulate 7 2 (20L, -10L) (30L, -5L)
-        // printfn "%A" foo
 
-        let v =
-            Seq.allPairs [0L..5000L] [-5000L..5000L]
-            |> Seq.choose (fun (x,y) -> match simulate x y (277L, -92L) (318L, -53L) with | Some _ -> Some (x,y) | _ -> None)
-            //|> Seq.choose (fun (x,y) -> match simulate x y (20L, -10L) (30L, -5L) with | Some _ -> Some (x,y) | _ -> None)
-            |> Seq.distinct
-            |> Seq.length
-        v |> string |> output 1
+        let results =
+            Seq.allPairs [1L..x2] [y1..500L]
+            |> Seq.choose (fun (xv,yv) -> match simulate xv yv with | Some maxy -> Some (xv,yv, maxy) | _ -> None)
+            |> Seq.toList
+
+        results |> List.map (fun (_,_,maxy) -> maxy) |> List.max |> string |> output 1        
+        results |> List.map (fun (xv,yv, _) -> (xv,yv)) |> List.distinct |> List.length |> string |> output 2        
