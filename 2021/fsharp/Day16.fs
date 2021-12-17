@@ -1,14 +1,12 @@
 namespace AdventOfCode.FSharp.Y2021
 
-// Day 15
+// Day 16: Packet Decoder
 module Day16 =
     open AdventOfCode.FSharp.Util
     open System.Collections
     open System.Linq
-    open System.Collections.Generic
 
-
-    let revBytes = 
+    let reverse = 
         [|
             0x00; 0x80; 0x40; 0xc0; 0x20; 0xa0; 0x60; 0xe0;
             0x10; 0x90; 0x50; 0xd0; 0x30; 0xb0; 0x70; 0xf0;
@@ -43,18 +41,19 @@ module Day16 =
             0x0f; 0x8f; 0x4f; 0xcf; 0x2f; 0xaf; 0x6f; 0xef;
             0x1f; 0x9f; 0x5f; 0xdf; 0x3f; 0xbf; 0x7f; 0xff 
         |] |> Array.map byte
+
     type BitStream(input: BitArray) = 
         let mutable pos = -1
         let data = input.Cast<bool> () |> Seq.toArray
         
-        member this.eof = pos >= data.Length
-        member this.read1 () =
+        member _.eof = pos >= data.Length - 1
+        member _.read1 () =
             pos <- pos + 1
             data.[pos]
         member this.read n =
             let mutable p = 0
             seq {
-                while p < n  && not this.eof do
+                while p < n && not this.eof do
                     yield this.read1 ()
                     p <- p + 1
             }
@@ -65,7 +64,7 @@ module Day16 =
         static member parse (text : string) =
             let a =
                 System.Convert.FromHexString text 
-                |> Array.map (fun b -> revBytes.[int b])
+                |> Array.map (fun b -> reverse.[int b])
                 |> BitArray
             new BitStream(a)
 
@@ -106,7 +105,7 @@ module Day16 =
             let mutable packets = []
             if lengthTypeID then
                 let packetLength = bits 11 stream |> int
-                for i = 1 to packetLength do
+                for _ = 1 to packetLength do
                     packets <- packets @ [ parsePacket stream ]
             else
                 let bitLength = bits 15 stream |> int
@@ -115,32 +114,23 @@ module Day16 =
                     packets <- packets @ [ parsePacket sub ]
             { version = version; typeid = typeid; value = Op packets }
             
-    let rec sumVersion packet =
+    let rec version packet =
         let subValue =
             match packet.value with
-            | Op packets -> packets |> List.sumBy sumVersion 
+            | Op packets -> packets |> List.sumBy version 
             | _ -> 0L
         packet.version + subValue
 
     let rec calc packet =
         match packet.typeid, packet.value with
-        | 4L, L v ->
-            v |> int64
-        | 0L, Op packets -> 
-            packets |> List.map calc |> List.sum 
-        | 1L, Op packets ->
-            packets |> List.map calc |> List.fold (fun a b -> a * b) 1L
-        | 2L, Op packets -> 
-            packets |> List.map calc |> List.min
-        | 3L, Op packets -> 
-            packets |> List.map calc |> List.max
-        | 5L, Op packets -> 
-            printfn ">"
-            let p = packets |> List.map calc in if p[0] > p[1] then 1L else 0L 
-        | 6L, Op packets -> 
-            let p = packets |> List.map calc in if p[0] < p[1] then 1L else 0L 
-        | 7L, Op packets -> 
-            let p = packets |> List.map calc in if p[0] = p[1] then 1L else 0L 
+        | 4L, L v -> v |> int64
+        | 0L, Op packets -> packets |> List.map calc |> List.sum 
+        | 1L, Op packets -> packets |> List.map calc |> List.reduce (fun a b -> a * b)
+        | 2L, Op packets -> packets |> List.map calc |> List.min
+        | 3L, Op packets -> packets |> List.map calc |> List.max
+        | 5L, Op packets -> let p = packets |> List.map calc in if p[0] > p[1] then 1L else 0L 
+        | 6L, Op packets -> let p = packets |> List.map calc in if p[0] < p[1] then 1L else 0L 
+        | 7L, Op packets -> let p = packets |> List.map calc in if p[0] = p[1] then 1L else 0L 
         | _ -> raise Unreachable
 
     let run text output =
@@ -148,6 +138,6 @@ module Day16 =
 
         let p = parsePacket stream
 
-        sumVersion p |> string |> output 1
+        version p |> string |> output 1
         calc p |> string |> output 2
 
