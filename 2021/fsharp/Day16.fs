@@ -43,82 +43,56 @@ module Day16 =
             0x0f; 0x8f; 0x4f; 0xcf; 0x2f; 0xaf; 0x6f; 0xef;
             0x1f; 0x9f; 0x5f; 0xdf; 0x3f; 0xbf; 0x7f; 0xff 
         |] |> Array.map byte
-    type BitStream = 
-        {
-            mutable eof: bool
-            e: IEnumerator<bool>
-            mutable p: int
-        }
-
-    let parse (text : string) =
-        let a =
-            System.Convert.FromHexString text 
-            |> Array.map (fun b -> revBytes.[int b])
-            |> BitArray
-        let b =
-            a.Cast<bool> ()
-            |> Seq.toArray
-        {
-            e = (b :> IEnumerable<bool>).GetEnumerator()
-            eof = false
-            p = 0
-        }
-           
-
+    type BitStream(input: BitArray) = 
+        let mutable pos = -1
+        let data = input.Cast<bool> () |> Seq.toArray
         
-    let read n (stream : BitStream) =       
-        let mutable p = 0 
-        seq {
-            while p < n && not stream.eof do
-                if stream.e.MoveNext() then 
-                    //printfn "read %d %b" n stream.e.Current
-                    yield stream.e.Current 
+        member this.eof = pos >= data.Length
+        member this.read1 () =
+            pos <- pos + 1
+            data.[pos]
+        member this.read n =
+            let mutable p = 0
+            seq {
+                while p < n  && not this.eof do
+                    yield this.read1 ()
                     p <- p + 1
-                    stream.p <- stream.p + 1
-                else
-                    stream.eof <- true
-        }
-    let read1 (stream : BitStream) =
-        stream.eof <- not (stream.e.MoveNext())
-        if not stream.eof then
-            stream.p <- stream.p + 1
-        // printfn "read1 %b" stream.e.Current
-        stream.e.Current
+            }
+        member this.subStream n =
+            let input = (this.read n) |> Seq.toArray
+            let a = new BitArray (input)
+            new BitStream (a)
+        static member parse (text : string) =
+            let a =
+                System.Convert.FromHexString text 
+                |> Array.map (fun b -> revBytes.[int b])
+                |> BitArray
+            new BitStream(a)
 
-    let tryRead1 (stream : BitStream) =
-        if stream.e.MoveNext() then
-            // printfn "tryRead %b" stream.e.Current
-            stream.p <- stream.p + 1
-            Some stream.e.Current
-        else
-            stream.eof <- true
-            None
-
-    let bits (length: int) (stream : BitStream) =
+    let bits (length: int) (s : BitStream) =
         let mutable v = 0L
-        for bit in read length stream do
+        for bit in s.read length do
             v <- (v <<< 1) + (if bit then 1L else 0L)
         v
 
-    let readLiteral (stream : BitStream) = 
+    let readLiteral (s : BitStream) = 
         let mutable v = 0L
         let mutable keepReading = true
         while keepReading do
-            keepReading <- read1 stream
-            let a = bits 4 stream            
+            keepReading <- s.read1 ()
+            let a = bits 4 s            
             v <- (v <<< 4) + a
         v
-
-    type Packet =
+    type PacketValue =
+        | Op of Packet list
+        | L of int64        
+    and Packet =
         {
             version:int64
             typeid:int64
             value:PacketValue
         }
-    and PacketValue =
-        | Op of Packet list
-        | L of int64        
-
+        
     let rec parsePacket stream=
 
         let version = bits 3 stream
@@ -128,7 +102,7 @@ module Day16 =
             let value = readLiteral stream     
             { version = version; typeid = typeid; value = L value }
         else
-            let lengthTypeID = read1 stream
+            let lengthTypeID = stream.read1 ()
             let mutable packets = []
             if lengthTypeID then
                 let packetLength = bits 11 stream |> int
@@ -136,28 +110,11 @@ module Day16 =
                     packets <- packets @ [ parsePacket stream ]
             else
                 let bitLength = bits 15 stream |> int
-                let p = stream.p
-                while stream.p < (p + bitLength) do 
-                    packets <- packets @ [ parsePacket stream ]
+                let sub = stream.subStream bitLength
+                while not sub.eof do 
+                    packets <- packets @ [ parsePacket sub ]
             { version = version; typeid = typeid; value = Op packets }
             
-
-    let printStream stream =
-        let mutable eof = false
-        while not eof do
-            match tryRead1 stream with
-            | Some b -> printf "%c" (if b then '1' else '0')
-            | None -> eof <- true
-
-    let rec printPacket depth p =
-        let spacer = (String.replicate depth "  ") 
-        printfn "%sVersion=%d Type=%d" spacer p.version p.typeid 
-        match p.value with
-        | L v -> printfn "%s - Literal %d" spacer v
-        | Op packets -> 
-            printfn "%s - SubPackets %d" spacer (List.length packets)
-            packets |> List.iter (printPacket (depth + 1))
-
     let rec sumVersion packet =
         let subValue =
             match packet.value with
@@ -165,45 +122,32 @@ module Day16 =
             | _ -> 0L
         packet.version + subValue
 
-    let rec calc depth packet =
-        printf "%s" (String.replicate depth " ")
-        let subcalc = calc (depth+1)
-        let x = 
-            match packet.typeid, packet.value with
-            | 4L, L v ->
-                printfn "%A" v 
-                v |> int64
-            | 0L, Op packets -> 
-                printfn "+"
-                packets |> List.map subcalc |> List.sum 
-            | 1L, Op packets ->
-                printfn "*"
-                packets |> List.map subcalc |> List.fold (fun a b -> a * b) 1L
-            | 2L, Op packets -> 
-                printfn "min"
-                packets |> List.map subcalc |> List.min
-            | 3L, Op packets -> 
-                printfn "max"
-                packets |> List.map subcalc |> List.max
-            | 5L, Op packets -> 
-                printfn ">"
-                let p = packets |> List.map subcalc in if p[0] > p[1] then 1L else 0L 
-            | 6L, Op packets -> 
-                printfn "<"
-                let p = packets |> List.map subcalc in if p[0] < p[1] then 1L else 0L 
-            | 7L, Op packets -> 
-                printfn "="
-                let p = packets |> List.map subcalc in if p[0] = p[1] then 1L else 0L 
-            | _ -> raise Unreachable
-        printfn "%s = %A" (String.replicate depth " ")  x
-        x
+    let rec calc packet =
+        match packet.typeid, packet.value with
+        | 4L, L v ->
+            v |> int64
+        | 0L, Op packets -> 
+            packets |> List.map calc |> List.sum 
+        | 1L, Op packets ->
+            packets |> List.map calc |> List.fold (fun a b -> a * b) 1L
+        | 2L, Op packets -> 
+            packets |> List.map calc |> List.min
+        | 3L, Op packets -> 
+            packets |> List.map calc |> List.max
+        | 5L, Op packets -> 
+            printfn ">"
+            let p = packets |> List.map calc in if p[0] > p[1] then 1L else 0L 
+        | 6L, Op packets -> 
+            let p = packets |> List.map calc in if p[0] < p[1] then 1L else 0L 
+        | 7L, Op packets -> 
+            let p = packets |> List.map calc in if p[0] = p[1] then 1L else 0L 
+        | _ -> raise Unreachable
 
     let run text output =
-        let stream = parse text
+        let stream = BitStream.parse text
 
         let p = parsePacket stream
 
-        printPacket 0 p
+        sumVersion p |> string |> output 1
+        calc p |> string |> output 2
 
-        calc 0 p |> string |> output 1
-        //output 2 (-1 |> string)
