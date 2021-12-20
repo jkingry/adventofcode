@@ -16,15 +16,15 @@ module Day18 =
         | Failure (errorMsg, _, _) ->
             failwith (sprintf "Failure: %s" errorMsg)
 
-    let rec addLeft n x =
+    let rec addRight n x =
         match x with 
         | FNumber xn -> 0,FNumber (xn + n)
         | FPair (a, b) -> 
-            let (nb,b') = addLeft n b
-            let (na,a') = addLeft nb a
+            let (nb,b') = addRight n b
+            let (na,a') = addRight nb a
             na, FPair (a',b')
 
-    let rec addRight n x =
+    let rec addLeft n x =
         match x with 
         | FNumber xn -> 0,FNumber (xn + n)
         | FPair (a, b) -> 
@@ -37,8 +37,7 @@ module Day18 =
         | FNumber a -> sprintf "%d" a
         | FPair (a,b) -> sprintf "[%s,%s]" (toString a) (toString b)
 
-
-    let explode f =
+    let reduce f =
         let rec innerExplode depth f =
             match f with
             | FPair (FNumber a, FNumber b) when depth = 4 ->
@@ -46,56 +45,43 @@ module Day18 =
             | FPair (a, b) -> 
                 match innerExplode (depth + 1) a with
                 | Some (left, a, right) -> 
-                    let right, b = addRight right b
+                    let right, b = addLeft right b
                     Some (left, FPair (a, b), right)
                 | None -> 
                     match innerExplode (depth + 1) b with
                     | Some (left, b, right) ->
-                        let left, a = addLeft left a
+                        let left, a = addRight left a
                         Some (left, FPair (a, b), right)
                     | None -> 
                         None
             | _ -> None
-        let mutable pf = f
-        let mutable reduced = true
-        while reduced do
-            printfn "%s" (toString pf)
-            let result = innerExplode 0 pf
-            match result with
-            | Some (_,nf,_) -> pf <- nf
-            | None -> reduced <- false
-        pf
-
-    let split f =
         let rec innerSplit f =
             match f with
             | FNumber a when a >= 10 ->
-                let af = (a |> float) / 2
+                let af = (a |> float) / 2.0
                 let roundDn = System.Math.Floor(af) |> int
                 let roundUp = System.Math.Ceiling(af) |> int
-                Some FPair(FNumber roundDn, FNumber roundUp)
+                FPair(FNumber roundDn, FNumber roundUp) |> Some
             | FPair (a,b) ->                 
-                match innerSplit (depth + 1) a with
-                | Some (left, a, right) -> 
-                    let right, b = addRight right b
-                    Some (left, FPair (a, b), right)
+                match innerSplit a with
+                | Some a -> FPair (a,b) |> Some
                 | None -> 
-                    match innerExplode (depth + 1) b with
-                    | Some (left, b, right) ->
-                        let left, a = addLeft left a
-                        Some (left, FPair (a, b), right)
-                    | None -> 
-                        None
-            | _ -> None
+                    match innerSplit b with
+                    | Some b -> FPair (a,b) |> Some
+                    | None -> None
+            | _ -> None 
+
         let mutable pf = f
         let mutable reduced = true
         while reduced do
-            printfn "%s" (toString pf)
-            let result = innerExplode 0 pf
-            match result with
+            match innerExplode 0 pf with
             | Some (_,nf,_) -> pf <- nf
-            | None -> reduced <- false
+            | None -> 
+                match innerSplit pf with
+                | Some nf -> pf <- nf
+                | None -> reduced <- false
         pf
+
     
     let add a b =
         FPair (a,b)
@@ -115,11 +101,16 @@ module Day18 =
         let list =
             input 
             |> splitLine
-            |> Array.map (runParser fvalue) 
+            |> Array.map (runParser fvalue)
 
-        let a = list[0]
-        let b = list[1]
-        let ab = add a b
-        let abr = reduce ab
+        let part1 =
+            list |> Array.reduce (fun a b -> add a b |> reduce)
 
-        -1 |> string |> output 1
+        part1 |> magnitude |> string |> output 1
+
+        let part2 =
+            Seq.allPairs list list
+            |> Seq.choose (fun (a,b) -> if a = b then None else add a b |> reduce |> magnitude |> Some)
+            |> Seq.max
+        
+        part2 |> string |> output 2
