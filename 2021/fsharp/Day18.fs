@@ -75,8 +75,7 @@ module Day18 =
                 | Some nf -> pf <- nf
                 | None -> needsReduction <- false
         pf
-
-    
+ 
     let add a b =
         FPair (a,b)
 
@@ -90,10 +89,6 @@ module Day18 =
         match f with
         | FNumber a -> sprintf "%d" a
         | FPair (a,b) -> sprintf "[%s,%s]" (toString a) (toString b)
-    let rec nsum f =
-        match f with
-        | FNumber a -> a
-        | FPair (a,b) -> (nsum a) + (nsum b)
 
     let run (input: string) (output: int -> string -> unit) =
         let fvalue, fvalueRef = createParserForwardedToRef<SnailFish, unit>()
@@ -117,9 +112,7 @@ module Day18 =
                     for j = 0 to (Array.length list) - 1 do
                         if i <> j then yield list[i],list[j]
             }
-            |> Seq.choose (fun (a,b) -> 
-                if a = b then None else
-                add a b |> reduce |> magnitude |> Some)
+            |> Seq.map (fun (a,b) -> add a b |> reduce |> magnitude)
             |> Seq.max
         
         part2 |> string |> output 2
