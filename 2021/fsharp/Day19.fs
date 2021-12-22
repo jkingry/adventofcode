@@ -4,36 +4,40 @@ module Day19 =
     open AdventOfCode.FSharp.Util
     open Checked
 
-    let parseScan input =
-        let h::lines = 
-            input
-            |> splitLine
-            |> Array.toList
-        let scan =
-            match h with
-            | Regex "--- scanner (\d+) ---" [n] -> n
-            | _ -> failwith "Bad Input"
-        let coords =
-            lines
-            |> List.map (fun line -> 
-                let c = line |> ints
-                (c[0], c[1], c[2]))
-        let dmap =
-            comb 2 coords
-            |> List.map (function | [a;b] -> (a,b) | _ -> failwith "impossible")
-            |> List.fold (fun dmap pair -> 
-                let ((x,y,z),(a,b,c)) = pair
-                let distance = (x-a)*(x-a) + (y-b)*(y-b) + (z-c)*(z-c)
-                dmap |> Map.change distance (fun o -> 
-                    match o with
-                    | Some k -> Some (pair::k)
-                    | None -> Some [pair])) Map.empty
-    
-        scan, dmap
+    type point3D = int * int * int
 
+    let list2tuple2 = function | [x;y] -> (x,y) | _ -> failwith "Invalid list item"
+    let array2tuple3 = function | [|x;y;z|] -> (x,y,z) | _ -> failwith "Invalid list item"
+    let list2tuple3 = function | [x;y;z] -> (x,y,z) | _ -> failwith "Invalid list item"
+
+    let parseScan input =
+        let lines = input |> splitLine
+        let header = lines[0]
+        let lines = Array.tail lines
+
+        let scan =
+            match header with
+            | Regex "--- scanner (\d+) ---" [n] -> int n
+            | _ -> failwith "Bad Input"
+        let beacons =
+            lines
+            |> Array.map (ints >> array2tuple3) 
+            |> Set.ofArray
+
+        scan, beacons
+    
+    let distanceMap (beacons: point3D seq) = 
+        comb 2 (beacons |> Seq.toList)
+        |> List.map list2tuple2
+        |> List.fold (fun dmap pair -> 
+            let ((x,y,z),(a,b,c)) = pair
+            let distance = (x-a)*(x-a) + (y-b)*(y-b) + (z-c)*(z-c)
+            dmap |> Map.change distance (fun o -> 
+                match o with
+                | Some k -> Some (pair::k)
+                | None -> Some [pair])) Map.empty
 
     let inline delta (a,b,c) (d,e,f) = (a-d,b-e,c-f)
-    let list2tuple3 = function | [x;y;z] -> (x,y,z) | _ -> failwith "Invalid list item"
 
     let rotations = seq { 
         for (x,y,z) in permute [1;2;3] |> List.map list2tuple3 do
@@ -43,7 +47,9 @@ module Day19 =
                         yield (x*fx,y*fy,z*fz)
     }
 
-    let rotate (rx,ry,rz) (x,y,z) =
+    let inline translate (tx,ty,tz) (x,y,z) = (x+tx,y+ty,z+tz)
+
+    let inline rotate (rx,ry,rz) (x,y,z) =
         let c = [|x;y;z|]
         let tx = abs(rx) - 1 in let fx = sign(rx)
         let ty = abs(ry) - 1 in let fy = sign(ry)
@@ -52,12 +58,9 @@ module Day19 =
     
     let inline flip (x,y,z) = (-x,-y,-z)
 
-    let matchScans a b =
-        let an, admap = a
-        let bn, bdmap = b
+    let inline manhattan (a,b,c) (d,e,f) = abs(a-d)+abs(b-e)+abs(c-f)
 
-        printfn "%s to %s" an bn
-        
+    let matchScans admap bdmap =                
         let tryFindTransform d1 d2 =
             let a1x,a1y = admap |> Map.find d1 |> List.exactlyOne
             let pb1x,pb1y = bdmap |> Map.find d1 |> List.exactlyOne
@@ -75,45 +78,91 @@ module Day19 =
             |> List.tryPick (fun (b1x,b1y,b2x,b2y) ->
                 let a1delta = (delta a1x a1y)
                 let b1delta = (delta b1x b1y)
-                let r1 = rotations |> Seq.find (fun r -> (rotate r b1delta) = a1delta)
-                let x1delta  = (delta a1x (rotate r1 b1x)) 
+                
+                match rotations |> Seq.tryFind (fun r -> (rotate r b1delta) = a1delta) with
+                | Some r1 -> 
+                    let x1delta  = (delta a1x (rotate r1 b1x)) 
 
-                // printfn "%7d A: %A - %A = %A -> %A" d1 a1x a1y (delta a1x a1y) r1
-                // printfn "%7s B: %A - %A = %A -> %A" "" b1x b1y (delta b1x b1y) r1
-                // printfn "%7s X: %A Y: %A" "" x1delta y1delta
+                    let a2delta = (delta a2x a2y)
+                    let b2delta = (delta b2x b2y)
 
-                let a2delta = (delta a2x a2y)
-                let b2delta = (delta b2x b2y)
-                let r2 = rotations |> Seq.find (fun r -> (rotate r b2delta) = a2delta)
-                let x2delta  = (delta a2x (rotate r2 b2x)) 
+                    match rotations |> Seq.tryFind (fun r -> (rotate r b2delta) = a2delta) with
+                    | Some r2 -> 
+                        let x2delta  = (delta a2x (rotate r2 b2x)) 
 
-                // printfn "%7d A: %A - %A = %A -> %A" d2 a2x a2y (delta a2x a2y) r2
-                // printfn "%7s B: %A - %A = %A -> %A" "" b2x b2y (delta b2x b2y) r2
-                // printfn "%7s X: %A Y: %A" "" x2delta y2delta
-
-                if r1 = r2 && x1delta = x2delta then Some (r1,x1delta) else None)
+                        if r1 = r2 && x1delta = x2delta then Some (r1,x1delta) else None
+                    | _ -> None
+                | _ ->
+                    //printfn "First distance failed %d - (%A->%A) vs (%A->%A)" d1 a1x a1y b1x b1y
+                    None)
 
         let uniquedistances m = 
             m 
             |> Map.toSeq
             |> Seq.choose (fun (k,v) -> if v |> List.length = 1 then Some k else None)
+            |> Set.ofSeq
 
         let samedistances = 
-            Set.intersect (admap |> uniquedistances |> Set.ofSeq) (bdmap |> uniquedistances |> Set.ofSeq)
-            |> Seq.toList            
-        
+            Set.intersect (admap |> uniquedistances) (bdmap |> uniquedistances)
+            |> Seq.toList     
+        //printfn " Same Distances %d" (samedistances |> List.length)     
+
+        if samedistances |> List.length < 12 then None else  
+
         comb 2 samedistances 
-        |> List.tryPick (fun [d1;d2] -> tryFindTransform d1 d2)
+        |> List.map list2tuple2 
+        |> List.tryPick (fun (d1,d2) -> tryFindTransform d1 d2)
 
     let run (input: string) (output: int -> string -> unit) =
-        let scans = 
+        let mutable scans = 
             input
             |> splitDoubleLine
             |> Array.map parseScan
+            |> Map.ofArray
+        
+        let mutable distances = scans |> Map.map (fun _ v -> distanceMap v)
 
-        for [a;b] in comb 2 (scans |> Array.toList) do
-            match matchScans a b with
-            | Some (r,t) -> printfn "R = %A, T = %A" r t
-            | None -> printfn "No match"
+        let mutable scanners = Map.empty |> Map.add 0 (0,0,0)
 
-        -1 |> string |> output 1
+        while scans |> Map.count > 1 do
+            let (an,bn,r,t) =
+                distances 
+                |> Map.keys 
+                |> Seq.toList 
+                |> comb 2 
+                |> List.map list2tuple2
+                |> List.pick (fun (an, bn) ->
+                    //printfn "try %d to %d" an bn
+                    match matchScans distances[an] distances[bn] with
+                    | Some (r,t) -> Some (an,bn,r,t)
+                    | None -> None)
+            
+            //printfn "  found R=%A T=%A" r t
+            
+            let a_beacons = scans[an]
+            let b_beacons = scans[bn]
+            let b_beacons_transformed = b_beacons |> Set.map (rotate r >> translate t)
+            let ab_beacons = a_beacons |> Set.union b_beacons_transformed
+
+            scanners <- scanners |> Map.add bn t
+
+            scans <- 
+                scans 
+                |> Map.add an ab_beacons
+                |> Map.remove bn
+            distances <-
+                distances
+                |> Map.add an (distanceMap ab_beacons)
+                |> Map.remove bn
+            
+        scans |> Map.values |> Seq.head |> Set.count |> string |> output 1
+
+        scanners 
+        |> Map.values
+        |> Seq.toList
+        |> comb 2
+        |> List.map list2tuple2
+        |> List.map (fun (a,b) -> manhattan a b)
+        |> List.max
+        |> string
+        |> output 2 
