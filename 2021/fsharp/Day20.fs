@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2021
 
-// Day 20
+// Day 20: Trench Map
 module Day20 =
     open AdventOfCode.FSharp.Util
     open System.Collections

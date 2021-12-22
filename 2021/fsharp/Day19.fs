@@ -1,5 +1,6 @@
 namespace AdventOfCode.FSharp.Y2021
 
+// Day 19: Beacon Scanner
 module Day19 =
     open AdventOfCode.FSharp.Util
     open Checked
