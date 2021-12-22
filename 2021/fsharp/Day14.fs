@@ -68,3 +68,4 @@ module Day14 =
             polymer <- npolymer
             atoms <- natoms            
         atomicValue atoms |> string |> output 2            
+        

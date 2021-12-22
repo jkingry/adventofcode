@@ -72,3 +72,4 @@ module Day13 =
             part2 <- part2 + (string s) + System.Environment.NewLine
 
         part2 |> output 2
+        

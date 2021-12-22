@@ -116,3 +116,4 @@ module Day18 =
             |> Seq.max
         
         part2 |> string |> output 2
+        
