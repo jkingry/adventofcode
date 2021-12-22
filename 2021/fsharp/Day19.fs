@@ -186,4 +186,4 @@ module Day19 =
         |> List.map (fun (a,b) -> manhattan a b)
         |> List.max
         |> string
-        |> output 2 
+        |> output 2

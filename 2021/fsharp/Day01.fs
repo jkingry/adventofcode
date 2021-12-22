@@ -1,7 +1,5 @@
 namespace AdventOfCode.FSharp.Y2021
 
-open System
-
 // Day 1: Sonar Sweep
 module Day01 =
     open AdventOfCode.FSharp.Util
@@ -15,14 +13,14 @@ module Day01 =
     let part1 input =
         input
         |> splitLine
-        |> Seq.map Int32.Parse
+        |> Seq.map int
         |> increasing
         |> string
 
     let part2 input =
         input
         |> splitLine
-        |> Seq.map Int32.Parse
+        |> Seq.map int
         |> Seq.windowed 3
         |> Seq.map Seq.sum
         |> increasing
@@ -32,7 +30,7 @@ module Day01 =
         let numbers =
             input
             |> splitLine
-            |> Array.map Int32.Parse
+            |> Array.map int
 
         let part1 =
             numbers

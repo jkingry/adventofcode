@@ -79,3 +79,4 @@ module Day15 =
         let part2 =
             dijkstra (0, 0) (width - 1, height - 1) width height risk
         output 2 (part2 |> string)
+        

@@ -140,4 +140,4 @@ module Day16 =
 
         version p |> string |> output 1
         calc p |> string |> output 2
-
+        
