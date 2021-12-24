@@ -7,10 +7,6 @@ module Day19 =
 
     type point3D = int * int * int
 
-    let list2tuple2 = function | [x;y] -> (x,y) | _ -> failwith "Invalid list item"
-    let array2tuple3 = function | [|x;y;z|] -> (x,y,z) | _ -> failwith "Invalid list item"
-    let list2tuple3 = function | [x;y;z] -> (x,y,z) | _ -> failwith "Invalid list item"
-
     let parseScan input =
         let lines = input |> splitLine
         let header = lines[0]

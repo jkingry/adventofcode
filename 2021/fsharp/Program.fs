@@ -1,8 +1,6 @@
 open AdventOfCode.FSharp.NorthPole
 open AdventOfCode.FSharp.Y2021
 
-open Checked
-
 let inline E v = v |> string |> Some
 
 let inline old (part1: string -> string) (part2: string -> string) =
@@ -39,6 +37,9 @@ let days =
       18, Day18.run, E 4243, E 4701
       19, Day19.run, E 315, E 13192
       20, Day20.run, E 5765, E 18509
+      21, Day21.run, E 797160, None
+      22, Day22.run, E 602574, Some "1288707160324706"
+      23, Day23.run, None, None
     ]
     |> List.map (fun (d, r, e1, e2) ->
             { day = d
