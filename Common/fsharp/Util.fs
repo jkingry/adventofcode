@@ -37,6 +37,10 @@ module Util =
         |> Array.filter (not << String.IsNullOrWhiteSpace)
         |> Array.map int 
 
+    let list2tuple2 = function | [x;y] -> (x,y) | _ -> failwith "Invalid list item"
+    let array2tuple3 = function | [|x;y;z|] -> (x,y,z) | _ -> failwith "Invalid list item"
+    let list2tuple3 = function | [x;y;z] -> (x,y,z) | _ -> failwith "Invalid list item"
+
     let split (split : string) (s : string) = s.Split([|split|], StringSplitOptions.RemoveEmptyEntries)
 
     let splitLine (s : string) = s.Split([|"\r\n";"\n"|], StringSplitOptions.RemoveEmptyEntries)
