@@ -121,6 +121,6 @@ module Day23 =
     let run (input: string) (output: int -> string -> unit) =
         let (cost, path) = dijkstra "...........DBDACBCA" "...........AABBCCDD"
         
-        printfn "%A" path
+        //printfn "%A" path
 
         cost |> string |> output 1

@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2021
 
-// Day 15
+// Day 15: Chiton
 module Day15 =
     open AdventOfCode.FSharp.Util
     open FSharpx.Collections

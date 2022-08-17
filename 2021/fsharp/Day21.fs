@@ -4,7 +4,6 @@ namespace AdventOfCode.FSharp.Y2021
 module Day21 =
     open AdventOfCode.FSharp.Util
 
-
     let game (rolls,players) =
         let ((pos, score), next) = players
         let die = (rolls % 100) + 1
@@ -33,5 +32,4 @@ module Day21 =
             g <- game g
             w <- winValue g
         let (r,_) = g
-        printfn "%d" r
         w.Value |> string |> output 1 
