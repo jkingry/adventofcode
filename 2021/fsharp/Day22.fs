@@ -1,63 +1,73 @@
 namespace AdventOfCode.FSharp.Y2021
 
+// Day 22: Reactor Reboot
 module Day22 =
     open AdventOfCode.FSharp.Util
-        
+    type Point = int64 * int64 * int64    
+
+    type Cuboid = Point * Point
+
+    let isValid ((x1,y1,z1), (x2,y2,z2)) =
+        x1 < x2 && y1 < y2 && z1 < z2
+
+    let getVolume ((x1,y1,z1),(x2,y2,z2)) =
+        (x2 - x1) * (y2 - y1) * (z2 - z1)
+
+    let getOverlap (a:Cuboid) (b:Cuboid) =
+        let ((aulx, auly, aulz), (abrx, abry, abrz)) = a
+        let ((bulx, buly, bulz), (bbrx, bbry, bbrz)) = b
+
+        let overlap = ((max aulx bulx),(max auly buly),(max aulz bulz)), ((min abrx bbrx),(min abry bbry), (min abrz bbrz))
+
+        if isValid overlap then Some overlap else None        
+
+    type Instruction = 
+        {
+            value : bool
+            cube : Cuboid
+        }
+
+    let parseInstructions input = 
+        input 
+        |> splitLine
+        |> Array.toList
+        |> List.map (fun line -> 
+            match line with
+            | Regex "(on|off) x=(-?\d+)..(-?\d+),y=(-?\d+)..(-?\d+),z=(-?\d+)..(-?\d+)" [onoff;x1;x2;y1;y2;z1;z2] ->
+                {   
+                    value = (onoff = "on")
+                    cube = ((int64 x1),(int64 y1),(int64 z1)), ((int64 x2) + 1L, (int64 y2) + 1L, (int64 z2) + 1L)
+                }    
+            | _ -> failwith "invalid")            
+
+    let rec runInstructions (depth: int) (instructions :  list<Instruction>) =
+
+        let runInstruction (placed: list<Cuboid>, volume: int64) (instruction: Instruction)  =
+            let newPlaced = placed@[instruction.cube]
+            let newVolume =
+                if instruction.value then
+                    let overlaps = 
+                        placed 
+                        |> List.choose (getOverlap instruction.cube) 
+                        |> List.map (fun overlapping -> { value = true; cube = overlapping})
+                    volume + (getVolume instruction.cube) - (runInstructions (depth + 1) overlaps)
+                else
+                    volume
+            (newPlaced, newVolume)
+
+        let volume = instructions |> List.rev |> List.fold runInstruction ([], 0L) |> snd
+        assert (volume >= 0L)
+        volume
+
+    let runPart1Instructions instructions =
+        let region = ((-50L, -50L, -50L),(51L, 51L, 51L))
+        instructions 
+            |> List.filter (fun x -> getOverlap region x.cube |> Option.isSome)
+            |> runInstructions 0
+
     let run (input: string) (output: int -> string -> unit) =
-        let rebootSteps = 
-            input 
-            |> splitLine
-            |> Array.map (fun line -> 
-                match line with
-                | Regex "(on|off) x=(-?\d+)..(-?\d+),y=(-?\d+)..(-?\d+),z=(-?\d+)..(-?\d+)" [onoff;x1;x2;y1;y2;z1;z2] ->    
-                    onoff = "on", (int x1,int y1, int z1), (int x2, int y2, int z2)
-                | _ -> failwith "invalid")
+        let instructions = parseInstructions input
 
-        let getD d (x,y,z) = match d with | 0 -> x | 1 -> y | 2 -> z | _ -> failwith "impossible"
+        instructions |> runPart1Instructions |> string |> output 1
+        instructions |> runInstructions 0 |> string |> output 2
 
-        let axi = 
-            [|0..2|]
-            |> Array.map (fun d -> 
-                Array.concat (rebootSteps |> Array.map (fun (_,a,b) -> [|(getD d a); (getD d b) + 1|]))
-                |> Array.map int64
-                |> Array.distinct
-                |> Array.sort)
-
-        let (mx,my,mz) = axi |> Array.map Array.length |> array2tuple3 
-        let core = Array3D.init mx my mz (fun x y z -> 
-            if x < mx - 1 && y < my - 1 && z < mz - 1 then 
-                (axi[0][x + 1] - axi[0][x]) * (axi[1][y+1] - axi[1][y]) * (axi[2][z+1] - axi[2][z])
-            else 
-                0L)
-
-        let getAxiIndexes d a b =
-            let f = getD d a |> int64
-            let t = getD d b |> int64
-            let fi = axi[d] |> Array.findIndex (fun v -> f = v)
-            let ti = axi[d] |> Array.findIndex (fun v -> t < v)
-            [fi..(ti-1)]            
-
-        let mutable powered = 0L
-        let mutable c = 0
-
-        let applyRebootSteps steps =
-            steps
-            |> Array.iter (fun (on,a,b) ->
-                for x in (getAxiIndexes 0 a b) do
-                    for y in (getAxiIndexes 1 a b) do
-                        for z in (getAxiIndexes 2 a b) do
-                            c <- c + 1
-                            if (core[x,y,z] > 0L) = on then
-                                powered <- powered + core[x,y,z]
-                                core[x,y,z] <- -1L * core[x,y,z])
-        
-        let (initialization, reboot) =                                
-            rebootSteps
-            |> Array.partition (fun (_,(x1,y1,z1),(x2,y2,z2)) -> x1 >= -50 && y1 >= -50 && z1 >= -50 && x2 <= 50 && y2 <= 50 && z2 <= 50)
-
-        initialization |> applyRebootSteps
-        powered |> string |> output 1
-
-        reboot |> applyRebootSteps
-        printfn "%d" c
-        powered |> string |> output 2
