@@ -2,6 +2,7 @@ namespace AdventOfCode.FSharp.Y2021
 
 module Day231 =
     open Checked
+    open System.Collections.Generic
 
     let PodTypeCount = 4
 
@@ -12,116 +13,93 @@ module Day231 =
     let EmptyPod = 4
     let Main = 4
     
-    let PodCosts = [|1; 10; 100; 1000; System.Int32.MaxValue |];
-    let PodLetter = [|'A';'B';'C';'D';'.'|];
+    let PodCosts = [|1; 10; 100; 1000; System.Int32.MaxValue |]
+    let LetterToPod =  Map [('A',0); ('B',1);('C',2);('D',3)]
+    let PodToLetter = LetterToPod |> Map.toList |> List.map (fun (a,b) -> (b,a)) |> Map.ofList
 
-    type NodeLayout = {
-        goalEnergy: int[]
-        validFor: bool[]
-        exits: (int*int)[] // (nodeIndex, cost)[] = exit[pod-type]
-    }
-    type Node = {
-        pod: int
-        goalEnergy: int
-        exits: (int*int)[] // (nodeIndex, cost)
-    }
+    let HallwayLength = 10
 
-    type Layout = {
-        nodes: NodeLayout[]
-        hallways: Map<int, int>
-    }
+    let getHomes (homeLength:int) =
+        [0..PodTypeCount - 1] 
+        |> List.map (fun pod -> HallwayLength + (pod * homeLength)) 
+        |> List.toArray
+    
+    let doors =
+        [0..PodTypeCount - 1] 
+        |> List.map (fun pod -> 2 + (pod * 2)) 
+        |> List.toArray
 
-    let emptyLayout = {
-        nodes = [||]
-        hallways = Map.empty
-    }
+    let createEmpty (homeLength:int) =
+        let nodeCount = HallwayLength + (PodTypeCount * homeLength)
 
-    let createExitLayout exitIndex weight =
-        PodCosts |> Array.map (fun c -> (exitIndex, c * weight))
+        let homes = getHomes homeLength
 
-    let addHallway (length:int) (layout:Layout) (hallwayIndex:int) : Layout =
-        let hallwayStart = layout.nodes.Length
-        let hallway = [hallwayStart..(hallwayStart + length)]
+        Array3D.init PodTypeCount nodeCount nodeCount (fun pod from dest -> 
+            if from < HallwayLength then
+                let homeStart = homes[pod]
+                let homeFinish = homeStart + homeLength
+                let door = doors[pod]
+                // coming from the hall then, must only go to our home, no door
+                if from <> door && dest >= homeStart && dest < homeFinish then
+                    let hallDistance = abs (door - from)
+                    let homeDistance = dest - homeStart
+                    let distance = hallDistance + homeDistance
+                    PodCosts[pod] * distance
+                else 0
+            else 
+                // coming from a home then, can't go to a door
+                let home = homes |> Array.findIndex (fun i -> i <= from)
+                let homeStart = homes[home]
+                let door = doors[home]
 
-        let hallwayExits = 
-            hallway 
-            |> List.pairwise
-            |> List.fold (fun m (a, b) ->
-                m 
-                |> Map.change a (fun exitList -> (b, 1)::(defaultArg exitList []) |> Some)
-                |> Map.change b (fun exitList -> (a, 1)::(defaultArg exitList []) |> Some))
-                Map.empty
+                if dest < HallwayLength && not (Array.contains dest doors) then
+                    let homeDistance = from - homeStart
+                    let hallDistance = abs (door - dest)
+                    let distance = homeDistance + hallDistance 
+                    PodCosts[pod] * distance                    
+                else 0)
 
-        let hallwayLayout = hallway |> List.map (fun index ->
-            {
-                goalEnergy = Array.zeroCreate PodTypeCount
-                validFor = Array.replicate PodTypeCount true
-                exits = hallwayExits.[index] |> List.toArray
-            })
+    let isBlocked (homes: int[]) (from :int) (dest: int) (state: int[]) =
+        let pod = state[from]
+        if pod = EmptyPod then true
+        else 
+            let homeStart = homes[pod]
+            let door = doors[pod]
+            if from < HallwayLength then
+                // getting out of hallway
+                let step = if from < door then 1 else -1 
+                ([(from + step)..step..door]@[homeStart..dest]) |> List.forall (fun n -> state[n] = EmptyPod)
+            else
+                // getting into hallway
+                let step = if door < dest then 1 else -1 
+                ([from..(-1)..homeStart]@[door..step..dest]) |> List.forall (fun n -> state[n] = EmptyPod)
 
-        { layout with 
-            nodes = hallwayLayout |> List.toArray |> Array.append layout.nodes
-            hallways = layout.hallways |> Map.add hallwayIndex hallwayStart
-        }
 
-    let connectHome hallway mainOffset layout =
-        let mainIndex = layout.hallways.[Main] + mainOffset
-        let mainNode = layout.nodes.[mainIndex]
+    let getMoves (homes: int[]) (adj: int[,,]) (pos: int) (state: int[]) =
+        let nodes = Array3D.length3 adj
+        let pod = state[pos]
+        if pod = EmptyPod then []
+        else 
+            [0..nodes - 1] |> List.choose (fun dest -> 
+                let cost = adj[pod, pos, dest]
+                if cost > 0 && not (isBlocked homes pos dest state) then Some (dest, cost) else None)
 
-        let hallwayIndex = layout.hallways[hallway]
-
-        let newNodes = Array.copy layout.nodes
-
-        // main node connects to nobody
-        newNodes.[mainIndex] <- { mainNode with exits = Array.empty }
-
-        // adjacent nodes 
-        //  - remove link to mainNode
-        //  - attach to other adjacent nodes
-        //  - attach to hallwayNode
-        mainNode.exits 
-            |> Array.map fst
-            |> Array.iter (fun adjIndex -> 
-                let adj = layout.nodes.[adjIndex]
-
-                let otherExits = 
-                    mainNode.exits 
-                    |> Array.filter (fun (otherIndex, _) -> otherIndex <> adjIndex)
-                    |> Array.map (fun (index, weight) -> (index, weight + 1))
-
-                let hallwayExit = [| (hallwayIndex, 2) |]
-
-                let newExits = 
-                    adj.exits 
-                        |> Array.filter (fun (e, _) -> e <> mainIndex)
-                        |> Array.append otherExits
-                        |> Array.append hallwayExit
-
-                newNodes.[adjIndex] <- { adj with exits = newExits }) 
-
-        // connect hallway to adjacent nodes    
-        let newHallwayExits = 
-            mainNode.exits 
-            |> Array.map (fun (index, weight) -> (index, weight + 1))
-
-        let hallwayNode = layout.nodes[hallwayIndex]
-        newNodes.[hallwayIndex] <- { hallwayNode with exits = hallwayNode.exits |> Array.append newHallwayExits }    
-
-        { layout with nodes = newNodes }
-        
+    let move (from: int) (dest: int) (state: int[]) =
+        let newState = state |> Array.copy
+        let pod = newState[from]
+        newState.[from] <- EmptyPod
+        newState.[dest] <- pod
+        newState
 
     let run (input: string) (output: int -> string -> unit) =
-        let mainLayout =
-            (emptyLayout, Main)
-            ||> addHallway 10
+        let adj = createEmpty 2
+        let homes = getHomes 2
 
-        let layout =
-            [Amber; Bronze; Copper; Desert] 
-            |> List.fold (addHallway 2) mainLayout 
-            |> connectHome Amber 2
-            |> connectHome Bronze 4
-            |> connectHome Copper 6
-            |> connectHome Desert 8
+        let getMoves' = getMoves homes adj
+        let state = "...........BACDBCDA" |> Seq.map (fun c -> LetterToPod.[c]) |> Seq.toArray
+        let moves = getMoves' 10 state
+
+        printfn "%A" adj
 
         output 2 "WTF"
         
