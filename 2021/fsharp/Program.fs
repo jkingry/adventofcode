@@ -39,7 +39,8 @@ let days =
       20, Day20.run, E 5765, E 18509
       21, Day21.run, E 797160, Some "27464148626406"
       22, Day22.run, E 602574, Some "1288707160324706"
-      23, Day23.run, None, None
+      23, Day23.run, E 16059, None
+      231, Day231.run, E 16059, None
     ]
     |> List.map (fun (d, r, e1, e2) ->
             { day = d
