@@ -20,7 +20,11 @@ module NorthPole =
 
     let findDays (dayIndex: int option) (days: Day list) =
         days 
-        |> List.choose (fun r -> match dayIndex with | None -> Some r | Some d when d = r.day -> Some r | _ -> None)
+        |> List.choose (fun r -> 
+            match dayIndex with 
+            | None -> Some r 
+            | Some d when d = r.day -> Some r 
+            | _ -> None)
 
     let runDay (r: Day) (repeat: int) =
         let path = $"../input/%02d{r.day}.txt"
@@ -54,17 +58,16 @@ module NorthPole =
 
         (r.day, results, w.ElapsedMilliseconds)
 
-
-    let run (dayIndex: int option) (days: Day list) =  
+    let executeRun (dayIndex: int option) (days: Day list) =  
         let days = findDays dayIndex days     
         match days with
         | [r] -> seq { yield runDay r 1 }
-        | [] -> sprintf "Could not find function for %A" dayIndex |> failwith
+        | [] -> sprintf "Could not find code for day %A" (dayIndex |> Option.defaultValue -1) |> failwith
         | manyDays -> 
             let maxDay = manyDays |> List.maxBy (fun r -> r.day)
             seq { yield runDay maxDay 1 }            
 
-    let test (dayIndex: int option) (repeats: int option) (days: Day list) =  
+    let executeTest (dayIndex: int option) (repeats: int option) (days: Day list) =  
         let repeats = defaultArg repeats 1
         let days = findDays dayIndex days     
 
@@ -80,47 +83,50 @@ module NorthPole =
         | Test = 1
     
     let tryParseCommand (str:string) : Command option =
-        match System.Enum.TryParse (str, true) with
-        | true,e when System.Enum.IsDefined(e) -> Some e
-        | _ -> None
+        match tryParse str with
+        | Some _ -> None
+        | None ->
+            match System.Enum.TryParse (str, true) with
+            | true,e when System.Enum.IsDefined(e) -> Some e
+            | _ -> None
         
     let runCommandLine (days : Day list) =
         let args = Environment.GetCommandLineArgs() |> Array.tail
 
         let mutable n = 0
 
-        let command =
+        let commandArg =
             if args.Length > 0 then Some args[0] else None
             |> Option.bind tryParseCommand
             |> function 
-            | Some command -> 
-                n <- n + 1
-                command
-            | _ -> Command.Run
+                | Some command -> 
+                    n <- n + 1
+                    command
+                | _ -> Command.Run
 
-        let repeats =
-            if command = Command.Test && args.Length > n then 
+        let repeatsArg =
+            if commandArg = Command.Test && args.Length > n then 
                 n <- n + 1
                 tryParse args[n-1] 
             else 
                 None
         
-        let dayIndex = 
+        let dayIndexArg = 
             if args.Length > n then Some args[n] else None
             |> Option.bind tryParse
 
         let mutable hideValue = false
 
         let result = 
-            match command with 
-            | Command.Run -> days |> run dayIndex
+            match commandArg with 
+            | Command.Run -> days |> executeRun dayIndexArg
             | Command.Test -> 
                 hideValue <- true
-                days |> test dayIndex repeats
+                days |> executeTest dayIndexArg repeatsArg
             | x -> sprintf "Unreachable %A" x |> failwith
     
-        let seconds time =
-            (float time) / (1000.0 * float (defaultArg repeats 1))
+        let secondsPerIteration time =
+            (float time) / (1000.0 * float (defaultArg repeatsArg 1))
 
         let mutable total = 0.0
 
@@ -129,11 +135,11 @@ module NorthPole =
             for r in results do
                 match r with
                 | _, Ok _ when hideValue && first -> 
-                    printfn "%3d %4s %6.5f" day "" (seconds time)
-                    total <- total + (seconds time)
+                    printfn "%3d %4s %6.5f" day "" (secondsPerIteration time)
+                    total <- total + (secondsPerIteration time)
                     first <- false
                 | p, Ok v when first -> 
-                    printfn "%3d %4d %6.3f %s" day p (seconds time) v
+                    printfn "%3d %4d %6.3f %s" day p (secondsPerIteration time) v
                     first <- false
                 | p, Ok v when not first && not hideValue -> 
                     printfn "%3d %4d %6s %s" day p "" v
