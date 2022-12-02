@@ -40,19 +40,60 @@ module Day232 =
                 buf <- buf.Remove(i, 1)
             buf.ToString()
 
+    let bitcount (n : int) =
+        let count2 = n - ((n >>> 1) &&& 0x55555555)
+        let count4 = (count2 &&& 0x33333333) + ((count2 >>> 2) &&& 0x33333333)
+        let count8 = (count4 + (count4 >>> 4)) &&& 0x0f0f0f0f
+        (count8 * 0x01010101) >>> 24       
+
     module bs =
         // 0000000000111111111122222222223333333333444444444455555555556666
         // 0123456789012345678901234567890123456789012345678901234567890123
-        // | LEN||  IS OCCUPIED BIT       ||        POD TYPE BITS         |
+        // | HOME |S|  IS OCCUPIED BIT    ||        POD TYPE BITS         |
+        // |      | |      |   |   |   |  ||       
+        // 0000000010000000100011111111111111001001110010011111011
 
-        let size (state: uint64) = state &&& 31UL |> int
+        let size (state: uint64) = if (state &&& (1UL <<< 8)) = 0UL then 15 else 23
+
+        let getPod (position: int) (occupied: uint64) (pods: uint64) =
+            let occupiedMask = occupied &&& ((1UL <<< position) - 1UL)
+            let podIndex = bitcount (occupiedMask |> int)
+            (pods >>> (podIndex * 2)) &&& 3UL, podIndex
+
+        let calculateHomes (size: int) (occupied: uint64) (pods: uint64) = 
+            let mutable homes = 0UL
+
+            for podType in 0..3 do
+                let mutable homeCount = Some 0UL
+                for homeRow in (if size = 15 then 1 else 3)..(-1)..1 do
+                    homeCount <-
+                        match homeCount with 
+                            | Some count ->
+                                let roomIndex = ValidHallwaySize + (homeRow * PodTypeCount) + podType
+                                if (occupied &&& (1UL <<< roomIndex)) <> 0UL then
+                                    let pod, _ = getPod roomIndex occupied pods
+                                    if pod |> int = podType then
+                                        Some (count + 1UL)
+                                    else None
+                                else Some count
+                            | _ -> None
+
+                if homeCount.IsSome then
+                    homes <- homes ||| (homeCount.Value <<< (podType * 2))
+
+            homes
 
         let fromString (value: string) =        
-            let mutable occupiedIndex = 0
+            let size = 
+                match value.Length with
+                | 15 -> 0UL
+                | 23 -> 1UL
+                | _ -> failwith "Invalid size"
 
-            let size = value.Length |> uint64
             let mutable occupied = 0UL
             let mutable pods = 0UL
+
+            let mutable occupiedIndex = 0
 
             for i in 0..value.Length-1 do
                 let c = value[i]
@@ -60,34 +101,34 @@ module Day232 =
                 if pod <> Empty then
                     occupied <- occupied ||| (1UL <<< i)
                     pods <- pods ||| (pod <<< (occupiedIndex * 2))
+                    
                     occupiedIndex <- occupiedIndex + 1
-            size ||| (occupied <<< 5) ||| (pods <<< 32)   
+
+            let homes = calculateHomes value.Length occupied pods
+
+            homes ||| (size <<< 8) ||| (occupied <<< 9) ||| (pods <<< 32)   
 
         let toString (state: uint64) =
-            let burrowSize = (state &&& 31UL) |> int
+            let size = size state
+
             seq {
                 let mutable occupiedIndex = 0
-                for roomIndex = 0 to burrowSize do
-                    let occupied = (state &&& (1UL <<< (5 + roomIndex))) <> 0UL
+                for roomIndex = 0 to size do
+                    let occupied = (state &&& (1UL <<< (8 + 1 + roomIndex))) <> 0UL
                     if occupied then                
                         let pod = (state >>> (32 + (occupiedIndex * 2))) &&& 3UL
                         occupiedIndex <- occupiedIndex + 1
                         yield PodToLetter.[pod]
                     else
                         yield '.'
-            } |> Seq.toArray |> System.String     
+            } |> Seq.toArray |> System.String   
+
         let print (state: uint64) =
             state |> toString |> btext.print
 
-        let bitcount (n : int) =
-            let count2 = n - ((n >>> 1) &&& 0x55555555)
-            let count4 = (count2 &&& 0x33333333) + ((count2 >>> 2) &&& 0x33333333)
-            let count8 = (count4 + (count4 >>> 4)) &&& 0x0f0f0f0f
-            (count8 * 0x01010101) >>> 24       
-
         let movePod (state: uint64) (fromPos: int) (toPos: int) =     
             let size = size state
-            let occupied = (state >>> 5) &&& ((1UL <<< size) - 1UL)
+            let occupied = (state >>> 8 + 1) &&& ((1UL <<< size) - 1UL)
             let pods = state >>> 32
 
             let fromBit = 1UL <<< fromPos
@@ -99,51 +140,56 @@ module Day232 =
             if not fromOccupied then failwithf "No pod at source: %d" fromPos
             if toOccupied then failwithf "Pod at destination: %d" toPos
 
-            let fromMask = occupied &&& ((1UL <<< fromPos) - 1UL)
-            let fromIndex = bitcount (fromMask |> int)
+            let pod, fromIndex = getPod fromPos occupied pods
 
-            let pod = (pods >>> (fromIndex * 2)) &&& 3UL        
+            printfn "pod: %i" pod
             
             let newOccupied = occupied &&& ~~~fromBit ||| toBit
 
-            let toMask = newOccupied &&& ((1UL <<< toPos) - 1UL)
-            let toIndex = bitcount (toMask |> int)
+            let _, toIndex = getPod toPos newOccupied pods
 
-            if fromIndex = toIndex then
-                (size |> uint64) ||| (newOccupied <<< 5) ||| (pods <<< 32)
-            else 
-                let lower = 
-                    if fromIndex > 0 then   
-                        let lowerMask = (1UL <<< ((fromIndex - 1) * 2)) - 1UL
-                        pods &&& lowerMask
-                    else 0UL
+            let newPods =
+                if fromIndex = toIndex then
+                    printfn "same pod location %i" fromIndex
+                    pods
+                else 
+                    printfn "from: %i to: %i" fromIndex toIndex
+                    let lower = 
+                        if fromIndex > 0 then   
+                            let lowerMask = (1UL <<< ((fromIndex - 1) * 2)) - 1UL
+                            pods &&& lowerMask
+                        else 0UL
 
-                let upper =
-                    if fromIndex < 15 then
-                        let upperMask = (1UL <<< ((fromIndex + 1) * 2)) - 1UL
-                        pods &&& ~~~upperMask            
-                    else 0UL
-                let upperShifted = upper >>> 2
-                let newPods = lower ||| upperShifted
+                    let upper =
+                        if fromIndex < 15 then
+                            let upperMask = (1UL <<< ((fromIndex + 1) * 2)) - 1UL
+                            pods &&& ~~~upperMask            
+                        else 0UL
+                    let upperShifted = upper >>> 2
+                   
+                    let newPods = lower ||| upperShifted
 
-                let lower =
-                    if toIndex > 0 then
-                        let lowerMask = (1UL <<< (toIndex * 2)) - 1UL
-                        newPods &&& lowerMask
-                    else 0UL
+                    let lower =
+                        if toIndex > 0 then
+                            let lowerMask = (1UL <<< (toIndex * 2)) - 1UL
+                            newPods &&& lowerMask
+                        else 0UL
+                    let upper =
+                        if toIndex < 15 then
+                            let upperMask = (1UL <<< ((toIndex + 1) * 2)) - 1UL
+                            newPods &&& ~~~upperMask
+                        else 0UL            
+                    let upperShifted = upper <<< 2
+                    
+                    lower ||| (pod <<< (2 * toIndex)) ||| upperShifted
 
-                let upper =
-                    if toIndex < 15 then
-                        let upperMask = (1UL <<< ((toIndex + 1) * 2)) - 1UL
-                        newPods &&& ~~~upperMask
-                    else 0UL            
-                let upperShifted = upper <<< 2
-                let newPods = lower ||| (pod <<< (2 * toIndex)) ||| upperShifted
+            let homes = calculateHomes size newOccupied newPods
+            let sizeBit = if size = 15 then 0UL else 1UL
 
-                (size |> uint64) ||| (newOccupied <<< 5) ||| (newPods <<< 32)            
+            homes ||| (sizeBit <<< 8) ||| (newOccupied <<< 9) ||| (newPods <<< 32)                             
 
     let toBinary (input: uint64) =
-        System.Convert.ToString(input |> int64, 2)     
+        System.Convert.ToString(input |> int64, 2).ToCharArray() |> Array.rev |> System.String     
 
     let reconstructPath cameFrom current =
         let mutable path = [ current ]
@@ -188,40 +234,6 @@ module Day232 =
         | Some cost -> (cost, reconstructPath cameFrom goal)
         | _ -> failwith "INFINITY"
 
-    let adj = Map [
-        (0b1000000_0000_0000UL, 
-            [
-                // hallway to first room
-                (0b0000000_1000_0000UL, 0b0100000_0000_0000UL);
-                (0b0000000_0100_0000UL, 0b0110000_0000_0000UL);
-                (0b0000000_0010_0000UL, 0b0111000_0000_0000UL);
-                (0b0000000_0001_0000UL, 0b0111100_0000_0000UL);
-                
-                // hallway to second room
-                (0b0000000_0000_1000UL, 0b0100000_1000_0000UL);
-                (0b0000000_0000_0100UL, 0b0110000_0100_0000UL);
-                (0b0000000_0000_0010UL, 0b0111000_0010_0000UL);
-                (0b0000000_0000_0001UL, 0b0111100_0001_0000UL);
-            ]
-        );
-
-        (0b0100000_0000_0000UL, 
-            [
-                // hallway to first room
-                (0b0000000_1000_0000UL, 0b0000000_0000_0000UL);
-                (0b0000000_0100_0000UL, 0b0010000_0000_0000UL);
-                (0b0000000_0010_0000UL, 0b0011000_0000_0000UL);
-                (0b0000000_0001_0000UL, 0b0011100_0000_0000UL);
-                
-                // hallway to second room
-                (0b0000000_0000_1000UL, 0b0000000_1000_0000UL);
-                (0b0000000_0000_0100UL, 0b0010000_0100_0000UL);
-                (0b0000000_0000_0010UL, 0b0011000_0010_0000UL);
-                (0b0000000_0000_0001UL, 0b0011100_0001_0000UL);
-            ]
-        );
-    ]
-
     let generateMoves state =
         let size = bs.size state
         let occupied = state >>> 5
@@ -234,13 +246,12 @@ module Day232 =
                     let pod = (pods >>> (occupiedIndex * 2)) &&& 3UL
                     occupiedIndex <- occupiedIndex + 1
 
-                    // in hallway
                     let inHallway = occupiedIndex < ValidHallwaySize
 
                     if inHallway then
+                        
                         ignore
                     else
-
                         ignore
 
                     
@@ -250,6 +261,14 @@ module Day232 =
     let run (input: string) (output: int -> string -> unit) =
         let state = input |> btext.parse |> bs.fromString
         
-        let cost1, path1 = dijkstra generateMoves (fun _ -> 0) state ("...........AABBCCDD" |> bs.fromString)        
+        printfn "%s" (toBinary state)
+        state |> bs.print
 
-        cost1 |> string |> output 1
+        let state2 = bs.movePod state 22 6
+        
+        printfn "%s" (toBinary state2)
+        state2 |> bs.print
+
+        // let cost1, path1 = dijkstra generateMoves (fun _ -> 0) state ("...........AABBCCDD" |> bs.fromString)        
+
+        1 |> string |> output 1
