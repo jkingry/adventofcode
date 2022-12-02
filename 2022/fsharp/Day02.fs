@@ -1,52 +1,42 @@
 namespace AdventOfCode.FSharp.Y2022
 
-// Day 2: ????
+// Day 2: Rock Paper Scissors
 module Day02 =
     open AdventOfCode.FSharp.Util
 
     let run input (output: int -> string -> unit) =
-        let commands = 
-            input 
-            |> splitLine
-            |> Seq.map(fun s -> 
-                let you = (int s[2]) - (int 'X')
-                let them = (int s[0]) - (int 'A')
-                let score = 
-                    if you = 0 && them = 2 then 1 + 6 + you
-                    elif you = 1 && them = 0 then 1 + 6 + you
-                    elif you = 2 && them = 1 then 1 + 6 + you
-                    elif you = them then 1 + 3 + you
-                    else 1 + you
-                printfn "%i %i = %i" them you score
-                
-                score)
-            |> Seq.sum
+        let losesVs = [| 2; 0; 1 |]
         
-              
-        commands |> string |> output 1 
-
-        let commands2 = 
+        let values = 
             input 
             |> splitLine
             |> Seq.map(fun s -> 
-                let obj = (int s[2]) - (int 'X')
                 let them = (int s[0]) - (int 'A')
+                let you = (int s[2]) - (int 'X')
+                (them, you))
 
-                let winner = [| 2; 3; 1 |]
-                let loser = [| 3; 1; 2 |]
-                let tie = [| 1; 2; 3 |]
-
-                let result = [| 0;3;6|]
-
-                let score = 
-                    result[obj] +
-                    match obj with
-                        | 0 -> loser[them]
-                        | 1 -> tie[them]
-                        | 2 -> winner[them]
-                        | _ -> failwith "wtf"
-                
-                score)
+        values 
+            |> Seq.map(fun (them, you) -> 
+                let result = 
+                    if you = them then 3
+                    elif you = losesVs[them] then 0
+                    else 6
+                1 + you + result)
             |> Seq.sum
+            |> string
+            |> output 1      
 
-        commands2 |> string |> output 2
+        values 
+            |> Seq.map(fun (them, result) -> 
+                1 + 
+                    match result with
+                    | 0 -> losesVs[them] 
+                    | 1 -> 3 + them
+                    | 2 -> 
+                        let winsVs = 3 - (them + losesVs[them])
+                        6 + winsVs
+                    | x -> failwithf "Unexpected: %i" x)
+            |> Seq.sum
+            |> string
+            |> output 2       
+
