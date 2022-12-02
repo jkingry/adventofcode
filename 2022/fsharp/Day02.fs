@@ -13,27 +13,38 @@ module Day02 =
                 let you = (int s[2]) - (int 'X')
                 (them, you))
 
+        let score (them, you) =
+            let result = 
+                if you = them then 3
+                elif you = (them + 1) % 3 then 6
+                else 0
+            1 + you + result           
+
         values 
-            |> Seq.map(fun (them, you) -> 
-                let result = 
-                    if you = them then 3
-                    elif you = (them + 1) % 3 then 6
-                    else 0
-                1 + you + result)
+            |> Seq.map score
             |> Seq.sum
             |> string
             |> output 1      
 
-        let part2 = 
+        let strategyOutput = 
             values 
                 |> Seq.map(fun (them, result) ->  
-                    match result with
-                    | 0 -> (1 + 0 + (them + 2) % 3, 1 + 6 + them)  
-                    | 1 -> (1 + 3 + them, 1 + 3 + them)
-                    | 2 -> (1 + 6 + (them + 1) % 3, 1 + 0 + them) 
-                    | x -> failwithf "Unexpected: %i" x)
-                |> Seq.fold (fun (a,b) (c,d) -> (a + c, b + d)) (0, 0)
+                        let you = 
+                            match result with
+                            | 0 -> (them + 2) % 3  
+                            | 1 -> them
+                            | 2 -> (them + 1) % 3 
+                            | x -> failwithf "Unexpected: %i" x
+                        (them, you))
+        
+        let part2 = strategyOutput |> Seq.map score |> Seq.sum 
 
-        printfn "You win by %i points" ((fst part2) - (snd part2))
-        part2 |> fst |> string |> output 2      
+        part2 |> string |> output 2      
+
+        // did we win?
+        let elfScore = strategyOutput |> Seq.map (fun (a,b) -> (b,a)) |> Seq.map score |> Seq.sum
+        if part2 > elfScore then
+            printfn "You win by %i points" (part2 - elfScore)
+        else
+            printfn "You lose by %i points" (elfScore - part2)
 
