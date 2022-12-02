@@ -4,9 +4,7 @@ namespace AdventOfCode.FSharp.Y2022
 module Day02 =
     open AdventOfCode.FSharp.Util
 
-    let run input (output: int -> string -> unit) =
-        let losesVs = [| 2; 0; 1 |]
-        
+    let run input (output: int -> string -> unit) =        
         let values = 
             input 
             |> splitLine
@@ -19,8 +17,8 @@ module Day02 =
             |> Seq.map(fun (them, you) -> 
                 let result = 
                     if you = them then 3
-                    elif you = losesVs[them] then 0
-                    else 6
+                    elif you = (them + 1) % 3 then 6
+                    else 0
                 1 + you + result)
             |> Seq.sum
             |> string
@@ -30,13 +28,11 @@ module Day02 =
             |> Seq.map(fun (them, result) -> 
                 1 + 
                     match result with
-                    | 0 -> losesVs[them] 
+                    | 0 -> 0 + (them + 2) % 3  
                     | 1 -> 3 + them
-                    | 2 -> 
-                        let winsVs = 3 - (them + losesVs[them])
-                        6 + winsVs
+                    | 2 -> 6 + (them + 1) % 3
                     | x -> failwithf "Unexpected: %i" x)
             |> Seq.sum
             |> string
-            |> output 2       
+            |> output 2
 
