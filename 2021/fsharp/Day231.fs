@@ -91,7 +91,6 @@ module Day231 =
                 let path = [(from - 1)..(-1)..homeStart]@[door..step..dest]
                 path |> List.forall (fun n -> state[n] = EmptyPod)
 
-
     let getMoves checkAllowed (adj: int[,,]) (pos: int) (state: int[]) : seq<int*int> =
         let nodes = Array3D.length3 adj
         let pod = state[pos]

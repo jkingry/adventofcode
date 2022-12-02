@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2022
 
-// Day 1: Sonar Sweep
+// Day 1: Calorie Counting
 module Day01 =
     open AdventOfCode.FSharp.Util
 
@@ -11,7 +11,7 @@ module Day01 =
             |> Seq.map (fun s -> s |> splitLine |> Seq.map int |> Seq.sum)
 
         elfs |> Seq.max |> string |> output 1
-
+        
         elfs |> Seq.sortDescending |> Seq.take 3 |> Seq.sum |> string |> output 2
 
 
