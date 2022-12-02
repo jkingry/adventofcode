@@ -11,8 +11,7 @@ let inline old (part1: string -> string) (part2: string -> string) =
 let days =
     [ 
       01, Day01.run, E 74394, E 212836
-      02, Day02.run, None, None
-//      01, Day01.run, E 1676, E 1706
+      02, Day02.run, E 11386, E 13600
     ]
     |> List.map (fun (d, r, e1, e2) ->
             { day = d
