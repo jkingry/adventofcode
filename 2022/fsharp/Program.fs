@@ -3,11 +3,6 @@ open AdventOfCode.FSharp.Y2022
 
 let inline E v = v |> string |> Some
 
-let inline old (part1: string -> string) (part2: string -> string) =
-  fun text output ->
-    part1 text |> output 1
-    part2 text |> output 2
-
 let days =
     [ 
       01, Day01.run, E 74394, E 212836
