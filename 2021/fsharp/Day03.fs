@@ -6,41 +6,43 @@ module Day03 =
 
     let fromBinary (s: string) = int ("0b" + s)
 
-    let part1 (input: string) =
-        let mapIncr (i: int) (m: Map<int, int>) =
-            m
-            |> Map.change i (fun x -> Some(1 + Option.defaultValue 0 x))
+    let toBinary (input: int) =
+        System.Convert.ToString(input, 2).ToCharArray()
+        |> Array.rev
+        |> System.String     
 
-        let countOnes (s: string) (counts: Map<int, int>) =
-            s
+    let run (input: string) (output: int -> string -> unit) =    
+        // Part 1  
+
+        let countDigits (counts: Map<int, int>) (line: string)  =
+            line
             |> Seq.indexed
-            |> Seq.fold (fun a (i, c) -> if c = '1' then (mapIncr i a) else a) counts
+            |> Seq.fold (fun a (i, c) -> if c = '1' then (mapIncr i a) else (mapDecr i a)) counts
 
-        let cache = input |> splitLine
+        let gammaCounts = 
+            input
+            |> splitLine
+            |> Seq.fold countDigits Map.empty 
 
-        let counts =
-            cache
-            |> Seq.fold (fun m s -> m |> countOnes s) Map.empty
-
-        let n = cache.Length
-
-        let gammaChars =
-            counts
-            |> Map.map (fun _ v -> if v > (n / 2) then '1' else '0')
+        let gammaText = 
+            gammaCounts
             |> Map.toSeq
             |> Seq.sortBy fst
-            |> Seq.map snd
+            |> Seq.map (fun (_, v) -> if v > 0 then '1' else '0')
             |> Seq.toArray
+            |> System.String
+        
+        let gamma = gammaText |> fromBinary        
+        
+        let epsilon = ~~~gamma
 
-        let gamma = new string (gammaChars) |> fromBinary
+        // trim to digit length
+        let epsilon = epsilon &&& ((1 <<< gammaText.Length) - 1)
 
-        let digits = (Array.head cache).Length
-        let mask = (1 <<< digits) - 1
-        let epsilon = (~~~gamma) &&& mask
+        gamma * epsilon |> string |> output 1
 
-        epsilon * gamma |> string
+        // Part 2
 
-    let part2 (input: string) =
         let filterReport (dir: bool) (input: string list) (p: int) =
             let m =
                 input
@@ -64,4 +66,4 @@ module Day03 =
         let cache = input |> splitLine |> List.ofArray
         let oxygenGenerator = foldReport cache true
         let co2Scrubber = foldReport cache false
-        oxygenGenerator * co2Scrubber |> string
+        oxygenGenerator * co2Scrubber |> string |> output 2

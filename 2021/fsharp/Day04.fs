@@ -57,24 +57,24 @@ module Day04 =
 
         sum
 
-    let part1 (input: string) =
+    let run (input: string) (output: int -> string -> unit) = 
+
         let (calls, boards) = parse input
 
+        // part 1
         let (called, firstWinners) = bingo calls boards |> Seq.head
 
         let firstWinner = List.head firstWinners
         let unpicked = unpickedSum called firstWinner
         let lastCall = called |> List.head
 
-        lastCall * unpicked |> string
+        lastCall * unpicked |> string |> output 1
 
-    let part2 (input: string) =
-        let (calls, boards) = parse input
-
+        // part 2
         let (called, lastWinners) = bingo calls boards |> Seq.last
 
         let lastWinner = List.last lastWinners
         let unpicked = unpickedSum called lastWinner
         let lastCall = called |> List.head
 
-        lastCall * unpicked |> string
+        lastCall * unpicked |> string |> output 2
