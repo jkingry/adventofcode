@@ -13,6 +13,4 @@ module Day01 =
         elfs |> Seq.max |> string |> output 1
         
         elfs |> Seq.sortDescending |> Seq.take 3 |> Seq.sum |> string |> output 2
-
-
-
+        

@@ -4,52 +4,27 @@ namespace AdventOfCode.FSharp.Y2022
 module Day03 =
     open AdventOfCode.FSharp.Util
 
-    let fromBinary (s: string) = int ("0b" + s)
-
-    let toBinary (input: int) =
-        System.Convert.ToString(input, 2).ToCharArray()
-        |> Array.rev
-        |> System.String     
-
     let run (input: string) (output: int -> string -> unit) =    
-        let s =
-            input |> splitLine
-            |> Seq.map(fun s ->
-                let a = s.Substring(0, s.Length / 2)
-                let b = s.Substring(s.Length / 2)
-                let c = b |> Seq.find (fun bb -> a.Contains(bb))
-                c)
-            |> Seq.map (fun c -> 
-                if c >= 'a' && c <= 'z' then 1 + (int c) - (int 'a')
-                else 27 + (int c) - (int 'A')) 
-
-        let q = Seq.sum s
         
+        let findCommonItem item =
+                item |> Seq.map Set.ofSeq |> Seq.reduce Set.intersect |> Seq.head
 
-        q |> string |> output 1
+        let charScore c =
+            (int c) -
+                if System.Char.IsLower(c) then (int 'a') - 1 else (int 'A') - 27
 
-        let s =
-            input
-            |> splitLine
-            |> Seq.indexed
-            |> Seq.groupBy (fun (i, s) -> i / 3)
-            |> Seq.map snd
-            |> Seq.map (fun w ->
-                printfn "WWWW"
-                for b in w do
-                    printfn "%A" b
-                
-                let cc = w |>  Seq.map snd |> Seq.map Set.ofSeq |> Seq.reduce (fun a b -> Set.intersect a b)
+        let lines = input |> splitLine
 
-                let r = cc |> Set.toList |> List.head
-                printfn "%c" r
-                r)
-            |> Seq.map (fun c ->
-                if c >= 'a' && c <= 'z' then
-                    1 + (int c) - (int 'a')
-                else
-                    27 + (int c) - (int 'A')) 
+        // split each line in half
+        let part1 = lines |> Seq.map(fun s ->
+            let mid = s.Length / 2 
+            [s[..mid - 1]; s[mid..]])
+
+        part1 |> Seq.map (findCommonItem >> charScore) |> Seq.sum |> string |> output 1
 
 
-        let q = Seq.sum s
-        q |> string |> output 2
+        // group lines into sets of three
+        let part2 = lines |> Seq.chunkBySize 3
+
+        part2 |> Seq.map (findCommonItem >> charScore) |> Seq.sum |> string |> output 2
+        
