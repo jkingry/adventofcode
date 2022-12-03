@@ -47,4 +47,3 @@ module Day02 =
             printfn "You win by %i points" (part2 - elfScore)
         else
             printfn "You lose by %i points" (elfScore - part2)
-
