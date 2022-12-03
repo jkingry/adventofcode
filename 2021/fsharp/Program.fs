@@ -12,7 +12,7 @@ let days =
     [ 
       01, Day01.run, E 1676, E 1706
       02, Day02.run, E 2036120, E 2015547716
-      03, old Day03.part1 Day03.part2, E 738234, E 3969126
+      03, Day03.run, E 738234, E 3969126
       04, old Day04.part1 Day04.part2, E 89001, E 7296
       05, old Day05.part1 Day05.part2, E 4993, E 21101
       06, old Day06.part1 Day06.part2, E 363101, Some "1644286074024"
