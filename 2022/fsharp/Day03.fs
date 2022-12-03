@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2022
 
-// Day 3
+// Day 3: Rucksack Reorganization
 module Day03 =
     open AdventOfCode.FSharp.Util
 
@@ -21,7 +21,6 @@ module Day03 =
             [s[..mid - 1]; s[mid..]])
 
         part1 |> Seq.map (findCommonItem >> charScore) |> Seq.sum |> string |> output 1
-
 
         // group lines into sets of three
         let part2 = lines |> Seq.chunkBySize 3
