@@ -26,4 +26,3 @@ module Day03 =
         let part2 = lines |> Seq.chunkBySize 3
 
         part2 |> Seq.map (findCommonItem >> charScore) |> Seq.sum |> string |> output 2
-        
