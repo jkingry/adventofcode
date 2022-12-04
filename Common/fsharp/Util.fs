@@ -49,6 +49,9 @@ module Util =
  
     let splitDoubleLine (s : string) = s.Split([|"\r\n\r\n";"\n\n"|], StringSplitOptions.RemoveEmptyEntries)
 
+    let intersects aStart aEnd bStart bEnd =
+        aStart <= bEnd && aEnd >= bStart
+
     let rec distribute e = function
     | [] -> [[e]]
     | x::xs' as xs -> (e::xs)::[for xs in distribute e xs' -> x::xs]
