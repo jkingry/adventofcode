@@ -1,27 +1,26 @@
 namespace AdventOfCode.FSharp.Y2022
 
-// Day 5: ???
+// Day 5: Supply Stacks
 module Day05 =
     open AdventOfCode.FSharp.Util
     open Checked
 
     let run (input: string) (output: int -> string -> unit) =    
-        let parseLayoutLine (stacks: List<char>[]) (line: string) =
-            for i in 1..stacks.Length do
-                let box = line[1 + ((i-1) * 4)]
-                if 'A' <= box && box <= 'Z' then
-                    stacks[i - 1] <- box::stacks[i - 1] 
-
-        let parseLayout layout =
+        let parseLayout layout : List<char>[] =
             let lines = layout |> splitLine
             let stackCount = lines |> Array.last |> ints |> Array.max
-            let stacks = Array.create stackCount []
 
-            lines 
+            let text = 
+                lines 
                 |> Array.take (lines.Length - 1)
-                |> Array.iter (parseLayoutLine stacks)
+                |> array2D
 
-            stacks |> Array.map List.rev 
+            [0..(stackCount - 1)] 
+                |> List.map (fun i -> 
+                    text[*, 1 + (i * 4)] 
+                        |> Array.filter (fun c -> c <> ' ') 
+                        |> List.ofArray)
+                |> Array.ofList
         
         let parseInstructions instructions =
             instructions
