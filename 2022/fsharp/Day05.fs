@@ -6,21 +6,22 @@ module Day05 =
     open Checked
 
     let run (input: string) (output: int -> string -> unit) =    
-        let parseLayoutLine stackCount stacks (line: string) =
-            let mutable s = stacks
-            for i in 1..stackCount do
+        let parseLayoutLine (stacks: List<char>[]) (line: string) =
+            for i in 1..stacks.Length do
                 let box = line[1 + ((i-1) * 4)]
-                if 'A' <= box && box <= 'Z' then 
-                    s <- s |> Map.change i (fun stack -> Some (box::(stack |> Option.defaultValue []))) 
-            s
+                if 'A' <= box && box <= 'Z' then
+                    stacks[i - 1] <- box::stacks[i - 1] 
 
         let parseLayout layout =
             let lines = layout |> splitLine
             let stackCount = lines |> Array.last |> ints |> Array.max
+            let stacks = Array.create stackCount []
+
             lines 
                 |> Array.take (lines.Length - 1)
-                |> Array.fold (parseLayoutLine stackCount) Map.empty
-                |> Map.map (fun _ v -> List.rev v)
+                |> Array.iter (parseLayoutLine stacks)
+
+            stacks |> Array.map List.rev 
         
         let parseInstructions instructions =
             instructions
@@ -35,31 +36,29 @@ module Day05 =
             | [| a; b |] -> (parseLayout a, parseInstructions b)
             | _ -> failwith "bad format"
 
-        let topBox layout = layout |> Map.toSeq |> Seq.sortBy fst |> Seq.map (snd >> List.head) |> Seq.toArray 
+        let topBox layout = layout |> Array.map List.head |> System.String 
 
-        let CrateMover9000 (stacks: Map<int,List<char>>) (amt, src, dest) =
-            let mutable s = stacks
+        let CrateMover9000 (s: List<char>[]) (amt, src, dest) =
             for _ in 1..amt do
-                s <- s 
-                    |> Map.add src (List.tail s[src]) 
-                    |> Map.add dest ((List.head s[src])::s[dest])
-            s  
+                let box = List.head s[src - 1] 
+                s[src - 1] <- List.tail s[src - 1]
+                s[dest - 1] <- box::s[dest - 1]
 
-        let part1 = instructions |> Array.fold CrateMover9000 layout |> topBox
+        let part1 = layout |> Array.copy
+        instructions |> Array.iter (CrateMover9000 part1) 
+        part1 |> topBox |> output 1
 
-        part1 |> System.String |> output 1
-
-        let CrateMover9001 (stacks: Map<int, List<char>>) (amt, src, dest) =
-            let mutable s = stacks
-
+        let CrateMover9001 (s: List<char>[]) (amt, src, dest) =
             let mutable pick = []
+
             for _ in 1..amt do
-                pick <- (List.head s[src])::pick
-                s <- s |> Map.add src (List.tail s[src]) 
+                let box = List.head s[src - 1]
+                pick <- box::pick
+                s[src - 1] <- List.tail s[src - 1]
+
             for p in pick do
-                s <- s |> Map.add dest (p::s[dest])
-            s 
+                s[dest - 1] <- p :: s[dest - 1]
 
-        let part2 = instructions |> Array.fold CrateMover9001 layout |> topBox
-
-        part2 |> System.String |> output 2
+        let part2 = layout |> Array.copy
+        instructions |> Array.iter (CrateMover9001 part2) 
+        part2 |> topBox |> output 2
