@@ -232,24 +232,51 @@ module Day232 =
 
     let generateMoves state =
         let size = bs.size state
-        let occupied = state >>> 5
+        let homes = state
+        let occupied = state >>> 9
         let pods = state >>> 32
+
+        let podsPerHome = if size = 15 then 2 else 4 
 
         seq {
             let mutable occupiedIndex = 0
             for i in 0..size do
-                if occupied &&& (1UL <<< i) <> 0UL then                    
-                    let pod = (pods >>> (occupiedIndex * 2)) &&& 3UL
+                let occupiedBit = 1UL <<< i
+                if occupied &&& occupiedBit <> 0UL then                    
+                    let pod = (pods >>> (occupiedIndex * 2)) &&& 3UL |> int
                     occupiedIndex <- occupiedIndex + 1
 
-                    let inHallway = occupiedIndex < ValidHallwaySize
+                    let inHallway = i < ValidHallwaySize
 
-                    if inHallway then                        
+                    if inHallway then
+                        // there is only one option
+
+                        // get bit mask for path to door way
+                        // if path to door way is clear
+                            // determine which is the next home space based on homes bits
+                            // get bit mask for path to home space
+                            // if path to home space is clear                         
+                                // OPTION
                         ignore
                     else
-                        ignore
+                        
+                        // if pod space >= home bits set then
+                            // no moves
+                        // else
+                            // get bit mask for path out of home
+                        let doorBit = 1UL <<< (7 + (pod * podsPerHome))
+                        let doorWayPathMask = ~~~(doorBit - 1UL) &&& ((occupiedBit <<< 1) - 1UL)
+                        printfn "for i=%i (%s) doorBit = %s and doorWayPathMask = %s" i (toBinary occupiedBit) (toBinary doorBit) (toBinary doorWayPathMask)
 
-                    
+                            // if path to door way is clear
+                                // there are multiple options
+
+                                // for each hallway space 
+                                    // get bit mask for path to hallway space
+                                    // if path to hallway space is clear
+                                        // OPTION
+                        
+                        ignore                    
                 yield state, 0
         }
 
@@ -263,6 +290,8 @@ module Day232 =
         
         printfn "%s" (toBinary state2)
         state2 |> bs.print
+
+        generateMoves state2 |> Seq.length |> ignore
 
         // let cost1, path1 = dijkstra generateMoves (fun _ -> 0) state ("...........AABBCCDD" |> bs.fromString)        
 
