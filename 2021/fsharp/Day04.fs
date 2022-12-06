@@ -61,20 +61,22 @@ module Day04 =
 
         let (calls, boards) = parse input
 
+        let results = bingo calls boards |> Seq.cache
+
+        let getOutput called winner =
+            let unpicked = unpickedSum called winner
+            let lastCall = called |> List.head
+
+            lastCall * unpicked |> string    
+
         // part 1
-        let (called, firstWinners) = bingo calls boards |> Seq.head
+        let (called, firstWinners) = results |> Seq.head
 
         let firstWinner = List.head firstWinners
-        let unpicked = unpickedSum called firstWinner
-        let lastCall = called |> List.head
-
-        lastCall * unpicked |> string |> output 1
+        getOutput called firstWinner |> output 1
 
         // part 2
-        let (called, lastWinners) = bingo calls boards |> Seq.last
+        let (called, lastWinners) = results |> Seq.last
 
         let lastWinner = List.last lastWinners
-        let unpicked = unpickedSum called lastWinner
-        let lastCall = called |> List.head
-
-        lastCall * unpicked |> string |> output 2
+        getOutput called lastWinner |> output 2
