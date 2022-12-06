@@ -4,6 +4,11 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="../input/01.txt" />
+    <EmbeddedResource Include="../input/02.txt" />
+    <EmbeddedResource Include="../input/03.txt" />
+    <EmbeddedResource Include="../input/04.txt" />
+    <EmbeddedResource Include="../input/05.txt" />
     <Compile Include="Day01.fs" />
     <Compile Include="Day02.fs" />
     <Compile Include="Day03.fs" />
@@ -12,6 +17,7 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
     <PackageReference Include="FParsec" Version="1.1.1" />
     <PackageReference Include="fsharpx.collections" Version="3.0.1" />
   </ItemGroup>

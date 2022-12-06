@@ -18,6 +18,21 @@ module NorthPole =
             expected : Map<int, string option>
         }
 
+    type Bench =
+        val public input : string[]
+
+        new (prefix) =
+            let a = Assembly.GetCallingAssembly()
+            let names = a.GetManifestResourceNames()
+            let input = [1..25] |> List.choose (fun dayIndex -> 
+                let path: string = sprintf "%s.%02i.txt" prefix dayIndex
+                if names |> Array.contains path then
+                    let s = a.GetManifestResourceStream(path)
+                    let r = new StreamReader (s)
+                    Some (r.ReadToEnd ())
+                else None) |> List.toArray
+            { input = input }
+
     let findDays (dayIndex: int option) (days: Day list) =
         days 
         |> List.choose (fun r -> 
@@ -81,6 +96,7 @@ module NorthPole =
     type Command = 
         | Run = 0
         | Test = 1
+        | Bench = 2
     
     let tryParseCommand (str:string) : Command option =
         match tryParse str with
@@ -117,12 +133,20 @@ module NorthPole =
 
         let mutable hideValue = false
 
-        let result = 
+        let results = 
             match commandArg with 
-            | Command.Run -> days |> executeRun dayIndexArg
+            | Command.Run -> days |> executeRun dayIndexArg |> Some
             | Command.Test -> 
                 hideValue <- true
-                days |> executeTest dayIndexArg repeatsArg
+                days |> executeTest dayIndexArg repeatsArg |> Some
+            | Command.Bench ->
+                // let types = 
+                //     Assembly.GetEntryAssembly().DefinedTypes
+                //     |> Seq.filter (fun t -> t.BaseType = typedefof<Bench>)
+                //     |> Seq.toArray
+
+                BenchmarkDotNet.Running.BenchmarkRunner.Run (Assembly.GetEntryAssembly()) |> ignore
+                None
             | x -> sprintf "Unreachable %A" x |> failwith
     
         let secondsPerIteration time =
@@ -147,8 +171,11 @@ module NorthPole =
                 | p, e -> 
                     printfn "%3d %4d %A" day p e
 
-        if hideValue then printfn "Day Part Time" else printfn "Day Part Time   Value"
+        match results with
+        | Some result ->
+            if hideValue then printfn "Day Part Time" else printfn "Day Part Time   Value"
 
-        result |> Seq.iter printResult  
+            result |> Seq.iter printResult  
 
-        if hideValue then printfn "         %6.5f" total else ()
+            if hideValue then printfn "         %6.5f" total else ()
+        | None -> ()

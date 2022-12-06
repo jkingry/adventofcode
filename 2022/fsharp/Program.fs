@@ -17,3 +17,21 @@ let days =
               expected = [ (1,e1); (2,e2) ] |> Map.ofList })
 
 runCommandLine days
+
+type public Y2022Bench () =
+    inherit Bench ("AdventOfCode.FSharp.Y2022")
+    
+    [<BenchmarkDotNet.Attributes.Benchmark>]
+    member this.day01() = Day01.run this.input[0]
+    
+    [<BenchmarkDotNet.Attributes.Benchmark>]
+    member this.day02() = Day02.run this.input[1]
+
+    [<BenchmarkDotNet.Attributes.Benchmark>]
+    member this.day03() = Day03.run this.input[2]
+
+    [<BenchmarkDotNet.Attributes.Benchmark>]
+    member this.day04() = Day04.run this.input[3]
+
+    [<BenchmarkDotNet.Attributes.Benchmark>]
+    member this.day05() = Day05.run this.input[4]
