@@ -1,7 +1,7 @@
 namespace AdventOfCode.FSharp.Y2021
 
 module Day232 =
-    //open Checked
+    open Checked
     open FSharpx.Collections
 
     let PodTypeCount = 4
@@ -40,11 +40,7 @@ module Day232 =
                 buf <- buf.Remove(i, 1)
             buf.ToString()
 
-    let bitcount (n : int) =
-        let count2 = n - ((n >>> 1) &&& 0x55555555)
-        let count4 = (count2 &&& 0x33333333) + ((count2 >>> 2) &&& 0x33333333)
-        let count8 = (count4 + (count4 >>> 4)) &&& 0x0f0f0f0f
-        (count8 * 0x01010101) >>> 24       
+    let bitcount (n: uint64) = System.Numerics.BitOperations.PopCount(n)
 
     module bs =
         // 0000000000111111111122222222223333333333444444444455555555556666
@@ -57,7 +53,7 @@ module Day232 =
 
         let getPod (position: int) (occupied: uint64) (pods: uint64) =
             let occupiedMask = occupied &&& ((1UL <<< position) - 1UL)
-            let podIndex = bitcount (occupiedMask |> int)
+            let podIndex = bitcount (occupiedMask)
             (pods >>> (podIndex * 2)) &&& 3UL, podIndex
 
         let calculateHomes (size: int) (occupied: uint64) (pods: uint64) = 
@@ -248,8 +244,7 @@ module Day232 =
 
                     let inHallway = occupiedIndex < ValidHallwaySize
 
-                    if inHallway then
-                        
+                    if inHallway then                        
                         ignore
                     else
                         ignore

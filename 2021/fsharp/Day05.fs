@@ -41,17 +41,17 @@ module Day05 =
         lines
         |> Array.fold (fun a line -> a + (points line grid)) 0
 
-    let part1 (input: string) =
+    let run (input: string) (output: int -> string -> unit) =
+
         let lines =
             input |> splitLine |> Array.map parseLine
 
+        // part 1
         lines
         |> Array.filter (fun ((x1, y1), (x2, y2)) -> x1 = x2 || y1 = y2)
         |> countPoints
-        |> string
+        |> string 
+        |> output 1
 
-    let part2 (input: string) =
-        let lines =
-            input |> splitLine |> Array.map parseLine
-
-        lines |> countPoints |> string
+        // part 2
+        lines |> countPoints |> string |> output 2
