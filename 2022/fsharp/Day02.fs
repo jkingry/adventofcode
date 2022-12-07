@@ -39,11 +39,9 @@ module Day02 =
         
         let part2 = strategyOutput |> Seq.map score |> Seq.sum 
 
-        part2 |> string |> output 2      
+        part2 |> string |> output 2     
 
         // did we win?
         let elfScore = strategyOutput |> Seq.map (fun (a,b) -> (b,a)) |> Seq.map score |> Seq.sum
-        if part2 > elfScore then
-            printfn "You win by %i points" (part2 - elfScore)
-        else
-            printfn "You lose by %i points" (elfScore - part2)
+        let part3 = part2 - elfScore
+        part3 |> string |> output 3
