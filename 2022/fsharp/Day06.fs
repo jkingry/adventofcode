@@ -1,17 +1,30 @@
 namespace AdventOfCode.FSharp.Y2022
 
-// Day 6: ????
+// Day 6: Tuning Trouble
 module Day06 =
-    open AdventOfCode.FSharp.Util
+    open System.Numerics
     open Checked
 
     let run (input: string) (output: int -> string -> unit) =    
-        let mutable mc = 0
+        let findUniqueWindowIndex windowSize (text: string) =
+            let window = Array.zeroCreate windowSize
 
-        for (i, cw) in (Seq.windowed 14 input) |> Seq.indexed do
-            let s = Set.ofSeq cw
-            if s.Count = 14 && mc = 0 then
-                mc <- i
+            seq { 0 .. (text.Length - 1) } 
+            |> Seq.pick (fun i ->
+                let c = text[i]
+                let cbit = (1UL <<< ((int c) - (int 'A')))
 
-        (mc + 14) |> string |> output 1
-        0 |> string |> output 2
+                let  windowPos = i % windowSize
+                
+                for offset in 0..(windowSize-1) do
+                    let wi = (windowPos + offset) % windowSize
+                    window[wi] <- window[wi] ||| cbit
+                
+                if BitOperations.PopCount(window[windowPos]) = windowSize then
+                    Some (i + 1)
+                else
+                    window[windowPos] <- 0UL
+                    None)
+
+        input |> findUniqueWindowIndex 4 |> string |> output 1
+        input |> findUniqueWindowIndex 14 |> string |> output 2
