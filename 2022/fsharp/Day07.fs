@@ -1,55 +1,48 @@
 namespace AdventOfCode.FSharp.Y2022
 
-// Day 7
+// Day 7: No Space Left On Device
 module Day07 =
     open AdventOfCode.FSharp.Util
-    open System.Numerics
     open Checked
 
     let run (input: string) (output: int -> string -> unit) =
-        let mutable pos = []
-        let mutable f = Set.empty
+        let mutable pathList = []
         let mutable d = Map.empty
-        for line in (input |> splitLine) do
-            let xline =  
-                if line.StartsWith("$ ") then
-                    line.Substring(2)
-                else 
-                    line
 
-            if xline = "ls" then
-                ignore
-            else
-                let a = xline.Split(' ')
-                match a[0] with 
-                | "cd" -> 
-                    if a[1] = ".." then
-                        let fff = List.tail pos
-                        pos <- fff
-                    else    
-                        let qqq = a[1]::pos
-                        pos <- qqq      
-                    ignore                              
-                | "dir" -> ignore
-                | _ ->
-                    let fsize = (int a[0])
-                    let fpath = System.String.Join ("/", a[1]::pos)
-                    if not (f |> Set.contains fpath) then
-                        for j in 1 ..(List.length pos) do
-                            let npos = pos |> List.rev |> List.take j 
-                            let dpath = System.String.Join ("/", npos)
-                            d <- d |>  Map.change dpath (fun v -> match v with | None -> Some fsize | Some q -> Some (q + fsize))
-                        f <- f |> Set.add fpath
-                        ignore
-                    else
-                        ignore
+        let noPrefixLines = 
+            input
+            |> splitLine
+            // who needs prefixes
+            |> Array.map (fun s -> s.TrimStart('$',' '))
+            // who needs ls
+            |> Array.filter (fun s -> s <> "ls")
 
-        printfn "%A" d
-        let smalld = d |> Map.values |> Seq.filter (fun v -> v <= 100000) |> Seq.sum
+        for line in noPrefixLines do
+            let args = line.Split(' ')
+            match args[0] with 
+            | "cd" -> 
+                if args[1] = ".." then
+                    pathList <- List.tail pathList
+                else    
+                    pathList <-  args[1]::pathList                                                        
+            | "dir" -> ()
+            | _ ->
+                let fsize = (int args[0])
+
+                // add filesize to every parent path
+                for pathLength in 1 ..(List.length pathList) do
+                    let parentPathList = pathList |> List.rev |> List.take pathLength
+                    let parentPath = System.String.Join ("/", parentPathList)
+                    d <- d |>  Map.change parentPath (fun v -> fsize + defaultArg v 0 |> Some)
+
+
+        let dirSizes = d |> Map.values |> Seq.toArray
+
+        let smallDirsTotal = dirSizes |> Seq.filter (fun v -> v <= 100000) |> Seq.sum
+        smallDirsTotal |> string |> output 1
                 
-        let tod = d |> Map.values |> Seq.filter (fun v -> v >= 6876531 ) |> Seq.sort |> Seq.head
-
-                
-        
-        smalld |> string |> output 1
-        tod |> string |> output 2
+        let totalSize = dirSizes |> Array.max
+        let allowedSize = 70000000 - 30000000
+        let needToDeleteSize =  totalSize- allowedSize 
+        let dirToDeleteSize = dirSizes |> Seq.filter (fun v -> v >= needToDeleteSize ) |> Seq.sort |> Seq.head       
+        dirToDeleteSize |> string |> output 2
