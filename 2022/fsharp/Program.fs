@@ -12,7 +12,7 @@ let days =
       05, Day05.run, E "PTWLTDSJV", E "WZMFVGGZP"
       06, Day06.run, E 1892, E 2313
       07, Day07.run, E 1513699, E 7991939
-      08, Day08.run, None, None
+      08, Day08.run, E 1669, E 331344
     ]
     |> List.map (fun (d, r, e1, e2) ->
             { day = d
