@@ -12,7 +12,7 @@ module Day07 =
             |> List.filter (fun p -> p.Length > 0)
             |> List.map (fun p -> "/" + System.String.Join ("/", p |> List.rev |> List.tail))
 
-        let foundFile pathList dirSizes fileSize =
+        let foundFile pathList fileSize dirSizes =
             pathList
             |> getAllParentPaths
             |> List.fold (fun dirSizes' dirPath -> 
@@ -25,27 +25,25 @@ module Day07 =
                 | "$ cd .." -> 
                     let newPathList = List.tail pathList
                     processInput (newPathList, dirSizes) nextLines
-                | "$ ls" -> handleList (pathList, dirSizes) nextLines
+                | "$ ls" -> 
+                    let (nextLines, dirSize) = handleList nextLines 0
+                    let dirSizes' = dirSizes |> foundFile pathList dirSize
+                    processInput (pathList, dirSizes') nextLines 
                 | _ ->
                     let dir = (line.Split(' ')[2])
                     let newPathList = dir::pathList
                     processInput (newPathList, dirSizes) nextLines
             | [] -> (pathList, dirSizes)
-        and handleList state inputLines = 
+        and handleList inputLines dirSize = 
             match inputLines with
             | line::nextLines ->
                 if line[0] = '$' then
-                    processInput state inputLines
+                    inputLines, dirSize
                 else
                     let parts = line.Split(' ')
-                    if parts[0] = "dir" then
-                        handleList state nextLines
-                    else
-                        let (pathList, dirSizes) = state
-                        let fsize = int parts[0]
-                        let newDirSizes = foundFile pathList dirSizes fsize
-                        handleList (pathList, newDirSizes) nextLines
-            | [] -> state
+                    let fsize = if parts[0] = "dir" then 0 else int parts[0]
+                    handleList nextLines (dirSize + fsize)
+            | [] -> inputLines, dirSize
 
         let (_, dirMap) = input |> splitLine |> Array.toList |> processInput ([], Map.empty) 
 
