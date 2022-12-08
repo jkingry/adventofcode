@@ -6,43 +6,60 @@ module Day07 =
     open Checked
 
     let run (input: string) (output: int -> string -> unit) =
-        let mutable pathList = []
-        let mutable d = Map.empty
+        let getAllParentPaths pathList =
+            (pathList, []) 
+            ||> List.scanBack (fun a b -> a::b ) 
+            |> List.filter (fun p -> p.Length > 0)
+            |> List.map (fun p -> "/" + System.String.Join ("/", p |> List.rev |> List.tail))
 
-        let noPrefixLines = 
-            input
-            |> splitLine
-            // who needs prefixes
-            |> Array.map (fun s -> s.TrimStart('$',' '))
-            // who needs ls
-            |> Array.filter (fun s -> s <> "ls")
+        let foundFile pathList dirSizes fileSize =
+            pathList
+            |> getAllParentPaths
+            |> List.fold (fun dirSizes' dirPath -> 
+                dirSizes' |> Map.change dirPath (fun v -> fileSize + defaultArg v 0 |> Some)) dirSizes
 
-        for line in noPrefixLines do
-            let args = line.Split(' ')
-            match args[0] with 
-            | "cd" -> 
-                if args[1] = ".." then
-                    pathList <- List.tail pathList
-                else    
-                    pathList <-  args[1]::pathList                                                        
-            | "dir" -> ()
-            | _ ->
-                let fsize = (int args[0])
+        let rec processInput (pathList, dirSizes) inputLines =
+            match inputLines with
+            | line::nextLines ->
+                match line with
+                | "$ cd .." -> 
+                    let newPathList = List.tail pathList
+                    processInput (newPathList, dirSizes) nextLines
+                | "$ ls" -> handleList (pathList, dirSizes) nextLines
+                | _ ->
+                    let dir = (line.Split(' ')[2])
+                    let newPathList = dir::pathList
+                    processInput (newPathList, dirSizes) nextLines
+            | [] -> (pathList, dirSizes)
+        and handleList state inputLines = 
+            match inputLines with
+            | line::nextLines ->
+                if line[0] = '$' then
+                    processInput state inputLines
+                else
+                    let parts = line.Split(' ')
+                    if parts[0] = "dir" then
+                        handleList state nextLines
+                    else
+                        let (pathList, dirSizes) = state
+                        let fsize = int parts[0]
+                        let newDirSizes = foundFile pathList dirSizes fsize
+                        handleList (pathList, newDirSizes) nextLines
+            | [] -> state
 
-                // add filesize to every parent path
-                for pathLength in 1 ..(List.length pathList) do
-                    let parentPathList = pathList |> List.rev |> List.take pathLength
-                    let parentPath = System.String.Join ("/", parentPathList)
-                    d <- d |>  Map.change parentPath (fun v -> fsize + defaultArg v 0 |> Some)
+        let (_, dirMap) = input |> splitLine |> Array.toList |> processInput ([], Map.empty) 
 
-
-        let dirSizes = d |> Map.values |> Seq.toArray
+        let dirSizes = dirMap |> Map.values |> Seq.toArray
 
         let smallDirsTotal = dirSizes |> Seq.filter (fun v -> v <= 100000) |> Seq.sum
         smallDirsTotal |> string |> output 1
-                
-        let totalSize = dirSizes |> Array.max
-        let allowedSize = 70000000 - 30000000
-        let needToDeleteSize =  totalSize- allowedSize 
+        
+        let diskSize   = 70_000_000
+        let neededFree = 30_000_000
+
+        let usedSize = dirSizes |> Array.max
+
+        let needToDeleteSize =  usedSize- (diskSize - neededFree) 
         let dirToDeleteSize = dirSizes |> Seq.filter (fun v -> v >= needToDeleteSize ) |> Seq.sort |> Seq.head       
+        
         dirToDeleteSize |> string |> output 2
