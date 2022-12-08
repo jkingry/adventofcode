@@ -15,14 +15,7 @@ module Day08 =
 
         let mutable visible = 0    
 
-        let traverse x y v =
-            if a[0 .. (x - 1), y] |> Array.forall (fun xx -> xx < v) 
-                || a[(x + 1) .. (mx - 1), y] |> Array.forall (fun xx -> xx < v) 
-                || a[x, 0 .. (y - 1)] |> Array.forall (fun xx -> xx < v) 
-                || a[x, (y + 1) .. (my - 1)] |> Array.forall (fun xx -> xx < v) then
-                visible <- visible + 1
-
-        a |> Array2D.iteri traverse
+        let mutable maxScore = 0
 
         let countUntil v l =
             let mutable r = 0
@@ -31,17 +24,26 @@ module Day08 =
                 if not stop then
                     r <- r + 1
                     if e >= v then stop <- true
-            r
-
-        let mutable maxScore = 0
+            r        
 
         let traverse x y v =
-            let top = a[0..(x-1), y] |> Array.rev |> countUntil v
-            let bot = a[(x+1)..(mx-1), y] |> countUntil v
-            let rgt = a[x, 0..(y-1)] |> Array.rev |> countUntil v            
-            let lft = a[x, (y+1)..(my-1)] |> countUntil v            
+            let top = a[0..(x-1), y] 
+            let bot = a[(x+1)..(mx-1), y] 
+            let rgt = a[x, 0..(y-1)]      
+            let lft = a[x, (y+1)..(my-1)] 
+
+            if top |> Array.forall (fun vv -> vv < v) 
+                || bot |> Array.forall (fun vv -> vv < v) 
+                || rgt |> Array.forall (fun vv -> vv < v) 
+                || lft |> Array.forall (fun vv -> vv < v) then
+                visible <- visible + 1
+
+            let tops = top |> Array.rev |> countUntil v
+            let bots = bot |> countUntil v
+            let rgts = rgt |> Array.rev |> countUntil v            
+            let lfts = lft |> countUntil v            
             
-            let score = top * bot * rgt * lft
+            let score = tops * bots * rgts * lfts
             if score > maxScore then maxScore <- score
 
         a |> Array2D.iteri traverse
