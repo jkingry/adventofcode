@@ -8,7 +8,7 @@ module Day07 =
     let run (input: string) (output: int -> string -> unit) =
         let getAllParentPaths pathList =
             (pathList, []) 
-            ||> List.scanBack (fun a b -> a::b ) 
+            ||> List.scanBack (fun a b -> a::b )
             |> List.filter (fun p -> p.Length > 0)
             |> List.map (fun p -> "/" + System.String.Join ("/", p |> List.rev |> List.tail))
 

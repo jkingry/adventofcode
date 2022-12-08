@@ -51,6 +51,8 @@ module Day232 =
 
         let size (state: uint64) = if (state &&& (1UL <<< 8)) = 0UL then 15 else 23
 
+        let podsPerHome (state: uint64) = if (state &&& (1UL <<< 8)) = 0UL then 2 else 4
+
         let getPod (position: int) (occupied: uint64) (pods: uint64) =
             let occupiedMask = occupied &&& ((1UL <<< position) - 1UL)
             let podIndex = bitcount (occupiedMask)
@@ -137,8 +139,6 @@ module Day232 =
             if toOccupied then failwithf "Pod at destination: %d" toPos
 
             let pod, fromIndex = getPod fromPos occupied pods
-
-            printfn "pod: %i" pod
             
             let newOccupied = occupied &&& ~~~fromBit ||| toBit
 
@@ -146,10 +146,8 @@ module Day232 =
 
             let newPods =
                 if fromIndex = toIndex then
-                    printfn "same pod location %i" fromIndex
                     pods
                 else 
-                    printfn "from: %i to: %i" fromIndex toIndex
                     let lower = 
                         if fromIndex > 0 then   
                             let lowerMask = (1UL <<< ((fromIndex - 1) * 2)) - 1UL
@@ -229,6 +227,15 @@ module Day232 =
         match found with
         | Some cost -> (cost, reconstructPath cameFrom goal)
         | _ -> failwith "INFINITY"
+    
+    let hall_moves = 
+        [|
+            //0 1.2.3.4.5 6
+            [|3;2;2;4;6;8;9|]
+            [|5;4;2;2;4;6;7|]
+            [|7;6;4;2;2;4;5|]
+            [|9;8;6;4;2;2;3|]
+        |]
 
     let generateMoves state =
         let size = bs.size state
@@ -240,15 +247,22 @@ module Day232 =
 
         seq {
             let mutable occupiedIndex = 0
-            for i in 0..size do
-                let occupiedBit = 1UL <<< i
+            let mutable checkedHome = 0
+            for roomIndex in 0..size do
+                let occupiedBit = 1UL <<< roomIndex
                 if occupied &&& occupiedBit <> 0UL then                    
                     let pod = (pods >>> (occupiedIndex * 2)) &&& 3UL |> int
                     occupiedIndex <- occupiedIndex + 1
 
-                    let inHallway = i < ValidHallwaySize
+                    let inHallway = roomIndex < ValidHallwaySize
 
                     if inHallway then
+                        let homeFilled = (homes >>> (pod * 2)) &&& 3UL |> int
+
+                        let targetDepth = podsPerHome - homeFilled - 1
+                        let targetRoom = 7 + (podsPerHome * targetDepth) + pod
+
+                        printfn "room=%i, pod=%i, homeFilled=%i, targetRoom=%i" roomIndex pod homeFilled targetRoom
                         // there is only one option
 
                         // get bit mask for path to door way
@@ -257,27 +271,34 @@ module Day232 =
                             // get bit mask for path to home space
                             // if path to home space is clear                         
                                 // OPTION
-                        ignore
+                        ()
                     else
-                        
-                        // if pod space >= home bits set then
-                            // no moves
-                        // else
-                            // get bit mask for path out of home
-                        let doorBit = 1UL <<< (7 + (pod * podsPerHome))
-                        let doorWayPathMask = ~~~(doorBit - 1UL) &&& ((occupiedBit <<< 1) - 1UL)
-                        printfn "for i=%i (%s) doorBit = %s and doorWayPathMask = %s" i (toBinary occupiedBit) (toBinary doorBit) (toBinary doorWayPathMask)
+                        let currentHome = (roomIndex - 7) % podsPerHome                        
 
-                            // if path to door way is clear
-                                // there are multiple options
+                        if (checkedHome &&& (1 <<< (currentHome + 1))) <> 0 then () else
 
-                                // for each hallway space 
-                                    // get bit mask for path to hallway space
-                                    // if path to hallway space is clear
-                                        // OPTION
+                        checkedHome <- checkedHome ||| (1 <<< (currentHome + 1))
                         
-                        ignore                    
-                yield state, 0
+                        let homeFilled = (homes >>> (pod * 2)) &&& 3UL |> int
+                        let homePosition = podsPerHome - ((roomIndex - 7) / podsPerHome)
+
+                        if pod = currentHome && homePosition <= (homeFilled + 1) then () else
+
+                        let mutable hallwayLft = currentHome + 1
+                        while hallwayLft >= 0 && (occupied &&& (1UL <<< hallwayLft)) = 0UL do
+                            let newState = bs.movePod state roomIndex hallwayLft
+                            let hall_moves = hall_moves[currentHome][hallwayLft]
+                            let home_moves = podsPerHome - homePosition
+                            yield (newState, PodCosts[pod] * (hall_moves + home_moves))                            
+                            hallwayLft <- hallwayLft - 1
+
+                        let mutable hallwayRgt = pod + 2
+                        while hallwayRgt < 7 && (occupied &&& (1UL <<< hallwayRgt)) = 0UL do
+                            let newState = bs.movePod state roomIndex hallwayRgt
+                            let hall_moves = hall_moves[currentHome][hallwayRgt]
+                            let home_moves = podsPerHome - homePosition
+                            yield (newState, PodCosts[pod] * (hall_moves + home_moves))                            
+                            hallwayRgt <- hallwayRgt + 1
         }
 
     let run (input: string) (output: int -> string -> unit) =
@@ -286,12 +307,9 @@ module Day232 =
         printfn "%s" (toBinary state)
         state |> bs.print
 
-        let state2 = bs.movePod state 22 6
-        
-        printfn "%s" (toBinary state2)
-        state2 |> bs.print
-
-        generateMoves state2 |> Seq.length |> ignore
+        for (s,c) in generateMoves state do
+            printfn "cost=%i" c
+            s |> bs.print
 
         // let cost1, path1 = dijkstra generateMoves (fun _ -> 0) state ("...........AABBCCDD" |> bs.fromString)        
 
