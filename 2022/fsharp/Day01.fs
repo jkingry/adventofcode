@@ -9,7 +9,7 @@ module Day01 =
         let elfs =
             input
             |> splitDoubleLine
-            |> Seq.map (fun s -> s |> splitLine |> Seq.map int |> Seq.sum)
+            |> Array.map (fun s -> s |> splitLine |> Seq.map int |> Seq.sum)
 
         elfs |> Seq.max |> string |> output 1
         
