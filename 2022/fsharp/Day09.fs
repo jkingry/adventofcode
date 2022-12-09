@@ -1,59 +1,67 @@
 namespace AdventOfCode.FSharp.Y2022
 
-// Day 9
+// Day 9: Rope Bridge
 module Day09 =
     open Checked
     open AdventOfCode.FSharp.Util
 
     let run (input: string) (output: int -> string -> unit) =
-        let mutable v = Set.empty
-        
-        let mutable hx = 0 
-        let mutable hy = 0 
-        let tx = Array.zeroCreate 9 
-        let ty = Array.zeroCreate 9
 
-        v <- v |> Set.add (0, 0)
-        let r = 
-            input 
-            |> splitLine 
-            |> Seq.iter (fun s -> 
-                let p = s.Split(' ')
-                let d = p[0][0]
-                let a = int p[1]
-                printfn "%s" s
-                for aa in 1..a do 
+        let createRope len = (Array.zeroCreate len), (Array.zeroCreate len)
 
-                    match d with 
-                    | 'U' -> 
-                        hy <- hy + 1
-                    | 'D' ->
-                        hy <- hy - 1
-                    | 'L' -> 
-                        hx <- hx - 1
-                    | 'R' -> 
-                        hx <- hx + 1
+        let follow (rx: int[], ry: int[]) (dir: char, amt: int) =
+            let ropeLength = Array.length rx
 
-                    let mutable px = hx
-                    let mutable py = hy 
-                    for i in 0..8 do
-                        
-                        let dx = px - tx[i]
-                        let dy = py - ty[i]
+            seq {
+                for _ in 1..amt do                
+                    match dir with 
+                    | 'U' -> ry[0] <- ry[0] + 1
+                    | 'D' -> ry[0] <- ry[0] - 1
+                    | 'L' -> rx[0] <- rx[0] - 1
+                    | 'R' -> rx[0] <- rx[0] + 1
+                    | c -> failwithf "Unexpected: %c" c
 
+                    let mutable moved = false
+                    for i in 1..(ropeLength - 1) do                    
+                        let dx = rx[i-1] - rx[i]
+                        let dy = ry[i-1] - ry[i]
+
+                        moved <- true
                         if dx = 0 && abs(dy) = 2 then
-                            ty[i] <- ty[i] + sign(dy)
+                            ry[i] <- ry[i] + sign(dy)
                         elif dy = 0 && abs(dx) = 2 then
-                            tx[i] <- tx[ i ] + sign(dx)
+                            rx[i] <- rx[i] + sign(dx)
                         elif (abs(dx) + abs(dy)) > 2 then
-                            tx[ i ] <- tx[ i ] + sign(dx)
-                            ty[i] <- ty[ i ] + sign(dy)
-                        else 
-                            ()
-                        px <- tx[i]
-                        py <- ty[i]
-                    v <- v |> Set.add (tx[8], ty[8])  
-            )
+                            rx[i] <- rx[i] + sign(dx)
+                            ry[i] <- ry[i] + sign(dy)
+                        else moved <- false
 
-        v |> Set.count |> string |> output 1
-        1 |> string |> output 2
+                    if moved then yield (Array.last rx),(Array.last ry)  
+            }
+
+        let instructions = 
+            input
+            |> splitLine
+            |> Array.map (fun s -> 
+                let p = s.Split(' ')
+                p[0][0], (int p[1]))
+
+        let trackMotionCount ropeLength = 
+            let rope = createRope ropeLength
+            let v = new System.Collections.Generic.HashSet<int*int>();
+            let o = instructions
+                    |> Seq.map (follow rope)
+                    |> Seq.concat
+            for p in o do v.Add(p) |> ignore
+            v.Count + 1
+            
+            // // Sad functional process that is ~3.2x slower:
+            // instructions
+            //     |> Seq.map (follow rope)
+            //     |> Seq.concat
+            //     |> Set.ofSeq
+            //     |> Set.add (0,0) // initial position
+            //     |> Set.count
+        
+        trackMotionCount 2 |> string |> output 1 
+        trackMotionCount 10 |> string |> output 2 
