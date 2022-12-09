@@ -92,7 +92,7 @@ module Day232 =
                 match value.Length with
                 | 15 -> 0UL
                 | 23 -> 1UL
-                | _ -> failwith "Invalid size"
+                | s -> failwithf "Invalid size: %i" s
 
             let mutable occupied = 0UL
             let mutable pods = 0UL
@@ -117,7 +117,7 @@ module Day232 =
 
             seq {
                 let mutable occupiedIndex = 0
-                for roomIndex = 0 to size do
+                for roomIndex = 0 to (size-1) do
                     let occupied = (state &&& (1UL <<< (8 + 1 + roomIndex))) <> 0UL
                     if occupied then                
                         let pod = (state >>> (32 + (occupiedIndex * 2))) &&& 3UL
@@ -188,8 +188,8 @@ module Day232 =
 
             homes ||| (sizeBit <<< 8) ||| (newOccupied <<< 9) ||| (newPods <<< 32)                                 
 
-    let reconstructPath cameFrom current =
-        let mutable path = [ current ]
+    let reconstructPath cameFrom current gScore =
+        let mutable path = [ current, (Map.find current gScore) ]
 
         let mutable finished = false
         let mutable pos = current
@@ -197,7 +197,7 @@ module Day232 =
         while not finished do
             match cameFrom |> Map.tryFind pos with
             | Some nextPos ->
-                path <- nextPos :: path
+                path <- (nextPos, (Map.find nextPos gScore))  :: path
                 pos <- nextPos
             | _ -> finished <- true
 
@@ -220,6 +220,7 @@ module Day232 =
                 q <- nq
 
                 for (move, moveCost) in moves current do
+                    () // move |> bs.print
                     let tentative_gScore = gScore[current] + moveCost
 
                     if tentative_gScore < (gScore |> Map.tryFind move |> Option.defaultValue System.Int32.MaxValue) then
@@ -228,7 +229,7 @@ module Day232 =
                         q <- q |> Heap.insert (tentative_gScore + (h move), move)
 
         match found with
-        | Some cost -> (cost, reconstructPath cameFrom goal)
+        | Some cost -> (cost, reconstructPath cameFrom goal gScore)
         | _ -> failwith "INFINITY"
     
     let hall_moves = 
@@ -251,6 +252,7 @@ module Day232 =
         seq {
             let mutable occupiedIndex = 0
             let mutable checkedHome = 0
+
             for roomIndex in 0..size do
                 let occupiedBit = 1UL <<< roomIndex
                 if occupied &&& occupiedBit <> 0UL then                    
@@ -263,60 +265,62 @@ module Day232 =
                         let homeFilled = (homes >>> (pod * 2)) &&& 3UL |> int
 
                         let targetDepth = podsPerHome - homeFilled - 1
-                        let targetRoom = 7 + (podsPerHome * targetDepth) + pod
+                        let targetRoom = 7 + (PodTypeCount * targetDepth) + pod
 
-                        let leftDoorIndex = pod + 1
-                        let rightDoorIndex = pod + 2
-                        if roomIndex <= leftDoorIndex then
-                            let mask = (1UL <<< (leftDoorIndex + 1)) - 1UL
-                            let mask = mask &&& ~~~((1UL <<< (roomIndex+1)) - 1UL)
-                            // 11 1 1 1
-                            //   0 1 2 3 
-                            if (mask &&& occupied) = 0UL then
-                                // we can move to room
-                                printfn "From Left: CAN MOVE TO HOME room=%i, pod=%i, homeFilled=%i, targetRoom=%i" roomIndex pod homeFilled targetRoom
-                                ()
-                            else
-                                printfn "From Left: NO MOVE TO HOME room=%i, pod=%i, homeFilled=%i, targetRoom=%i" roomIndex pod homeFilled targetRoom
-                                ()
-                        else
-                            printfn "From Right: ??? room=%i, pod=%i, homeFilled=%i, targetRoom=%i" roomIndex pod homeFilled targetRoom
-                            ()
+                        // printfn "Room=%i, Pod=%i, homeFilled=%i targetDepth=%i targetRoom=%i" roomIndex pod homeFilled targetDepth targetRoom
 
-                        // there is only one option
+                        let mutable checkHomeBlocked = targetRoom
+                        while checkHomeBlocked >= 7 && occupied &&& (1UL <<< checkHomeBlocked) = 0UL do
+                            checkHomeBlocked <- checkHomeBlocked - PodTypeCount
 
-                        // get bit mask for path to door way
-                        // if path to door way is clear
-                            // determine which is the next home space based on homes bits
-                            // get bit mask for path to home space
-                            // if path to home space is clear                         
-                                // OPTION
-                        ()
+                        if checkHomeBlocked < 7 then
+                            let leftDoorIndex = pod + 1
+                            let rightDoorIndex = pod + 2
+
+                            let hallwayMask = 
+                                if roomIndex <= leftDoorIndex then
+                                    let mask = (1UL <<< (leftDoorIndex + 1)) - 1UL
+                                    mask &&& ~~~((1UL <<< (roomIndex+1)) - 1UL)
+                                else
+                                    let mask = (1UL <<< roomIndex ) - 1UL
+                                    mask &&& ~~~((1UL <<< rightDoorIndex) - 1UL)
+                            if (hallwayMask &&& occupied) = 0UL then
+                                let newState = bs.movePod state roomIndex targetRoom
+                                let hall_moves = hall_moves[pod][roomIndex]
+                                let home_moves = targetDepth
+                                yield (newState, PodCosts[pod] * (hall_moves + home_moves))   
                     else
-                        let currentHome = (roomIndex - 7) % podsPerHome                        
+                        let currentHome = (roomIndex - 7) % PodTypeCount                        
 
-                        if (checkedHome &&& (1 <<< (currentHome + 1))) <> 0 then () else
+                        // printfn "Room=%i, Pod=%i, checkedHome=%i, currentHome=%i" roomIndex pod checkedHome currentHome
+                        if (checkedHome &&& (1 <<< (currentHome + 1))) <> 0 then 
+                            () // printfn "Already checked??"
+                        else
 
-                        checkedHome <- checkedHome ||| (1 <<< (currentHome + 1))
+                        checkedHome <- checkedHome ||| (1 <<< (currentHome+1))
                         
                         let homeFilled = (homes >>> (pod * 2)) &&& 3UL |> int
-                        let homePosition = podsPerHome - ((roomIndex - 7) / podsPerHome)
+                        let homeDepth = podsPerHome - ((roomIndex - 7) / PodTypeCount)
 
-                        if pod = currentHome && homePosition <= (homeFilled + 1) then () else
+                        if pod = currentHome && ((homeDepth <= homeFilled) || (homeFilled + 1 = podsPerHome)) then
+                            () // printfn "All good? homeDepth=%i, homeFilled=%i" homeDepth homeFilled
+                        else
+
+                        // printfn "homeDepth=%i, homeFilled=%i" homeDepth homeFilled
 
                         let mutable hallwayLft = currentHome + 1
                         while hallwayLft >= 0 && (occupied &&& (1UL <<< hallwayLft)) = 0UL do
                             let newState = bs.movePod state roomIndex hallwayLft
                             let hall_moves = hall_moves[currentHome][hallwayLft]
-                            let home_moves = podsPerHome - homePosition
+                            let home_moves = podsPerHome - homeDepth
                             yield (newState, PodCosts[pod] * (hall_moves + home_moves))                            
                             hallwayLft <- hallwayLft - 1
 
-                        let mutable hallwayRgt = pod + 2
+                        let mutable hallwayRgt = currentHome + 2
                         while hallwayRgt < 7 && (occupied &&& (1UL <<< hallwayRgt)) = 0UL do
                             let newState = bs.movePod state roomIndex hallwayRgt
                             let hall_moves = hall_moves[currentHome][hallwayRgt]
-                            let home_moves = podsPerHome - homePosition
+                            let home_moves = podsPerHome - homeDepth
                             yield (newState, PodCosts[pod] * (hall_moves + home_moves))                            
                             hallwayRgt <- hallwayRgt + 1
         }
@@ -324,14 +328,12 @@ module Day232 =
     let run (input: string) (output: int -> string -> unit) =
         let state = input |> btext.parse |> bs.fromString
         
-        printfn "%s" (toBinary state)
-        state |> bs.print
+        let goal1 = ".......ABCDABCD" |> bs.fromString
+        let cost1, _ = dijkstra generateMoves (fun _ -> 0) state goal1
+        cost1 |> string |> output 1
 
-        for (s,c) in generateMoves state do
-            printfn "cost=%i" c
-            printfn "%s" (toBinary s)
-            s |> bs.print
+        let state2 = (state |> bs.toString).Insert(11, "DCBADBAC") |> bs.fromString
 
-        // let cost1, path1 = dijkstra generateMoves (fun _ -> 0) state ("...........AABBCCDD" |> bs.fromString)        
-
-        1 |> string |> output 1
+        let goal2 = ".......ABCDABCDABCDABCD" |> bs.fromString
+        let cost2, _ = dijkstra generateMoves (fun _ -> 0) state2 goal2
+        cost2 |> string |> output 2        
