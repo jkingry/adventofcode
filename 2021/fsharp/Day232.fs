@@ -41,13 +41,19 @@ module Day232 =
             buf.ToString()
 
     let bitcount (n: uint64) = System.Numerics.BitOperations.PopCount(n)
-
+    
+    let toBinary (input: uint64) =
+        System.Convert.ToString(input |> int64, 2).ToCharArray()
+        // |> Array.rev
+        |> System.String 
+    
     module bs =
         // 0000000000111111111122222222223333333333444444444455555555556666
         // 0123456789012345678901234567890123456789012345678901234567890123
         // | HOME |S|  IS OCCUPIED BIT    ||        POD TYPE BITS         |
         // |      | |      |   |   |   |  ||       
-        // 0000000010000000100011111111111111001001110010011111011
+        // 1100001011000010000011101110111111  0100110100100100011011
+        // 1100001011010010000010101110111111110000  0100100100011011
 
         let size (state: uint64) = if (state &&& (1UL <<< 8)) = 0UL then 15 else 23
 
@@ -150,7 +156,7 @@ module Day232 =
                 else 
                     let lower = 
                         if fromIndex > 0 then   
-                            let lowerMask = (1UL <<< ((fromIndex - 1) * 2)) - 1UL
+                            let lowerMask = (1UL <<< (fromIndex * 2)) - 1UL
                             pods &&& lowerMask
                         else 0UL
 
@@ -160,7 +166,7 @@ module Day232 =
                             pods &&& ~~~upperMask            
                         else 0UL
                     let upperShifted = upper >>> 2
-                   
+
                     let newPods = lower ||| upperShifted
 
                     let lower =
@@ -170,7 +176,7 @@ module Day232 =
                         else 0UL
                     let upper =
                         if toIndex < 15 then
-                            let upperMask = (1UL <<< ((toIndex + 1) * 2)) - 1UL
+                            let upperMask = (1UL <<< (toIndex * 2)) - 1UL
                             newPods &&& ~~~upperMask
                         else 0UL            
                     let upperShifted = upper <<< 2
@@ -180,10 +186,7 @@ module Day232 =
             let homes = calculateHomes size newOccupied newPods
             let sizeBit = if size = 15 then 0UL else 1UL
 
-            homes ||| (sizeBit <<< 8) ||| (newOccupied <<< 9) ||| (newPods <<< 32)                             
-
-    let toBinary (input: uint64) =
-        System.Convert.ToString(input |> int64, 2).ToCharArray() |> Array.rev |> System.String     
+            homes ||| (sizeBit <<< 8) ||| (newOccupied <<< 9) ||| (newPods <<< 32)                                 
 
     let reconstructPath cameFrom current =
         let mutable path = [ current ]
@@ -262,7 +265,24 @@ module Day232 =
                         let targetDepth = podsPerHome - homeFilled - 1
                         let targetRoom = 7 + (podsPerHome * targetDepth) + pod
 
-                        printfn "room=%i, pod=%i, homeFilled=%i, targetRoom=%i" roomIndex pod homeFilled targetRoom
+                        let leftDoorIndex = pod + 1
+                        let rightDoorIndex = pod + 2
+                        if roomIndex <= leftDoorIndex then
+                            let mask = (1UL <<< (leftDoorIndex + 1)) - 1UL
+                            let mask = mask &&& ~~~((1UL <<< (roomIndex+1)) - 1UL)
+                            // 11 1 1 1
+                            //   0 1 2 3 
+                            if (mask &&& occupied) = 0UL then
+                                // we can move to room
+                                printfn "From Left: CAN MOVE TO HOME room=%i, pod=%i, homeFilled=%i, targetRoom=%i" roomIndex pod homeFilled targetRoom
+                                ()
+                            else
+                                printfn "From Left: NO MOVE TO HOME room=%i, pod=%i, homeFilled=%i, targetRoom=%i" roomIndex pod homeFilled targetRoom
+                                ()
+                        else
+                            printfn "From Right: ??? room=%i, pod=%i, homeFilled=%i, targetRoom=%i" roomIndex pod homeFilled targetRoom
+                            ()
+
                         // there is only one option
 
                         // get bit mask for path to door way
@@ -309,6 +329,7 @@ module Day232 =
 
         for (s,c) in generateMoves state do
             printfn "cost=%i" c
+            printfn "%s" (toBinary s)
             s |> bs.print
 
         // let cost1, path1 = dijkstra generateMoves (fun _ -> 0) state ("...........AABBCCDD" |> bs.fromString)        
