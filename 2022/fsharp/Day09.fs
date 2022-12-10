@@ -48,12 +48,12 @@ module Day09 =
 
         let trackMotionCount ropeLength = 
             let rope = createRope ropeLength
-            let v = new System.Collections.Generic.HashSet<int*int>();
+            let v = new System.Collections.Generic.HashSet<int*int>([(0,0)]);
             let o = instructions
                     |> Seq.map (follow rope)
                     |> Seq.concat
             for p in o do v.Add(p) |> ignore
-            v.Count + 1
+            v.Count
             
             // // Sad functional process that is ~3.2x slower:
             // instructions
