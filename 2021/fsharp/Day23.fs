@@ -16,13 +16,13 @@ module Day23 =
 
     let HallwayLength = 11
     let ValidHallwaySize = HallwayLength - PodTypeCount
-    let ValidHallwayIndexes = [|1;1;0;1;0;1;0;1;0;1;1|]
-    let DoorIndexes = [|8;6;4;2|]
-
+    
     let LetterToPod =  Map [('A',Amber); ('B',Bronze);('C',Copper);('D',Desert);('.',Empty)]
     let PodToLetter = LetterToPod |> Map.toList |> List.map (fun (a,b) -> (b,a)) |> Map.ofList
 
     module btext =
+        let DoorIndexes = [|8;6;4;2|]
+
         let print (t: string) =
             printf "#############\n#%c%s%c#\n" t[0] (t[1..5] |> Seq.map string |> String.concat ".") t[6] 
             for roomIndex in ValidHallwaySize .. 4 .. t.Length - 2 do
@@ -42,18 +42,31 @@ module Day23 =
 
     let bitcount (n: uint64) = System.Numerics.BitOperations.PopCount(n)
     
-    let toBinary (input: uint64) =
-        System.Convert.ToString(input |> int64, 2).ToCharArray()
-        // |> Array.rev
-        |> System.String 
+    let toBinary (input: uint64) = System.Convert.ToString(input |> int64, 2)
     
     module bs =
         // 0000000000111111111122222222223333333333444444444455555555556666
         // 0123456789012345678901234567890123456789012345678901234567890123
         // | HOME |S|  IS OCCUPIED BIT    ||        POD TYPE BITS         |
-        // |      | |      |   |   |   |  ||       
-        // 1100001011000010000011101110111111  0100110100100100011011
-        // 1100001011010010000010101110111111110000  0100100100011011
+
+        // Home     - 8 bits 
+        //   - 2 bits per type storing how many pods are in correct place (0,1,2,3)
+        // Size     - 1 bit 
+        //   - small = 0, large = 1, saves passing in size as a seperate parameter
+        // Occupied - 15 or 23 bits
+        //   - stores if a pod is in a _valid_ space in the burrow
+        //   - hallway spaces are first, left to right
+        //   - doors aren't valid spaces, so they are skipped
+        //   - then borrows, one row/layer at time, left to right
+        //   - offset map
+        //   #############
+        //   #01.2.3.4.56#
+        //   ###7#8#9#..etc..
+        // Pods - 16 or 32 bits
+        //    - always starting at offset 32
+        //    - 2 bits per pod, indicating pod type
+        //    - in the order the pods are in the occupied mask
+        //    - 00 = Amber, 11 = Desert
 
         let size (state: uint64) = if (state &&& (1UL <<< 8)) = 0UL then 15 else 23
 
@@ -252,69 +265,72 @@ module Day23 =
 
             for roomIndex in 0..size do
                 let occupiedBit = 1UL <<< roomIndex
-                if occupied &&& occupiedBit <> 0UL then                    
-                    let pod = (pods >>> (occupiedIndex * 2)) &&& 3UL |> int
-                    occupiedIndex <- occupiedIndex + 1
+                
+                if occupied &&& occupiedBit = 0UL then () else 
 
-                    let inHallway = roomIndex < ValidHallwaySize
+                let pod = (pods >>> (occupiedIndex * 2)) &&& 3UL |> int
+                occupiedIndex <- occupiedIndex + 1
 
-                    if inHallway then
-                        let homeFilled = (homes >>> (pod * 2)) &&& 3UL |> int
+                let inHallway = roomIndex < ValidHallwaySize
 
-                        let targetDepth = podsPerHome - homeFilled - 1
-                        let targetRoom = 7 + (PodTypeCount * targetDepth) + pod
+                if inHallway then
+                    let homeFilled = (homes >>> (pod * 2)) &&& 3UL |> int
 
-                        let mutable checkHomeBlocked = targetRoom
-                        while checkHomeBlocked >= 7 && occupied &&& (1UL <<< checkHomeBlocked) = 0UL do
-                            checkHomeBlocked <- checkHomeBlocked - PodTypeCount
+                    let targetDepth = podsPerHome - homeFilled - 1
+                    let targetRoom = 7 + (PodTypeCount * targetDepth) + pod
 
-                        if checkHomeBlocked < 7 then
-                            let leftDoorIndex = pod + 1
-                            let rightDoorIndex = pod + 2
+                    let mutable checkHomeBlocked = targetRoom
+                    while checkHomeBlocked >= 7 && occupied &&& (1UL <<< checkHomeBlocked) = 0UL do
+                        checkHomeBlocked <- checkHomeBlocked - PodTypeCount
 
-                            let hallwayMask = 
-                                if roomIndex <= leftDoorIndex then
-                                    let mask = (1UL <<< (leftDoorIndex + 1)) - 1UL
-                                    mask &&& ~~~((1UL <<< (roomIndex+1)) - 1UL)
-                                else
-                                    let mask = (1UL <<< roomIndex ) - 1UL
-                                    mask &&& ~~~((1UL <<< rightDoorIndex) - 1UL)
-                            if (hallwayMask &&& occupied) = 0UL then
-                                let newState = bs.movePod state roomIndex targetRoom
-                                let hall_moves = hall_moves[pod][roomIndex]
-                                let home_moves = targetDepth
-                                yield (newState, PodCosts[pod] * (hall_moves + home_moves))   
+                    if checkHomeBlocked < 7 then
+                        let leftDoorIndex = pod + 1
+                        let rightDoorIndex = pod + 2
+
+                        let hallwayMask = 
+                            if roomIndex <= leftDoorIndex then
+                                let mask = (1UL <<< (leftDoorIndex + 1)) - 1UL
+                                mask &&& ~~~((1UL <<< (roomIndex+1)) - 1UL)
+                            else
+                                let mask = (1UL <<< roomIndex ) - 1UL
+                                mask &&& ~~~((1UL <<< rightDoorIndex) - 1UL)
+                                
+                        if (hallwayMask &&& occupied) = 0UL then
+                            let newState = bs.movePod state roomIndex targetRoom
+                            let hall_moves = hall_moves[pod][roomIndex]
+                            let home_moves = targetDepth
+                            yield (newState, PodCosts[pod] * (hall_moves + home_moves))   
+                else
+                    let currentHome = (roomIndex - 7) % PodTypeCount                        
+
+                    if (checkedHome &&& (1 <<< (currentHome + 1))) <> 0 then 
+                        () // printfn "Already checked??"
                     else
-                        let currentHome = (roomIndex - 7) % PodTypeCount                        
 
-                        if (checkedHome &&& (1 <<< (currentHome + 1))) <> 0 then 
-                            () // printfn "Already checked??"
-                        else
+                    checkedHome <- checkedHome ||| (1 <<< (currentHome+1))
+                    
+                    let homeFilled = (homes >>> (pod * 2)) &&& 3UL |> int
+                    let homeDepth = podsPerHome - ((roomIndex - 7) / PodTypeCount)
 
-                        checkedHome <- checkedHome ||| (1 <<< (currentHome+1))
-                        
-                        let homeFilled = (homes >>> (pod * 2)) &&& 3UL |> int
-                        let homeDepth = podsPerHome - ((roomIndex - 7) / PodTypeCount)
+                    if pod = currentHome && ((homeDepth <= homeFilled) || (homeFilled + 1 = podsPerHome)) then 
+                        () // printfn "All good? homeDepth=%i, homeFilled=%i" homeDepth homeFilled
+                    else
 
-                        if pod = currentHome && ((homeDepth <= homeFilled) || (homeFilled + 1 = podsPerHome)) then
-                            () // printfn "All good? homeDepth=%i, homeFilled=%i" homeDepth homeFilled
-                        else
+                    let mutable hallwayLft = currentHome + 1
+                    while hallwayLft >= 0 && (occupied &&& (1UL <<< hallwayLft)) = 0UL do
+                        let newState = bs.movePod state roomIndex hallwayLft
+                        let hall_moves = hall_moves[currentHome][hallwayLft]
+                        let home_moves = podsPerHome - homeDepth
+                        yield (newState, PodCosts[pod] * (hall_moves + home_moves))                            
+                        hallwayLft <- hallwayLft - 1
 
-                        let mutable hallwayLft = currentHome + 1
-                        while hallwayLft >= 0 && (occupied &&& (1UL <<< hallwayLft)) = 0UL do
-                            let newState = bs.movePod state roomIndex hallwayLft
-                            let hall_moves = hall_moves[currentHome][hallwayLft]
-                            let home_moves = podsPerHome - homeDepth
-                            yield (newState, PodCosts[pod] * (hall_moves + home_moves))                            
-                            hallwayLft <- hallwayLft - 1
-
-                        let mutable hallwayRgt = currentHome + 2
-                        while hallwayRgt < 7 && (occupied &&& (1UL <<< hallwayRgt)) = 0UL do
-                            let newState = bs.movePod state roomIndex hallwayRgt
-                            let hall_moves = hall_moves[currentHome][hallwayRgt]
-                            let home_moves = podsPerHome - homeDepth
-                            yield (newState, PodCosts[pod] * (hall_moves + home_moves))                            
-                            hallwayRgt <- hallwayRgt + 1
+                    let mutable hallwayRgt = currentHome + 2
+                    while hallwayRgt < 7 && (occupied &&& (1UL <<< hallwayRgt)) = 0UL do
+                        let newState = bs.movePod state roomIndex hallwayRgt
+                        let hall_moves = hall_moves[currentHome][hallwayRgt]
+                        let home_moves = podsPerHome - homeDepth
+                        yield (newState, PodCosts[pod] * (hall_moves + home_moves))                            
+                        hallwayRgt <- hallwayRgt + 1
         }
 
     let run (input: string) (output: int -> string -> unit) =
