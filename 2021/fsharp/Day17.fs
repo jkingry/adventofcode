@@ -4,7 +4,9 @@ namespace AdventOfCode.FSharp.Y2021
 module Day17 =
     open AdventOfCode.FSharp.Util
     
-    let run (input: string) (output: int -> string -> unit) =
+    let run data (output: int -> string -> unit) =
+        let input = data |> text
+        
         let (x1,x2,y1,y2) =
             match input with
             | Regex "target area: x=(\d+)\.\.(\d+), y=(-?\d+)\.\.(-?\d+)" [a;b;c;d]

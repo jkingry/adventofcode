@@ -46,7 +46,9 @@ module Day21 =
             cache.Value <- Map.add gameState (currentWins, otherWins) cache.Value 
             currentWins, otherWins
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run input (output: int -> string -> unit) =
+        let input = input |> text
+
         let positions = 
             input 
             |> splitLine

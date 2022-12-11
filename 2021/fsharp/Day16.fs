@@ -133,7 +133,8 @@ module Day16 =
         | 7L, Op packets -> let p = packets |> List.map calc in if p[0] = p[1] then 1L else 0L 
         | _ -> raise Unreachable
 
-    let run text output =
+    let run data output =
+        let text = data |> text
         let stream = BitStream.parse text
 
         let p = parsePacket stream

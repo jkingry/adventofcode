@@ -3,6 +3,7 @@ namespace AdventOfCode.FSharp.Y2021
 module Day23 =
     open Checked
     open FSharpx.Collections
+    open AdventOfCode.FSharp.Util
 
     let PodTypeCount = 4
 
@@ -333,7 +334,9 @@ module Day23 =
                         hallwayRgt <- hallwayRgt + 1
         }
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run input (output: int -> string -> unit) =
+        let input = input |> text
+
         let state = input |> btext.parse |> bs.fromString
         
         let goal1 = ".......ABCDABCD" |> bs.fromString

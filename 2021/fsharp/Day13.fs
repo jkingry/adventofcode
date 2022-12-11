@@ -44,7 +44,8 @@ module Day13 =
         | ("y", n) -> foldy n dots
         | _ -> failwith "unreachable"
 
-    let run text output =
+    let run input output =
+        let text = input |> text
         let (dots, folds) = parse text
 
         let firstFold = folds |> Array.head

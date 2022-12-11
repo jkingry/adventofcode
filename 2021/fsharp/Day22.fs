@@ -65,7 +65,9 @@ module Day22 =
             |> List.filter (fun x -> getOverlap region x.cube |> Option.isSome)
             |> runInstructions 0
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run input (output: int -> string -> unit) =
+        let input = input |> text
+        
         let instructions = parseInstructions input
 
         instructions |> runPart1Instructions |> string |> output 1

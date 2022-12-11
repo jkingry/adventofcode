@@ -93,7 +93,9 @@ module Day20 =
     let bitCount (image: BitArray[]) = 
         image[0]
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run input (output: int -> string -> unit) =
+        let input = input |> text
+
         let sections = input |> splitDoubleLine
 
         let algo = sections[0] |> parseBits
