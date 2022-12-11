@@ -11,9 +11,9 @@ module Day03 =
         |> Array.rev
         |> System.String     
 
-    let run (input: string) (output: int -> string -> unit) =    
+    let run input (output: int -> string -> unit) =    
         // Part 1  
-
+        let input = input |> text
         let countDigits (counts: Map<int, int>) (line: string)  =
             line
             |> Seq.indexed

@@ -50,7 +50,8 @@ module Day14 =
             |> Seq.fold (fun (mv, lv) v -> (max v mv), (min v lv)) (System.Int64.MinValue, System.Int64.MaxValue)
         most - least
 
-    let run (text: string) output =
+    let run data output =
+        let text = data |> text
         let (rules, polymerString) = parse text
         let reactor = react rules
 

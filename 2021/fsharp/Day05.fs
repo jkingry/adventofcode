@@ -41,8 +41,8 @@ module Day05 =
         lines
         |> Array.fold (fun a line -> a + (points line grid)) 0
 
-    let run (input: string) (output: int -> string -> unit) =
-
+    let run input (output: int -> string -> unit) =
+        let input = input |> text
         let lines =
             input |> splitLine |> Array.map parseLine
 

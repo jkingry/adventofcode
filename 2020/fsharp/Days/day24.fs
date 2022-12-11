@@ -40,7 +40,8 @@ module Day24 =
             (Array2D.copy g),o
 
 
-    let run input output =
+    let run data output =
+        let input = data |> text
         let parseTile line =
             let (q,r,_) = 
                 line |> Seq.fold (fun (q, r, s) c -> 
@@ -77,14 +78,14 @@ module Day24 =
         
         c |> string |> output 1
 
-        let step ((g,o),c) =
-            let g' Array2D.copy g 
-            g |> Array2D.iteri (fun x y v -> 
-                (g',c') <- 
-                    match v with
-                    | 2 -> flip x y g'
-                    | 9 | 10 -> ()
-                    | v when (v &&& DARK_BIT) = DARK_BIT -> flip x y g'
-                    | _ -> ())
+        // let step ((g,o),c) =
+        //     let g' Array2D.copy g 
+        //     g |> Array2D.iteri (fun x y v -> 
+        //         (g',c') <- 
+        //             match v with
+        //             | 2 -> flip x y g'
+        //             | 9 | 10 -> ()
+        //             | v when (v &&& DARK_BIT) = DARK_BIT -> flip x y g'
+        //             | _ -> ())
 
 
