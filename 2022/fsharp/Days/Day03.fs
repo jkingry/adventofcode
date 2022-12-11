@@ -4,7 +4,7 @@ namespace AdventOfCode.FSharp.Y2022
 module Day03 =
     open AdventOfCode.FSharp.Util
 
-    let run (input: string) (output: int -> string -> unit) =    
+    let run (input: byte array) (output: int -> string -> unit) =    
         let toMask (s: char[]) =
             s |> Array.fold (fun a c -> a ||| (1UL <<< ((int c) - (int 'A')))) 0UL
 
@@ -20,7 +20,7 @@ module Day03 =
             (int c) -
                 if System.Char.IsLower(c) then (int 'a') - 1 else (int 'A') - 27
 
-        let lines = input |> splitLine
+        let lines = input |> text |> splitLine
 
         // split each line in half
         let part1 = lines |> Array.map (fun s ->

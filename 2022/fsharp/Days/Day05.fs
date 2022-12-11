@@ -5,7 +5,7 @@ module Day05 =
     open AdventOfCode.FSharp.Util
     open Checked
 
-    let run (input: string) (output: int -> string -> unit) =    
+    let run (input: byte array) (output: int -> string -> unit) =    
         let parseLayout layout : List<char>[] =
             let lines = layout |> splitLine
             let stackCount = lines |> Array.last |> ints |> Array.max
@@ -27,7 +27,7 @@ module Day05 =
                 | _ -> None)
                     
         let (layout, instructions) = 
-            match input |> splitDoubleLine with
+            match input |> text |> splitDoubleLine with
             | [| a; b |] -> (parseLayout a, parseInstructions b)
             | _ -> failwith "bad format"
 

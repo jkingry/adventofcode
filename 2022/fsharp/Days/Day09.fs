@@ -5,7 +5,7 @@ module Day09 =
     open Checked
     open AdventOfCode.FSharp.Util
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run (input: byte array) (output: int -> string -> unit) =
 
         let createRope len = (Array.zeroCreate len), (Array.zeroCreate len)
 
@@ -41,6 +41,7 @@ module Day09 =
 
         let instructions = 
             input
+            |> text
             |> splitLine
             |> Array.map (fun s -> 
                 let p = s.Split(' ')

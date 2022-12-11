@@ -2,6 +2,7 @@ namespace AdventOfCode.FSharp.Y2022
 
 // Day 8: Treetop Tree House
 module Day08 =
+    open AdventOfCode.FSharp.Util
     open Checked
 
     type RightEntry = {
@@ -18,7 +19,7 @@ module Day08 =
 
     let emptyBottom = { bot = -1; score = 1; }
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run (input: byte array) (output: int -> string -> unit) =
         let zero = int '0'
 
         let fromleft = Array.create 10 0
@@ -32,8 +33,8 @@ module Day08 =
 
         let mutable maxScore = 0
 
-        for c in input do 
-            if c = '\n' then
+        for c in (input |> text) do 
+            if c = '\n' then            
                 col <- 0 
                 row <- row + 1
 

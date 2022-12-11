@@ -26,6 +26,9 @@ module Util =
         let inline decr (key : 'T) (counter : Map<'T, int64>) : Map<'T, int64> =
             add key -1 counter
 
+    let text (data: byte array) : string = 
+        Text.Encoding.ASCII.GetString(data)
+
     let rec comb n l = 
         match n, l with
         | 0, _ -> [[]]

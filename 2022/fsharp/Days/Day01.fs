@@ -5,9 +5,10 @@ module Day01 =
     open Checked
     open AdventOfCode.FSharp.Util
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run (input: byte array) (output: int -> string -> unit) =
         let elfs =
             input
+            |> text
             |> splitDoubleLine
             |> Array.map (fun s -> s |> splitLine |> Seq.map int |> Seq.sum)
 

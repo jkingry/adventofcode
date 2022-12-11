@@ -7,6 +7,7 @@ module Day02 =
     let run input (output: int -> string -> unit) =        
         let values = 
             input 
+            |> text
             |> splitLine
             |> Seq.map(fun s -> 
                 let them = (int s[0]) - (int 'A')
