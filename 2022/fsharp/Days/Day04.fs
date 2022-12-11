@@ -5,9 +5,10 @@ module Day04 =
     open AdventOfCode.FSharp.Util
     open Checked
 
-    let run (input: string) (output: int -> string -> unit) =    
+    let run (input: byte array) (output: int -> string -> unit) =    
         let (part1, part2) = 
             input
+            |> text 
             |> splitLine
             |> Array.fold(fun (p1, p2) line ->                 
                 let v = line.Split([|',';'-'|]) |> Array.map int

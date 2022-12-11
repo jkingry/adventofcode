@@ -2,10 +2,11 @@ namespace AdventOfCode.FSharp.Y2022
 
 // Day 6: Tuning Trouble
 module Day06 =
+    open AdventOfCode.FSharp.Util
     open System.Numerics
     open Checked
 
-    let run (input: string) (output: int -> string -> unit) =    
+    let run (input: byte array) (output: int -> string -> unit) =    
         let findUniqueWindowIndex windowSize (text: string) =
             let window = Array.zeroCreate windowSize
 
@@ -26,5 +27,5 @@ module Day06 =
                     window[windowPos] <- 0UL
                     None)
 
-        input |> findUniqueWindowIndex 4 |> string |> output 1
-        input |> findUniqueWindowIndex 14 |> string |> output 2
+        input |> text |> findUniqueWindowIndex 4 |> string |> output 1
+        input |> text |> findUniqueWindowIndex 14 |> string |> output 2

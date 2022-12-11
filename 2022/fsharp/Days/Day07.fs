@@ -5,7 +5,7 @@ module Day07 =
     open AdventOfCode.FSharp.Util
     open Checked
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run (input: byte array) (output: int -> string -> unit) =
         let getAllParentPaths pathList =
             (pathList, []) 
             ||> List.scanBack (fun a b -> a::b )
@@ -45,7 +45,7 @@ module Day07 =
                     handleList nextLines (dirSize + fsize)
             | [] -> inputLines, dirSize
 
-        let (_, dirMap) = input |> splitLine |> Array.toList |> processInput ([], Map.empty) 
+        let (_, dirMap) = input |> text |> splitLine |> Array.toList |> processInput ([], Map.empty) 
 
         let dirSizes = dirMap |> Map.values |> Seq.toArray
 
