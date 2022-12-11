@@ -27,6 +27,7 @@ module Day01 =
         |> string
         
     let run input (output: int -> string -> unit) =
+        let input = input |> text
         let numbers =
             input
             |> splitLine

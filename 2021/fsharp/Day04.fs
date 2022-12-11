@@ -57,8 +57,8 @@ module Day04 =
 
         sum
 
-    let run (input: string) (output: int -> string -> unit) = 
-
+    let run input (output: int -> string -> unit) = 
+        let input = input |> text
         let (calls, boards) = parse input
 
         let results = bingo calls boards |> Seq.cache

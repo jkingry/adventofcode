@@ -4,17 +4,20 @@ open AdventOfCode.FSharp.Y2021
 let inline E v = v |> string |> Some
 
 let inline old (part1: string -> string) (part2: string -> string) =
-  fun text output ->
-    part1 text |> output 1
-    part2 text |> output 2
+  [
+    fun data output ->
+      let text = AdventOfCode.FSharp.Util.text data
+      part1 text |> output 1
+      part2 text |> output 2
+  ]
 
 let days =
     [ 
-      01, Day01.run, E 1676, E 1706
-      02, Day02.run, E 2036120, E 2015547716
-      03, Day03.run, E 738234, E 3969126
-      04, Day04.run, E 89001, E 7296
-      05, Day05.run, E 4993, E 21101
+      01, [ Day01.run ], E 1676, E 1706
+      02, [ Day02.run ], E 2036120, E 2015547716
+      03, [ Day03.run ], E 738234, E 3969126
+      04, [ Day04.run ], E 89001, E 7296
+      05, [ Day05.run ], E 4993, E 21101
       06, old Day06.part1 Day06.part2, E 363101, Some "1644286074024"
       07, old Day07.part1 Day07.part2, E 344605, E 93699985
       08, old Day08.part1 Day08.part2, E 245, E 983026
@@ -41,9 +44,9 @@ let days =
       22, Day22.run, E 602574, Some "1288707160324706"
       23, Day23.run, E 16059, E 43117
     ]
-    |> List.map (fun (d, r, e1, e2) ->
-            { day = d
-              run = r
-              expected = [ (1,e1); (2,e2) ] |> Map.ofList })
+    |> List.map (fun (d, r, _, _) ->
+            { year = 2021
+              day = d
+              runs = r })
 
 runCommandLine days

@@ -14,6 +14,7 @@ module Day02 =
         depth * h
 
     let run input output =
+        let input = input |> text
         let executeCommand1 p (direction, x) =
             match direction with
             | "down" -> { p with depth = p.depth + x }

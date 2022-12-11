@@ -15,7 +15,8 @@ let days =
       10, [ Day10.run ]
     ]
     |> List.map (fun (d, r ) ->
-            { day = d
+            { year = 2022
+              day = d
               runs = r })
 
 runCommandLine days

@@ -17,6 +17,7 @@ module NorthPole =
     type RunDayThunk = byte array -> (int -> string -> unit) -> unit
 
     type Day = { 
+        year: int
         day: int 
         runs: RunDayThunk list 
     }
@@ -32,8 +33,6 @@ module NorthPole =
         let NullOut = new StreamWriter (Stream.Null)
 
         let RequestLimit = TimeSpan.FromSeconds 30
-
-        let mutable Year = DateTime.Today.Year
 
         let getInputPath (day: int) (inputType: InputType) =
             let baseFilename = sprintf "%02i.txt" day
@@ -81,14 +80,14 @@ module NorthPole =
                 (File.Create aocTrackerPath).Close () 
             File.SetLastWriteTimeUtc (aocTrackerPath, DateTime.UtcNow)
 
-        let getReleaseTime day =
-            new DateTime(Year, 12, day, 5, 0, 0, DateTimeKind.Utc)
+        let getReleaseTime year day =
+            new DateTime(year, 12, day, 5, 0, 0, DateTimeKind.Utc)
 
         let getSessionValue () =
             File.ReadAllText ".adventofcode.session"
 
-        let downloadInput day inputPath =
-            let releaseDate = getReleaseTime day
+        let downloadInput year day inputPath =
+            let releaseDate = getReleaseTime year day
             if releaseDate > DateTime.UtcNow then
                 printf "%A is in the future, no input file yet" releaseDate             
                 None 
@@ -102,7 +101,7 @@ module NorthPole =
                 client.DefaultRequestHeaders.Add("User-Agent", "github.com/0.1 jkingry/adventofcode by joe-at-kingry.ca")
                 client.DefaultRequestHeaders.Add("Cookie", sprintf "session=%s" session)
 
-                let inputUrl = sprintf "https://adventofcode.com/%i/day/%i/input" Year day |> Uri
+                let inputUrl = sprintf "https://adventofcode.com/%i/day/%i/input" year day |> Uri
                 printfn "Downloading %O" inputUrl
                 let task = client.GetByteArrayAsync inputUrl
                 let data = task.Result
@@ -110,12 +109,12 @@ module NorthPole =
                 File.WriteAllBytes (inputPath, data)
                 Some data 
 
-        let getInput (day: int) (inputType: InputType)  =
+        let getInput (year: int) (day: int) (inputType: InputType)  =
             let path = getInputPath day inputType
 
             match readFile path with
             | Some data -> Some data
-            | None when inputType = InputType.Default -> downloadInput day path
+            | None when inputType = InputType.Default -> downloadInput year day path
             | None -> None 
 
         let getExpected (day: int) (inputType: InputType) (part: int)=
@@ -123,7 +122,7 @@ module NorthPole =
             readFile path |> Option.map text
 
         let runDay (d: Day) (inputType: InputType) (repeat: int) (silentOutput: bool) =
-            let input = getInput d.day inputType |> Option.get
+            let input = getInput d.year d.day inputType |> Option.get
             let expected = 
                 [|
                     getExpected d.day inputType 1
