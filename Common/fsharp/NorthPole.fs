@@ -84,7 +84,17 @@ module NorthPole =
             new DateTime(year, 12, day, 5, 0, 0, DateTimeKind.Utc)
 
         let getSessionValue () =
-            File.ReadAllText ".adventofcode.session"
+            let mutable dir = Directory.GetCurrentDirectory ()
+            let mutable sessionValue = None
+
+            while dir <> null && sessionValue = None do
+                let sessionPath = Path.Combine (dir, ".adventofcode.session")
+                if File.Exists sessionPath then
+                    sessionValue <- Some (File.ReadAllText sessionPath)
+                else
+                    dir <- Path.GetDirectoryName dir
+
+            sessionValue.Value
 
         let downloadInput year day inputPath =
             let releaseDate = getReleaseTime year day
@@ -136,7 +146,8 @@ module NorthPole =
                     | Some a, Some e when e <> a -> sprintf "Expected: '%s' Actual: '%s'" e a |> Error |> Some
                     | None, Some e -> sprintf "Expected: '%s', Actual: BLANK" e |> Error |> Some
                     | None, _ -> None
-                    | Some a, _ -> Ok a |> Some)
+                    | Some a, None -> sprintf "Unknown: %s" a |> Ok |> Some
+                    | Some a, _ -> a |> Ok |> Some)
 
             let originalOut = Console.Out
 
@@ -193,15 +204,22 @@ module NorthPole =
                 | Some dayIndex -> days |> List.find (fun d -> d.day = dayIndex)
                 | None -> days |> List.last
 
-            printfn "Day Time   Part Value"        
+            printfn "%3s %8s %4s %s" "Day" "Time" "Part" "Value"        
             
             let repeats = 1
-            let silentOutput = false        
+            let silentOutput = false
+
+            let resToStr (res: Result<string, string> option) =
+                match res with
+                | None -> "BLANK"
+                | Some (Error s) -> sprintf "Error: %s" s
+                | Some (Ok s) -> s
+
             for r in runDay day inputType repeats silentOutput do
-                printfn "%3d %6.3f %4d %A [%d]" r.day r.elapsedMs 1 r.results[0].Value r.index
+                printfn "%3d %8.3f %4d %s [%d]" r.day r.elapsedMs 1 (resToStr r.results[0]) r.index
                 for (p, pr) in r.results |> Array.indexed |> Array.tail do
                     match pr with
-                    | Some v -> printfn "%3d %6s %4d %A" r.day "" (p+1) v 
+                    | Some v -> printfn "%3d %8s %4d %s" r.day "" (p+1) (resToStr pr) 
                     | None -> ()
 
         let executeTest (dayIndexArg: int option) (repeats: int option) (days: Day list) =

@@ -53,7 +53,9 @@ module Day15 =
         | Some cost -> cost
         | _ -> failwith "INFINITY"
 
-    let run (text: string) output =
+    let run data output =
+        let text = data |> text
+ 
         let grid =
             text
             |> splitLine

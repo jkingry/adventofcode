@@ -106,7 +106,9 @@ module Day19 =
         |> List.map list2tuple2 
         |> List.tryPick (fun (d1,d2) -> tryFindTransform d1 d2)
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run input (output: int -> string -> unit) =
+        let input = input |> text
+
         let mutable scans = 
             input
             |> splitDoubleLine

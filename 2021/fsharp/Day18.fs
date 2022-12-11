@@ -90,7 +90,9 @@ module Day18 =
         | FNumber a -> sprintf "%d" a
         | FPair (a,b) -> sprintf "[%s,%s]" (toString a) (toString b)
 
-    let run (input: string) (output: int -> string -> unit) =
+    let run data (output: int -> string -> unit) =
+        let input = data |> text
+
         let fvalue, fvalueRef = createParserForwardedToRef<SnailFish, unit>()
         let pnumber = pint32 |>> FNumber
         let rec ppair = between (pstring "[") (pstring "]") (tuple2 (fvalue .>> (pstring ",")) fvalue |>> FPair) 
