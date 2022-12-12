@@ -60,7 +60,7 @@ module Day11 =
         let turn short i (monkeys : Monkey array) =
             let monkey = monkeys[i]
             // printfn "Monkey %i:" i
-            for item in monkey.items do           
+            for item in monkey.items |> List.rev do           
                 monkey.inspections <- monkey.inspections + 1 
                 // printfn "  Monkey inspects an items with a worry level of %i." item
                 let newWorry = monkey.operation item
@@ -71,7 +71,7 @@ module Day11 =
                 let dest = if testRes then monkey.destTrue else monkey.destFalse
                 // printfn "    Current worry level is %sdivisible by %i." (if testRes then "" else "not ") monkey.test
                 // printfn "    Item with worry level %i is thrown to monkey %i." newWorry dest
-                monkeys[dest].items <- List.append monkeys[dest].items [newWorry]
+                monkeys[dest].items <- newWorry::monkeys[dest].items
             monkey.items <- []
         
         let round short (monkeys : Monkey array) = 
