@@ -56,7 +56,6 @@ module Day02 =
         let charA = byte 'A'
         let charX = byte 'X'
 
-        let newLine = byte '\n'
         let mutable lastLinePosition = 0
 
         for i in 0 .. s.Length - 1 do

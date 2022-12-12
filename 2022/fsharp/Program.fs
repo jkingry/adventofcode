@@ -12,7 +12,7 @@ let days =
       07, [ Day07.run ]
       08, [ Day08.run ]
       09, [ Day09.run; Day09.runFast ]
-      10, [ Day10.run ]
+      10, [ Day10.run; Day10.runFast ]
       11, [ Day11.run ]
     ]
     |> List.map (fun (d, r ) ->
