@@ -234,9 +234,16 @@ module NorthPole =
             let repeats = repeats |> Option.defaultValue 1
             let mutable totalMs = 0.0
             for day in days do
+                let mutable fastestMs = Double.PositiveInfinity 
                 for r in runDay day InputType.Default repeats silentOutput do
-                    printfn "%3d %8.3f [%d]" r.day (r.elapsedMs / (float repeats)) r.index
-                    totalMs <- totalMs + r.elapsedMs
+                    if r.index > 0 then
+                        let multi =  fastestMs / r.elapsedMs
+                        printfn "%3d %8.3f [%d] x%.2f" r.day (r.elapsedMs / (float repeats)) r.index multi
+                    else
+                        printfn "%3d %8.3f [%d]" r.day (r.elapsedMs / (float repeats)) r.index
+                    fastestMs <- min fastestMs r.elapsedMs
+                    
+                totalMs <- totalMs + fastestMs
             
             printfn "%3s %8.3f" "" (totalMs / (float repeats))
 
