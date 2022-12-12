@@ -6,18 +6,23 @@ module Day12 =
     open FSharpx.Collections
     open AdventOfCode.FSharp.Util 
 
-    let dijkstra moves start goalFunc =
-        let mutable gScore = Map [ (start, 0) ]
+    let dijkstraInit starts =        
+        let gScore = starts |> Seq.fold (fun m n -> m |> Map.add n 0) Map.empty
+        let q = starts |> Seq.fold (fun q n -> q |> Heap.insert (0, n)) (Heap.empty false)
 
-        let mutable q = Heap.empty false |> Heap.insert (0, start)
+        gScore, q
+
+    let dijkstraRun (gScore, q) moves goalFunc =        
+        let mutable q = q
+        let mutable gScore = gScore
 
         let mutable found = None
 
         while Option.isNone found && not (Heap.isEmpty q) do
             let ((_, current), nq) = Heap.uncons q
 
-            if goalFunc current gScore[current] then
-                found <- Some gScore[current]
+            if goalFunc current then
+                found <- gScore |> Map.find current |> Some 
             else
                 q <- nq
 
@@ -27,7 +32,7 @@ module Day12 =
                     if tentative_gScore < (gScore |> Map.tryFind move |> Option.defaultValue System.Int32.MaxValue) then
                         gScore <- gScore |> Map.add move tentative_gScore
                         q <- q |> Heap.insert (tentative_gScore, move)
-        found
+        gScore, q
 
     let run (input: byte array) (output: int -> string -> unit) =
         let lines = input |> text |> splitLine 
@@ -61,16 +66,15 @@ module Day12 =
                 if y < (my - 1) && allowFunc (x,y) (x, y + 1) then yield ((x,y + 1), 1)
             }
   
-        let mutable minCost = None
-        let findStart (x,y) cost =
-            if a[x,y] = 0uy && Option.isNone minCost then
-                minCost <- Some cost
-            start = (x,y)
+        let mutable firstA = None
+        let g = dijkstraInit [goal]
 
-        let startCost = dijkstra (moves canMoveDown) goal findStart
-
-        startCost |> Option.get |> string |> output 1
-        minCost |> Option.get |> string |> output 2    
+        let (costs, _) = dijkstraRun g (moves canMoveDown) (fun (nx, ny) -> 
+            if firstA.IsNone && a[nx, ny] = 0uy then firstA <- Some (nx, ny)
+            (nx, ny) = start)
+        
+        costs[start] |> string |> output 1
+        costs[firstA.Value] |> string |> output 2
 
     let moves2D mx my allowFunc cx cy (mxBuf: int array) (myBuf: int array) (mcBuf: int array) =
         let mutable c = 0
@@ -96,11 +100,17 @@ module Day12 =
             c <- c + 1
         c
 
-    let dijkstra2D mx my moveFunc (sx, sy) goalFunc =
+    let dijkstra2Dinit mx my starts =
         let gScore = Array2D.create mx my System.Int32.MaxValue
-        gScore[sx, sy] <- 0
+        let mutable q = Heap.empty false 
+        for (x,y) in starts do
+            gScore[x, y] <- 0
+            q <- q |> Heap.insert (0, (x, y))
+        gScore, q
 
-        let mutable q = Heap.empty false |> Heap.insert (0, (sx, sy))
+    let dijkstra2Drun (gScore, q) moveFunc goalFunc =
+        let mutable gScore = gScore
+        let mutable q = q
 
         let mutable found = None
 
@@ -111,8 +121,8 @@ module Day12 =
         while Option.isNone found && not (Heap.isEmpty q) do
             let ((_, (cx, cy)), nq) = Heap.uncons q
 
-            if goalFunc (cx, cy) (gScore[cx, cy]) then
-                found <- Some gScore[cx, cy]
+            if goalFunc (cx, cy) then
+                found <- Some (Array2D.get gScore cx cy)
             else
                 q <- nq
 
@@ -127,7 +137,7 @@ module Day12 =
                     if tentative_gScore < gScore[mx, my] then
                         gScore[mx, my] <- tentative_gScore
                         q <- q |> Heap.insert (tentative_gScore, (mx, my))
-        found
+        gScore, q
     
     let runFast (input: byte array) (output: int -> string -> unit) =
         let lines = input |> text |> splitLine 
@@ -153,13 +163,17 @@ module Day12 =
 
         let canMoveDown fx fy tx ty = canMoveUp tx ty fx fy
   
-        let mutable minCost = None
-        let findStart (x,y) cost =
-            if a[x,y] = 0uy && Option.isNone minCost then
-                minCost <- Some cost
+        let mutable firstA = None
+        let findStart (x,y) =
+            if firstA.IsNone && a[x,y] = 0uy then
+                firstA <- Some (x, y)
             start = (x,y)
 
-        let startCost = dijkstra2D mx my (moves2D mx my canMoveDown) goal findStart
+        let g = dijkstra2Dinit mx my [goal]
+        let (costs, _) = dijkstra2Drun g (moves2D mx my canMoveDown) findStart
 
-        startCost |> Option.get |> string |> output 1
-        minCost |> Option.get |> string |> output 2    
+        let sx,sy = start
+        costs[sx, sy] |> string |> output 1
+
+        let fx,fy = firstA.Value
+        costs[fx, fy] |> string |> output 2    
