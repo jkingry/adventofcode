@@ -1,8 +1,7 @@
 namespace AdventOfCode.FSharp.Y2022
 
-// Day 11
+// Day 11: Monkey in the Middle
 module Day11 =
-    // open Checked
     open AdventOfCode.FSharp.Util
 
     type Monkey = {
