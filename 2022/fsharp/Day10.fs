@@ -5,41 +5,49 @@ module Day10 =
     open Checked
     open AdventOfCode.FSharp.Util
 
+    type Op =
+    | AddX of int
+    | Noop
+
     let run (input: byte array) (output: int -> string -> unit) =
-        let lines =
-            input
-            |> text
-            |> splitLine
-
-        let mutable cc = 0
-        let mutable x = 1
-        let mutable t = 0
-        let g = [20;60;100;140;180;220]
-        let mutable cr = -1
-        let mutable tt = "\n"
-        for line in lines do
+        let parse (line: string) = 
             let p = line.Split(' ')
-            let op = p[0]
+            match p[0] with
+            | "addx" -> AddX (int p[1])
+            | _ -> Noop
 
-            let amt = if p.Length > 1 then int p[1] else 0
-            let c = if op = "addx" then 2 else 1
+        let instrs = input |> text |> splitLine |> Array.map parse
 
-            for _ = 1 to c do
-                cc <- cc + 1
-                cr <- cr + 1
-                if cr % 40 = 0 then
-                    cr <- 0
-                    tt <- tt + "\n"
-                if List.contains cc g then
-                    printfn "%i x %i = %i" cc x (cc * x)
-                    t <- t + (cc* x)
-                if (x - 1) <= cr && cr <= (x + 1) then
-                    tt <- tt + "#"
+        let cyclesOfInterest = Set [20;60;100;140;180;220]
+
+        let mutable cycle = 0
+        let mutable x = 1
+        
+        let mutable crtOutput = ""
+        let mutable signalStrengthTotal = 0
+
+        for op in instrs do
+            let (cycleLen, amt) = 
+                match op with
+                | AddX amt -> (2, amt)
+                | _ -> (1, 0) 
+
+            for _ = 1 to cycleLen do
+                let position = cycle % 40
+
+                if position = 0 then crtOutput <- crtOutput + "\n"
+
+                if (x - 1) <= position && position <= (x + 1) then
+                    crtOutput <- crtOutput + "#"
                 else
-                    tt <- tt + "."
+                    crtOutput <- crtOutput + "."
 
-            printfn "c = %i, x = %i" cr x
+                cycle <- cycle + 1
+
+                if cyclesOfInterest |> Set.contains cycle then
+                    signalStrengthTotal <- signalStrengthTotal + (cycle * x)
+
             x <- x + amt
         
-        t |> string |> output 1 
-        tt |> string |> output 2 
+        signalStrengthTotal |> string |> output 1 
+        crtOutput |> output 2 
