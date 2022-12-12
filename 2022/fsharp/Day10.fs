@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2022
 
-// Day 10
+// Day 10: Cathode-Ray Tube
 module Day10 =
     open Checked
     open AdventOfCode.FSharp.Util
