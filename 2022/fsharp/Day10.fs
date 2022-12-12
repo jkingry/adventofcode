@@ -52,30 +52,12 @@ module Day10 =
         signalStrengthTotal |> string |> output 1 
         crtOutput |> output 2 
 
-      
-    
     let runFast (input: byte array) (output: int -> string -> unit) =
-        let zero = byte '0' 
-        let dash = byte '-'
-        let newline = byte '\n'
-        
-        let inline parseInt (s: byte array) (pos: int) =
-            let mutable n = 0
-            let mutable neg = 1
-            let mutable i = pos
-            let mutable f = true
-            while f && i < (s.Length - 1) do
-                let c = s[i]
-                if c = newline then f <- false
-                elif c = dash then neg <- -1
-                else n <- n * 10 + int (c - zero)
-                i <- i + 1  
-            (i, n * neg)
-
         let charA = byte 'a'
+        let newline = byte '\n'
 
         let parse (s: byte array) (pos: int) =
-            let (nextPos, amt) = if s[pos] = charA then parseInt s (pos+5) else (pos+5, 0)
+            let (nextPos, amt) = if s[pos] = charA then parseIntToDelim s (pos+5) newline else (pos+5, 0)
 
             let cycleLen = if amt = 0 then 1 else 2
 

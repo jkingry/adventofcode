@@ -29,7 +29,11 @@ module NorthPole =
         elapsedMs: float
     }
 
-    module Impl =
+    type private BlackBox =
+        [<System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
+        static member public GetValue a = a
+
+    module private Impl =
         let NullOut = new StreamWriter (Stream.Null)
 
         let RequestLimit = TimeSpan.FromSeconds 30
@@ -167,7 +171,7 @@ module NorthPole =
                     w.Start ()
 
                     for _ = 1 to repeat do
-                        thunk input output
+                        thunk (BlackBox.GetValue input) output
 
                     w.Stop ()
                 finally
@@ -233,6 +237,10 @@ module NorthPole =
             let silentOutput = true
             let repeats = repeats |> Option.defaultValue 1
             let mutable totalMs = 0.0
+            
+            let mutable dayTimes = Map.empty
+
+            printfn "By day:"
             for day in days do
                 let mutable fastestMs = Double.PositiveInfinity 
                 for r in runDay day InputType.Default repeats silentOutput do
@@ -242,10 +250,14 @@ module NorthPole =
                     else
                         printfn "%3d %8.3f [%d]" r.day (r.elapsedMs / (float repeats)) r.index
                     fastestMs <- min fastestMs r.elapsedMs
-                    
+                dayTimes <- dayTimes |> Map.add day.day fastestMs                    
                 totalMs <- totalMs + fastestMs
             
-            printfn "%3s %8.3f" "" (totalMs / (float repeats))
+            printfn "%3s %8.3f" "Total" (totalMs / (float repeats))
+
+            printfn "By (fastest) time:"
+            for (day, time) in dayTimes |> Map.toList |> List.sortBy snd do
+                printfn "%3d %8.3f" day (time / (float repeats))  
 
     open Impl
     
