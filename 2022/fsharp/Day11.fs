@@ -12,6 +12,7 @@ module Day11 =
         test : int
         destTrue : int
         destFalse : int }
+
     let run (input: byte array) (output: int -> string -> unit) =
         let monkeys =
             input
@@ -38,7 +39,7 @@ module Day11 =
                     else
                         failwithf "Unexpected op: %s" optext[1]
 
-                let test = line[3].Split(' ') |> Array.last |> int |> int
+                let test = line[3].Split(' ') |> Array.last |> int 
                 let destTrue = line[4].Split(' ') |> Array.last |> int 
                 let destFalse = line[5].Split(' ') |> Array.last |> int 
                 { 
@@ -77,7 +78,7 @@ module Day11 =
             for i=0 to (monkeys.Length - 1) do
                 turn short i monkeys
                         
-        let shortMonkeys = monkeys |> Array.map (fun m -> { m with items = m.items |> List.toArray |> Array.toList })
+        let shortMonkeys = monkeys |> Array.map (fun m -> { m with items = m.items |> List.ofSeq })
         for _ = 1 to 20 do
             round true shortMonkeys
 
