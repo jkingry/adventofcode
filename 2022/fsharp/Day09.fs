@@ -5,17 +5,17 @@ module Day09 =
     open Checked
     open AdventOfCode.FSharp.Util
 
-    let follow (rx: int[], ry: int[]) (dir: char, amt: int) =
+    let follow (rx: int[], ry: int[]) (dir: byte, amt: int) =
         let ropeLength = Array.length rx
 
         seq {
             for _ in 1..amt do                
                 match dir with 
-                | 'U' -> ry[0] <- ry[0] + 1
-                | 'D' -> ry[0] <- ry[0] - 1
-                | 'L' -> rx[0] <- rx[0] - 1
-                | 'R' -> rx[0] <- rx[0] + 1
-                | c -> failwithf "Unexpected: %c" c
+                | 85uy -> ry[0] <- ry[0] + 1
+                | 68uy -> ry[0] <- ry[0] - 1
+                | 76uy -> rx[0] <- rx[0] - 1
+                | 82uy -> rx[0] <- rx[0] + 1
+                | c -> failwithf "Unexpected: %c" (char c)
 
                 let mutable moved = false
                 for i in 1..(ropeLength - 1) do                    
@@ -62,10 +62,20 @@ module Day09 =
         |> splitLine
         |> Array.map (fun s -> 
             let p = s.Split(' ')
-            p[0][0], (int p[1]))    
+            (byte (p[0][0])), (int p[1]))    
+
+    let parseInstructionsFast (input: byte array) =
+        let newline = byte '\n'
+        seq {
+            let mutable i = 0
+            while i < (input.Length - 1) do
+                let (ni, amt) = parseIntToDelim input (i + 2) newline
+                yield (input[i], amt)
+                i <- ni
+        }
 
     let runFast (input: byte array) (output: int -> string -> unit) =
-        let instructions = input |> parseInstructions
+        let instructions = input |> parseInstructionsFast
 
         instructions |> trackMotionCountHashSet 2 |> string |> output 1 
         instructions |> trackMotionCountHashSet 10 |> string |> output 2 
