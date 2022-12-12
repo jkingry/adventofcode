@@ -13,6 +13,7 @@ let days =
       08, [ Day08.run ]
       09, [ Day09.run; Day09.runFast ]
       10, [ Day10.run ]
+      11, [ Day11.run ]
     ]
     |> List.map (fun (d, r ) ->
             { year = 2022
