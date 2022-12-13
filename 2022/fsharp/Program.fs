@@ -10,7 +10,7 @@ let days =
       05, [ Day05.run ]
       06, [ Day06.run ]
       07, [ Day07.run ]
-      08, [ Day08.run ]
+      08, [ Day08.run; Day08.runFast ]
       09, [ Day09.run; Day09.runFast ]
       10, [ Day10.run; Day10.runFast ]
       11, [ Day11.run; Day11.runFast ]

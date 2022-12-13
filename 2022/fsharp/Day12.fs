@@ -41,14 +41,13 @@ module Day12 =
             (nx, ny) = start
 
         let (costs, _) = 
-            DijkstraMap.init 0 [goal] 
+            DijkstraMap.empty
+            |> DijkstraMap.add goal 0 
             |> DijkstraMap.run System.Int32.MaxValue moves stopSearching
         
         costs[start] |> string |> output 1
         costs[firstA.Value] |> string |> output 2
 
-
-    
     let runFast (input: byte array) (output: int -> string -> unit) =
         let lines = input |> text |> splitLine 
         let a = lines |> Array.map (

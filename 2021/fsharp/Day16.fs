@@ -134,7 +134,7 @@ module Day16 =
         | _ -> raise Unreachable
 
     let run data output =
-        let text = data |> text
+        let text = (data |> text).Trim()
         let stream = BitStream.parse text
 
         let p = parsePacket stream
