@@ -58,6 +58,6 @@ module Day07 =
         let usedSize = dirSizes |> Array.max
 
         let needToDeleteSize =  usedSize- (diskSize - neededFree) 
-        let dirToDeleteSize = dirSizes |> Seq.filter (fun v -> v >= needToDeleteSize ) |> Seq.sort |> Seq.head       
+        let dirToDeleteSize = dirSizes |> Seq.filter (fun v -> v >= needToDeleteSize ) |> Seq.min       
         
         dirToDeleteSize |> string |> output 2

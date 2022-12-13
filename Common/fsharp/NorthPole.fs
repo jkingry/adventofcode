@@ -244,6 +244,11 @@ module NorthPole =
             for day in days do
                 let mutable fastestMs = Double.PositiveInfinity 
                 for r in runDay day InputType.Default repeats silentOutput do
+                    for o in r.results do
+                        match o with 
+                        | Some (Error s) -> eprintfn "Error: %A" s
+                        | _ -> ()
+
                     if r.index > 0 then
                         let multi =  fastestMs / r.elapsedMs
                         printfn "%3d %8.3f [%d] x%.2f" r.day (r.elapsedMs / (float repeats)) r.index multi

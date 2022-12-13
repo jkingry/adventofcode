@@ -45,8 +45,8 @@ module Day23 =
 
     let part1 (input: string) =
         let init =
-            input
-            |> Seq.map (fun c -> c.ToString() |> Int32.Parse)
+            input.Trim()
+            |> Seq.map (fun c -> c.ToString() |> int)
             |> Seq.map (fun n -> { prev = None; v = n; next = None })
             |> Seq.toArray
 
@@ -83,8 +83,8 @@ module Day23 =
 
     let part2 (input: string) =
         let nn =
-            input
-            |> Seq.map (fun c -> c.ToString() |> Int32.Parse)
+            input.Trim()
+            |> Seq.map (fun c -> c.ToString() |> int)
 
         let init =
             Seq.append nn [ 10 .. 1000000 ]
