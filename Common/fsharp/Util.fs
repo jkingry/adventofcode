@@ -6,7 +6,125 @@ module Util =
     open System.Collections.Generic
 
     exception Unreachable
-    
+
+    module OrthoGrid =
+        let movesToSeq (mx, my) (x, y) =
+            seq {
+                if x > 0 then yield (x - 1, y)
+                if y > 0 then yield (x, y - 1)
+                if x < (mx - 1) then yield (x + 1, y)
+                if y < (my - 1) then yield (x, y + 1) 
+            }    
+        let checkBounds a cx cy =
+            cx >= 0 && cy >= 0 && (cx < Array2D.length1 a) && (cy < Array2D.length2 a)
+
+        let movesToBuffers costFunc cx cy (mxBuf: int array) (myBuf: int array) (mcBuf: 'a array) =
+            let mutable c = 0
+            match costFunc cx cy (cx - 1) cy with
+            | Some cost ->
+                mxBuf[c] <- cx - 1
+                myBuf[c] <- cy
+                mcBuf[c] <- cost
+                c <- c + 1
+            | _ -> ()
+            match costFunc cx cy cx (cy - 1) with
+            | Some cost ->
+                mxBuf[c] <- cx
+                myBuf[c] <- cy - 1
+                mcBuf[c] <- cost
+                c <- c + 1
+            | _ -> ()           
+            match costFunc cx cy (cx + 1) cy with
+            | Some cost ->
+                mxBuf[c] <- cx + 1
+                myBuf[c] <- cy
+                mcBuf[c] <- cost
+                c <- c + 1
+            | _ -> ()     
+            match costFunc cx cy cx (cy + 1) with
+            | Some cost ->
+                mxBuf[c] <- cx
+                myBuf[c] <- cy + 1
+                mcBuf[c] <- cost
+                c <- c + 1
+            | _ -> ()     
+            c        
+
+    module DijkstraMap =
+        open FSharpx.Collections
+
+        let empty<'a,'b when 'a : comparison and 'b : comparison> = (Map.empty : Map<'a, 'b>), ((Heap.empty false) : Heap<'b * 'a>)
+
+        let add state cost (costs: Map<'a,'b>, q) =
+            let costs' = costs |> Map.add state cost 
+            let q' = q |> Heap.insert (cost, state)            
+            costs', q'            
+                
+        let run infiniteCost movesFunc goalFunc (scores: Map<'a,'b>, q) =
+            let mutable q = q
+            let mutable scores = scores
+
+            let mutable found = false
+
+            while not (found || Heap.isEmpty q) do
+                let (_, current), nq = Heap.uncons q
+
+                if goalFunc current then
+                    found <- true
+                else
+                    q <- nq
+
+                    for (move, moveCost) in movesFunc current do
+                        let tentativeScore = scores[current] + moveCost
+
+                        if tentativeScore < (scores |> Map.tryFind move |> Option.defaultValue infiniteCost) then
+                            scores <- scores |> Map.add move tentativeScore
+                            q <- q |> Heap.insert (tentativeScore, move)
+            scores, q            
+
+    module Dijkstra2D =
+        open FSharpx.Collections
+
+        let init mx my infinityCost =
+            let costs = Array2D.create mx my infinityCost
+            let q = Heap.empty false 
+            costs, q
+
+        let add x y (cost: 'a) (costs: 'a[,], q) =
+            costs[x, y] <- cost
+            let q' = q |> Heap.insert (cost, (x, y))            
+            costs, q'
+
+        let run maxMoves zeroCost moveFunc goalFunc (costs: 'a[,], q) =
+            let mutable q = q
+
+            let mutable found = false
+
+            let mxBuf = Array.create maxMoves 0
+            let myBuf = Array.create maxMoves 0
+            let mcBuf = Array.create maxMoves zeroCost
+            
+            while not (found || Heap.isEmpty q) do
+                let (_, (cx, cy)), nq = Heap.uncons q
+                
+                if goalFunc cx cy then
+                    found <- true
+                else
+                    q <- nq
+
+                    let moveCount = moveFunc cx cy mxBuf myBuf mcBuf
+                    for i = 1 to moveCount do
+                        let mx = mxBuf[i - 1]
+                        let my = myBuf[i - 1]
+                        let moveCost = mcBuf[i - 1]
+
+                        let tentative_score = costs[cx, cy] + moveCost
+
+                        if tentative_score < costs[mx, my] then
+                            costs[mx, my] <- tentative_score
+                            q <- q |> Heap.insert (tentative_score, (mx, my))
+            costs, q            
+
     module Counter =
         let create (input : #seq<'T>) : Map<'T, int64> =
             input 

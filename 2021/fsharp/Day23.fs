@@ -1,8 +1,6 @@
 namespace AdventOfCode.FSharp.Y2021
 
 module Day23 =
-    open Checked
-    open FSharpx.Collections
     open AdventOfCode.FSharp.Util
 
     let PodTypeCount = 4
@@ -201,47 +199,6 @@ module Day23 =
             let sizeBit = if size = 15 then 0UL else 1UL
 
             homes ||| (sizeBit <<< 8) ||| (newOccupied <<< 9) ||| (newPods <<< 32)                                 
-
-    let reconstructPath cameFrom current gScore =
-        let mutable path = [ current, (Map.find current gScore) ]
-
-        let mutable finished = false
-        let mutable pos = current
-
-        while not finished do
-            match cameFrom |> Map.tryFind pos with
-            | Some nextPos ->
-                path <- (nextPos, (Map.find nextPos gScore))  :: path
-                pos <- nextPos
-            | _ -> finished <- true
-
-        path 
-
-    let dijkstra moves h start goal =
-        let mutable gScore = Map [ (start, 0) ]
-
-        let mutable q = Heap.empty false |> Heap.insert ((h start), start)
-
-        let mutable found = None
-
-        while Option.isNone found && not (Heap.isEmpty q) do
-            let ((_, current), nq) = Heap.uncons q
-
-            if current = goal then
-                found <- Some gScore[current]
-            else
-                q <- nq
-
-                for (move, moveCost) in moves current do
-                    let tentative_gScore = gScore[current] + moveCost
-
-                    if tentative_gScore < (gScore |> Map.tryFind move |> Option.defaultValue System.Int32.MaxValue) then
-                        gScore <- gScore |> Map.add move tentative_gScore
-                        q <- q |> Heap.insert (tentative_gScore + (h move), move)
-
-        match found with
-        | Some cost -> cost
-        | _ -> failwith "INFINITY"
     
     let hall_moves = 
         [|
@@ -337,14 +294,22 @@ module Day23 =
     let run input (output: int -> string -> unit) =
         let input = input |> text
 
-        let state = input |> btext.parse |> bs.fromString
+        let state1 = input |> btext.parse |> bs.fromString
         
         let goal1 = ".......ABCDABCD" |> bs.fromString
-        let cost1 = dijkstra generateMoves (fun _ -> 0) state goal1
-        cost1 |> string |> output 1
+        let costs1, _ = 
+            DijkstraMap.empty 
+            |> DijkstraMap.add state1 0
+            |> DijkstraMap.run System.Int32.MaxValue generateMoves (fun s -> s = goal1)
 
-        let state2 = (state |> bs.toString).Insert(11, "DCBADBAC") |> bs.fromString
+        costs1[goal1] |> string |> output 1
+
+        let state2 = (state1 |> bs.toString).Insert(11, "DCBADBAC") |> bs.fromString
 
         let goal2 = ".......ABCDABCDABCDABCD" |> bs.fromString
-        let cost2 = dijkstra generateMoves (fun _ -> 0) state2 goal2
-        cost2 |> string |> output 2        
+        let costs2, _ =
+            DijkstraMap.empty
+            |> DijkstraMap.add state2 0
+            |> DijkstraMap.run System.Int32.MaxValue generateMoves (fun s -> s = goal2)
+        
+        costs2[goal2] |> string |> output 2        
