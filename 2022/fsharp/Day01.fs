@@ -33,14 +33,13 @@ module Day01 =
                 top3[maxIndex] <- sum
             sum <- 0
 
-        let newLine = byte '\n'
         let mutable i = 0
         while i < (input.Length - 1) do 
-            if input[i] = newLine then
+            if input[i] = '\n'B then
                 handleElf ()
                 i <- i + 1
 
-            let (ni, n) = parseIntToDelim input i newLine
+            let (ni, n) = parseIntToDelim input i '\n'B
             sum <- sum + n
 
             i <- ni

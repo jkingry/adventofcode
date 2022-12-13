@@ -208,9 +208,6 @@ module Util =
             while e.MoveNext() && not (String.IsNullOrEmpty e.Current) do
                 yield e.Current
         }
-    
-    let zero = byte '0' 
-    let dash = byte '-'
         
     let inline parseIntToDelim (s: byte array) (pos: int) (delimChar: byte) =
         let mutable res = 0
@@ -219,8 +216,10 @@ module Util =
         let mutable foundDelim = false
         while (not foundDelim) && pos' < (s.Length - 1) do
             let c = s[pos']
-            if c = delimChar then foundDelim <- true
-            elif c = dash then sign <- -1
-            else res <- res * 10 + int (c - zero)
+            match c with
+            | c when c = delimChar -> foundDelim <- true
+            | '-'B -> sign <- -1
+            | c when '0'B <= c && c <= '9'B -> res <- res * 10 + int (c - '0'B)
+            | _ -> failwithf "Bad Format at '%c'" (char c)
             pos' <- pos' + 1  
         (pos', sign * res)

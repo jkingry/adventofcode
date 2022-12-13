@@ -53,11 +53,8 @@ module Day10 =
         crtOutput |> output 2 
 
     let runFast (input: byte array) (output: int -> string -> unit) =
-        let charA = byte 'a'
-        let newline = byte '\n'
-
         let parse (s: byte array) (pos: int) =
-            let (nextPos, amt) = if s[pos] = charA then parseIntToDelim s (pos+5) newline else (pos+5, 0)
+            let (nextPos, amt) = if s[pos] = 'a'B then parseIntToDelim s (pos+5) '\n'B else (pos+5, 0)
 
             let cycleLen = if amt = 0 then 1 else 2
 

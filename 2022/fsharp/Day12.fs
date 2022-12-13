@@ -18,7 +18,7 @@ module Day12 =
             match v with
             | 'S' -> start <- (x, y); 0uy
             | 'E' -> goal <- (x,y); 25uy
-            | _ -> (byte v) - (byte 'a'))
+            | _ -> (byte v) - 'a'B)
         
         let mx = Array2D.length1 a
         let my = Array2D.length2 a
@@ -60,7 +60,7 @@ module Day12 =
             match v with
             | 'S' -> sx <- x; sy <- y; 0uy
             | 'E' -> gx <- x; gy <- y; 25uy
-            | _ -> (byte v) - (byte 'a'))
+            | _ -> (byte v) - 'a'B)
         
         let mx = Array2D.length1 a
         let my = Array2D.length2 a

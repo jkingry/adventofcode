@@ -28,10 +28,12 @@ module Day13 =
             | [],_ ->  Some true
             | _,[] ->  Some false
         | PNum(_), PList(_) -> compare ([a] |> PList) b
-        | PList(_), PNum(_) -> compare a ([b] |> PList)            
+        | PList(_), PNum(_) -> compare a ([b] |> PList)       
 
+    let divPack1 = PList([ PList([ PNum(6) ]) ])
+    let divPack2 = PList([ PList([ PNum(2) ]) ])     
 
-    let runWithValue pairs divPack1 divPack2 (output: int -> string -> unit) =
+    let runWithValue pairs (output: int -> string -> unit) =
         let mutable part1 = 0
         
         for (index, (a,b)) in pairs |> Array.indexed do
@@ -77,11 +79,8 @@ module Day13 =
             |> Array.map (fun text ->
                 let parts = text |> splitLine |> Array.map (runParser fvalue)
                 parts[0],parts[1])
-        
-        let divPack1 = runParser fvalue "[[2]]"
-        let divPack2 = runParser fvalue "[[6]]"
 
-        runWithValue pairs divPack1 divPack2 output
+        runWithValue pairs output
   
     // JSON
     open System.Text.Json
@@ -101,13 +100,12 @@ module Day13 =
             | JsonValueKind.Number -> e.GetInt32() |> PNum
             | _ -> failwithf "Unexpected element: %A" e
 
-        let newline = byte '\n'
         let mutable s = 0
         let mutable i = 0
         let mutable firstPair = None 
         while i < input.Length do
             let c = input[i]
-            if c = newline then
+            if c = '\n'B then
                 if (i - s) = 0 then
                     ()
                 else
@@ -122,10 +120,7 @@ module Day13 =
             i <- i + 1
         let pairs = pairs.ToArray ()  
 
-        let divPack1 = JsonDocument.Parse("[[2]]").RootElement |> fromJson
-        let divPack2 = JsonDocument.Parse("[[6]]").RootElement |> fromJson
-
-        runWithValue pairs divPack1 divPack2 output        
+        runWithValue pairs output        
 
     let runCustom (input: byte array) (output: int -> string -> unit) =
         // [1,[2,[3,[4,[5,6,7]]]],8,9]
@@ -161,4 +156,4 @@ module Day13 =
                 pairs <- (packet1, packet2)::pairs
             pairs |> List.rev |> List.toArray
 
-        runWithValue (parse input) (PList([PList([PNum(6)])])) (PList([PList([PNum(2)])])) output
+        runWithValue (parse input) output
