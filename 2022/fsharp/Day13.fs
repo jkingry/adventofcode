@@ -30,8 +30,8 @@ module Day13 =
         | PNum(_), PList(_) -> compare ([a] |> PList) b
         | PList(_), PNum(_) -> compare a ([b] |> PList)       
 
-    let divPack1 = PList([ PList([ PNum(6) ]) ])
-    let divPack2 = PList([ PList([ PNum(2) ]) ])     
+    let divPack1 = PList([ PList([ PNum(2) ]) ])
+    let divPack2 = PList([ PList([ PNum(6) ]) ])     
 
     let runWithValue pairs (output: int -> string -> unit) =
         let mutable part1 = 0
@@ -57,6 +57,28 @@ module Day13 =
 
         let part2 = (index1 + 1) * (index2 + 1)
         part2 |> string |> output 2
+
+    let runWithValue2 pairs (output: int -> string -> unit) =
+        let mutable part1 = 0
+
+        let mutable index1 = 1
+        let mutable index2 = 2
+        
+        for (index, (a,b)) in pairs |> Array.indexed do
+            if (compare a b).Value then
+                part1 <- part1 + (index + 1)
+            
+            if (compare a divPack1).Value then
+                index1 <- index1 + 1
+            if (compare b divPack1).Value then
+                index1 <- index1 + 1
+            if (compare a divPack2).Value then
+                index2 <- index2 + 1
+            if (compare b divPack2).Value then
+                index2 <- index2 + 1
+
+        part1 |> string |> output 1
+        (index1 * index2) |> string |> output 2        
 
     // FParsec
     open FParsec
@@ -157,3 +179,39 @@ module Day13 =
             pairs |> List.rev |> List.toArray
 
         runWithValue (parse input) output
+
+    let runCustom2 (input: byte array) (output: int -> string -> unit) =
+        // [1,[2,[3,[4,[5,6,7]]]],8,9]
+        let rec parseList (input: byte array) (offset: int) =
+            let mutable stack = [ PList([]) ]
+            let mutable terminated = false
+            let mutable i = offset        
+            let mutable p = '@'B
+
+            while not terminated && i < input.Length do
+                let c = input[i]
+                stack <-
+                    match c,stack,p with
+                    |'['B,_,_ -> ([] |> PList)::stack
+                    |']'B,_,'['B -> stack
+                    |']'B,x::PList(y)::ys,_ -> PList((x::y)|>List.rev)::ys
+                    |','B,x::PList(y)::ys,_ -> PList(x::y)::ys
+                    | c,PNum(n)::ys,_ when '0'B <= c && c <= '9'B -> PNum(((c - '0'B)|>int)+(10*n))::ys
+                    | c,_,_ when '0'B <= c && c <= '9'B -> PNum(c - '0'B|>int)::stack
+                    | '\n'B,_,_ -> terminated <- true; stack                 
+                    | _ -> failwithf "Failed at '%c' : %s" (char c) (String.concat "\n  " (stack |> List.map tostr))
+                p <- c
+                i <- i + 1
+            i, stack[0]
+
+        let parse (input: byte array) =
+            let mutable i = 0
+            let mutable pairs = []
+            while i < input.Length do
+                let (i1, packet1) = parseList input i
+                let (i2, packet2) = parseList input i1
+                i <- i2 + 1
+                pairs <- (packet1, packet2)::pairs
+            pairs |> List.rev |> List.toArray
+
+        runWithValue2 (parse input) output

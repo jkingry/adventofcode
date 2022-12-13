@@ -250,8 +250,8 @@ module NorthPole =
                         | _ -> ()
 
                     if r.index > 0 then
-                        let multi =  fastestMs / r.elapsedMs
-                        printfn "%3d %8.3f [%d] x%.2f" r.day (r.elapsedMs / (float repeats)) r.index multi
+                        let multi =  100.0 - (100.0 * r.elapsedMs / fastestMs) 
+                        printfn "%3d %8.3f [%d] %.2f%%" r.day (r.elapsedMs / (float repeats)) r.index multi
                     else
                         printfn "%3d %8.3f [%d]" r.day (r.elapsedMs / (float repeats)) r.index
                     fastestMs <- min fastestMs r.elapsedMs
