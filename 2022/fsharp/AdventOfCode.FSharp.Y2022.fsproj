@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.1.1" />
-    <PackageReference Include="fsharpx.collections" Version="3.0.1" />
+    <PackageReference Include="fsharpx.collections" Version="3.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../Common/fsharp/AdventOfCode.FSharp.fsproj" />
