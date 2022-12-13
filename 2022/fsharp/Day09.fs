@@ -65,7 +65,7 @@ module Day09 =
             (byte (p[0][0])), (int p[1]))    
 
     let parseInstructionsFast (input: byte array) =
-        let newline = byte '\n'
+        let newline = '\n'B
         seq {
             let mutable i = 0
             while i < (input.Length - 1) do

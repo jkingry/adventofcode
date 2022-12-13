@@ -8,7 +8,7 @@ module Day08 =
     let run (input: byte array) (output: int -> string -> unit) =
         let lines = input |> text |> splitLine 
         let a = lines |> Array.map (
-            fun s -> s.ToCharArray() |> Array.map (fun x -> (byte x) - (byte '0'))) |> array2D
+            fun s -> s.ToCharArray() |> Array.map (fun x -> (byte x) - '0'B)) |> array2D
 
         let mx = Array2D.length1 a
         let my = Array2D.length2 a
@@ -66,8 +66,6 @@ module Day08 =
     let emptyBottom = { bot = -1; score = 1; }
 
     let runFast (input: byte array) (output: int -> string -> unit) =
-        let zero = int '0'
-
         let fromleft = Array.create 10 0
         let fromright = Array.create 10 emptyRight
 
@@ -93,7 +91,7 @@ module Day08 =
                 Array.fill fromright 0 fromright.Length emptyRight                                               
                 Array.fill fromleft 0 fromleft.Length 0 
             else
-                let v = (int c) - zero
+                let v = ((byte c) - '0'B) |> int
 
                 if fromtops.Length <= col then
                     fromtops <- fromtops |> Array.insertAt fromtops.Length (Array.create 10 0)

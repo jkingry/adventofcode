@@ -53,16 +53,13 @@ module Day02 =
         let mutable part1 = 0
         let mutable part2 = 0
 
-        let charA = byte 'A'
-        let charX = byte 'X'
-
         let mutable lastLinePosition = 0
 
         for i in 0 .. s.Length - 1 do
             if (i - lastLinePosition) = 2 then
                 lastLinePosition <- lastLinePosition + 4
-                let them = int (s[i-2] - charA)
-                let you = int (s[i] - charX)
+                let them = int (s[i-2] - 'A'B)
+                let you = int (s[i] - 'X'B)
                 part1 <- part1 + 
                     if you = them then 1 + 3 + you
                     elif you = (them + 1) % 3 then 1 + 6 + you
