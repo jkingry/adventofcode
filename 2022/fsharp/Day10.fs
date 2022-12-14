@@ -6,36 +6,38 @@ module Day10 =
     open AdventOfCode.FSharp.Util
 
     type Op =
-    | AddX of int
-    | Noop
+        | AddX of int
+        | Noop
 
-    let run (input: byte array) (output: int -> string -> unit) =
-        let parse (line: string) = 
+    let run (input: byte[]) (output: int -> string -> unit) =
+        let parse (line: string) =
             let p = line.Split(' ')
+
             match p[0] with
-            | "addx" -> AddX (int p[1])
+            | "addx" -> AddX(int p[1])
             | _ -> Noop
 
         let instrs = input |> text |> splitLine |> Array.map parse
 
-        let cyclesOfInterest = Set [20;60;100;140;180;220]
+        let cyclesOfInterest = Set [ 20; 60; 100; 140; 180; 220 ]
 
         let mutable cycle = 0
         let mutable x = 1
-        
+
         let mutable crtOutput = ""
         let mutable signalStrengthTotal = 0
 
         for op in instrs do
-            let (cycleLen, amt) = 
+            let (cycleLen, amt) =
                 match op with
                 | AddX amt -> (2, amt)
-                | _ -> (1, 0) 
+                | _ -> (1, 0)
 
             for _ = 1 to cycleLen do
                 let position = cycle % 40
 
-                if position = 0 then crtOutput <- crtOutput + "\n"
+                if position = 0 then
+                    crtOutput <- crtOutput + "\n"
 
                 if (x - 1) <= position && position <= (x + 1) then
                     crtOutput <- crtOutput + "#"
@@ -48,13 +50,17 @@ module Day10 =
                     signalStrengthTotal <- signalStrengthTotal + (cycle * x)
 
             x <- x + amt
-        
-        signalStrengthTotal |> string |> output 1 
-        crtOutput |> output 2 
 
-    let runFast (input: byte array) (output: int -> string -> unit) =
-        let parse (s: byte array) (pos: int) =
-            let (nextPos, amt) = if s[pos] = 'a'B then parseIntToDelim s (pos+5) '\n'B else (pos+5, 0)
+        signalStrengthTotal |> string |> output 1
+        crtOutput |> output 2
+
+    let runFast (input: byte[]) (output: int -> string -> unit) =
+        let parse (s: byte[]) (pos: int) =
+            let (nextPos, amt) =
+                if s[pos] = 'a'B then
+                    parseIntToDelim s (pos + 5) '\n'B
+                else
+                    (pos + 5, 0)
 
             let cycleLen = if amt = 0 then 1 else 2
 
@@ -63,11 +69,12 @@ module Day10 =
         let mutable cycle = 0
         let mutable x = 1
 
-        let mutable crt = new System.Text.StringBuilder ()
+        let mutable crt = new System.Text.StringBuilder()
         let mutable signalStrengthTotal = 0
 
         let mutable i = 0
-        while i < (input.Length - 1) do        
+
+        while i < (input.Length - 1) do
             let (nextPos, amt, cycleLen) = parse input i
             i <- nextPos
 
@@ -77,7 +84,12 @@ module Day10 =
                 if position = 0 then
                     crt <- crt.Append '\n'
 
-                let pixel = if (x - 1) <= position && position <= (x + 1) then '#' else '.'
+                let pixel =
+                    if (x - 1) <= position && position <= (x + 1) then
+                        '#'
+                    else
+                        '.'
+
                 crt <- crt.Append pixel
 
                 cycle <- cycle + 1
@@ -88,4 +100,4 @@ module Day10 =
             x <- x + amt
 
         signalStrengthTotal |> string |> output 1
-        crt.ToString () |> output 2 
+        crt.ToString() |> output 2

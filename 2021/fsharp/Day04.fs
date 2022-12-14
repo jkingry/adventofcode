@@ -39,25 +39,19 @@ module Day04 =
             ([], [])
         // filter out all rounds where there was no new winner
         |> Seq.pairwise
-        |> Seq.choose
-            (fun ((c, w), (c', w')) ->
-                if w'.Length > w.Length then
-                    Some(c', w')
-                else
-                    None)
+        |> Seq.choose (fun ((c, w), (c', w')) -> if w'.Length > w.Length then Some(c', w') else None)
 
     let unpickedSum called b =
         let mutable sum = 0
 
         b
-        |> Array2D.iter
-            (fun v ->
-                if not (called |> List.contains v) then
-                    sum <- sum + v)
+        |> Array2D.iter (fun v ->
+            if not (called |> List.contains v) then
+                sum <- sum + v)
 
         sum
 
-    let run input (output: int -> string -> unit) = 
+    let run input (output: int -> string -> unit) =
         let input = input |> text
         let (calls, boards) = parse input
 
@@ -67,7 +61,7 @@ module Day04 =
             let unpicked = unpickedSum called winner
             let lastCall = called |> List.head
 
-            lastCall * unpicked |> string    
+            lastCall * unpicked |> string
 
         // part 1
         let (called, firstWinners) = results |> Seq.head

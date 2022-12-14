@@ -5,7 +5,7 @@ module Day01 =
     open Checked
     open AdventOfCode.FSharp.Util
 
-    let run (input: byte array) (output: int -> string -> unit) =
+    let run (input: byte[]) (output: int -> string -> unit) =
         let elfs =
             input
             |> text
@@ -13,10 +13,10 @@ module Day01 =
             |> Array.map (fun s -> s |> splitLine |> Seq.map int |> Seq.sum)
 
         elfs |> Seq.max |> string |> output 1
-        
+
         elfs |> Seq.sortDescending |> Seq.take 3 |> Seq.sum |> string |> output 2
 
-    let runFast (input: byte array) output =
+    let runFast (input: byte[]) output =
         let mutable sum = 0
 
         let top3 = Array.zeroCreate 3
@@ -24,17 +24,22 @@ module Day01 =
         let handleElf () =
             let mutable maxDiff = 0
             let mutable maxIndex = -1
+
             for j in 0..2 do
-                let diff = sum - top3[j] 
+                let diff = sum - top3[j]
+
                 if diff > maxDiff then
                     maxIndex <- j
-                    maxDiff <- diff 
+                    maxDiff <- diff
+
             if maxIndex >= 0 then
                 top3[maxIndex] <- sum
+
             sum <- 0
 
         let mutable i = 0
-        while i < (input.Length - 1) do 
+
+        while i < (input.Length - 1) do
             if input[i] = '\n'B then
                 handleElf ()
                 i <- i + 1

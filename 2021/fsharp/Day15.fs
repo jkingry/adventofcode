@@ -6,7 +6,7 @@ module Day15 =
 
     let run data output =
         let text = data |> text
- 
+
         let grid =
             text
             |> splitLine
@@ -23,8 +23,10 @@ module Day15 =
             (risk % 9) + 1
 
         let part1risk _ _ x y =
-            if x < 0 || y < 0 || x >= width || y >= height then None else
-            risk x y |> Some
+            if x < 0 || y < 0 || x >= width || y >= height then
+                None
+            else
+                risk x y |> Some
 
         let costs, q =
             Dijkstra2D.init width height System.Int32.MaxValue
@@ -37,12 +39,14 @@ module Day15 =
         let height' = height * 5
 
         let part2risk _ _ x y =
-            if x < 0 || y < 0 || x >= width' || y >= height' then None else
-            risk x y |> Some
+            if x < 0 || y < 0 || x >= width' || y >= height' then
+                None
+            else
+                risk x y |> Some
 
         let costs, _ =
             Dijkstra2D.init width' height' System.Int32.MaxValue
             |> Dijkstra2D.add 0 0 0
             |> Dijkstra2D.run 4 0 (OrthoGrid.movesToBuffers part2risk) (fun x y -> x = width' - 1 && y = height' - 1)
-        
+
         costs[width' - 1, height' - 1] |> string |> output 2

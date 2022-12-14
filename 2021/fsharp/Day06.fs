@@ -14,7 +14,7 @@ module Day06 =
             ages.[nextBirthDay] <- ages.[nextBirthDay] + ages.[birthDay]
 
     let part1 (input: string) =
-        let ages: int64 [] = Array.zeroCreate 9
+        let ages: int64[] = Array.zeroCreate 9
 
         ints input
         |> Array.groupBy id
@@ -25,7 +25,7 @@ module Day06 =
         Array.sum ages |> string
 
     let part2 (input: string) =
-        let ages: int64 [] = Array.zeroCreate 9
+        let ages: int64[] = Array.zeroCreate 9
 
         ints input
         |> Array.groupBy id

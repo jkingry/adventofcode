@@ -7,33 +7,29 @@ module Day03 =
     let fromBinary (s: string) = int ("0b" + s)
 
     let toBinary (input: int) =
-        System.Convert.ToString(input, 2).ToCharArray()
-        |> Array.rev
-        |> System.String     
+        System.Convert.ToString(input, 2).ToCharArray() |> Array.rev |> System.String
 
-    let run input (output: int -> string -> unit) =    
-        // Part 1  
+    let run input (output: int -> string -> unit) =
+        // Part 1
         let input = input |> text
-        let countDigits (counts: Map<int, int>) (line: string)  =
+
+        let countDigits (counts: Map<int, int>) (line: string) =
             line
             |> Seq.indexed
             |> Seq.fold (fun a (i, c) -> if c = '1' then (mapIncr i a) else (mapDecr i a)) counts
 
-        let gammaCounts = 
-            input
-            |> splitLine
-            |> Seq.fold countDigits Map.empty 
+        let gammaCounts = input |> splitLine |> Seq.fold countDigits Map.empty
 
-        let gammaText = 
+        let gammaText =
             gammaCounts
             |> Map.toSeq
             |> Seq.sortBy fst
             |> Seq.map (fun (_, v) -> if v > 0 then '1' else '0')
             |> Seq.toArray
             |> System.String
-        
-        let gamma = gammaText |> fromBinary        
-        
+
+        let gamma = gammaText |> fromBinary
+
         let epsilon = ~~~gamma
 
         // trim to digit length
@@ -44,10 +40,7 @@ module Day03 =
         // Part 2
 
         let filterReport (dir: bool) (input: string list) (p: int) =
-            let m =
-                input
-                |> List.groupBy (fun s -> s.[p])
-                |> Map.ofList
+            let m = input |> List.groupBy (fun s -> s.[p]) |> Map.ofList
 
             if (m.['0'].Length > m.['1'].Length) = dir then
                 m.['0']

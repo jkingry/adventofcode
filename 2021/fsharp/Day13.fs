@@ -9,8 +9,7 @@ module Day13 =
             (text |> splitDoubleLine).[0]
             |> splitLine
             |> Array.map ints
-            |> Array.map
-                (function
+            |> Array.map (function
                 | [| x; y |] -> (x, y)
                 | _ -> failwith "Bad format")
             |> Set.ofArray
@@ -18,11 +17,10 @@ module Day13 =
         let folds =
             (text |> splitDoubleLine).[1]
             |> splitLine
-            |> Array.map
-                (fun line ->
-                    match line with
-                    | Regex @"fold along (y|x)=(\d+)" [ axis; num ] -> (axis, int num)
-                    | _ -> failwith "Bad format")
+            |> Array.map (fun line ->
+                match line with
+                | Regex @"fold along (y|x)=(\d+)" [ axis; num ] -> (axis, int num)
+                | _ -> failwith "Bad format")
 
         dots, folds
 
@@ -51,21 +49,18 @@ module Day13 =
         let firstFold = folds |> Array.head
         let firstDots = fold dots firstFold
         firstDots |> Set.count |> string |> output 1
-        
+
         let foldedDots = folds |> Array.tail |> Array.fold fold firstDots
 
         let (maxx, maxy) =
-            foldedDots
-            |> Seq.reduce (fun (mx, my) (x, y) -> max mx x, max my y)
+            foldedDots |> Seq.reduce (fun (mx, my) (x, y) -> max mx x, max my y)
 
         let mutable part2 = System.Environment.NewLine
 
         for y = 0 to maxy do
-            let s =
-                new System.Text.StringBuilder(String.replicate (maxx + 1) ".")
+            let s = new System.Text.StringBuilder(String.replicate (maxx + 1) ".")
 
-            let row =
-                foldedDots |> Seq.filter (fun (_, yy) -> yy = y)
+            let row = foldedDots |> Seq.filter (fun (_, yy) -> yy = y)
 
             for (x, _) in row do
                 s.[x] <- '#'
@@ -73,4 +68,3 @@ module Day13 =
             part2 <- part2 + (string s) + System.Environment.NewLine
 
         part2 |> output 2
-        

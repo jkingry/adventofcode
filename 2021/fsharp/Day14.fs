@@ -15,11 +15,7 @@ module Day14 =
             let b = ab.[1]
             ab, (c, sprintf "%c%c" a c, sprintf "%c%c" c b)
 
-        let rules =
-            sections.[1]
-            |> splitLine
-            |> Array.map parseRule
-            |> Map.ofArray
+        let rules = sections.[1] |> splitLine |> Array.map parseRule |> Map.ofArray
 
         (rules, sections.[0])
 
@@ -34,20 +30,18 @@ module Day14 =
         |> Map.fold
             (fun (poly', atoms') ab count ->
                 match rules |> Map.tryFind ab with
-                | Some (c, ac, cb) ->
-                    poly'
-                    |> Counter.remove ab count
-                    |> Counter.add ac count
-                    |> Counter.add cb count,
+                | Some(c, ac, cb) ->
+                    poly' |> Counter.remove ab count |> Counter.add ac count |> Counter.add cb count,
                     atoms' |> Counter.add c count
                 | _ -> poly', atoms')
             (polymer, atoms)
 
     let atomicValue atoms =
         let (most, least) =
-            atoms 
+            atoms
             |> Map.values
             |> Seq.fold (fun (mv, lv) v -> (max v mv), (min v lv)) (System.Int64.MinValue, System.Int64.MaxValue)
+
         most - least
 
     let run data output =
@@ -61,12 +55,13 @@ module Day14 =
         for _ = 1 to 10 do
             let (npolymer, natoms) = (polymer, atoms) |> reactor
             polymer <- npolymer
-            atoms <- natoms            
-        atomicValue atoms |> string |> output 1     
-            
+            atoms <- natoms
+
+        atomicValue atoms |> string |> output 1
+
         for _ = 11 to 40 do
             let (npolymer, natoms) = (polymer, atoms) |> reactor
             polymer <- npolymer
-            atoms <- natoms            
-        atomicValue atoms |> string |> output 2            
-        
+            atoms <- natoms
+
+        atomicValue atoms |> string |> output 2

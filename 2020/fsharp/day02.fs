@@ -21,8 +21,7 @@ module Day02 =
 
     let part1 input =
         let valid p =
-            let ccount =
-                p.input |> Seq.where (fun x -> x = p.c) |> Seq.length
+            let ccount = p.input |> Seq.where (fun x -> x = p.c) |> Seq.length
 
             p.min <= ccount && ccount <= p.max
 

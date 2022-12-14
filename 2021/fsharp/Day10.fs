@@ -6,16 +6,9 @@ module Day10 =
     open AdventOfCode.FSharp.Util
     open Checked
 
-    let errorMap =
-        [ ')', 3L
-          ']', 57L
-          '}', 1197L
-          '>', 25137L ]
-        |> Map.ofList
+    let errorMap = [ ')', 3L; ']', 57L; '}', 1197L; '>', 25137L ] |> Map.ofList
 
-    let score =
-        [ '(', 1L; '[', 2L; '{', 3L; '<', 4L ]
-        |> Map.ofList
+    let score = [ '(', 1L; '[', 2L; '{', 3L; '<', 4L ] |> Map.ofList
 
     let lineStack line =
         line
@@ -49,8 +42,7 @@ module Day10 =
         text
         |> splitLine
         |> Array.map lineStack
-        |> Array.map
-            (function
+        |> Array.map (function
             | Error v -> v
             | _ -> 0L)
         |> Array.sum
@@ -61,14 +53,10 @@ module Day10 =
             text
             |> splitLine
             |> Array.map lineStack
-            |> Array.choose
-                (function
+            |> Array.choose (function
                 | Error _ -> None
                 | Ok s -> Some s)
-            |> Array.map
-                (fun s ->
-                    s
-                    |> List.fold (fun a v -> (a * 5L) + score.[v]) 0L)
+            |> Array.map (fun s -> s |> List.fold (fun a v -> (a * 5L) + score.[v]) 0L)
             |> Array.sort
 
         totals.[totals.Length / 2] |> string
