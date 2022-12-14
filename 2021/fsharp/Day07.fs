@@ -6,17 +6,13 @@ module Day07 =
     open Checked
 
     let part1 (text: string) =
-        let input =
-            text |> ints |> Array.map int64 |> Array.sort
+        let input = text |> ints |> Array.map int64 |> Array.sort
 
         let median = input.[input.Length / 2]
 
         let cost x y = abs (x - y)
 
-        input
-        |> Array.map (cost median)
-        |> Array.sum
-        |> string
+        input |> Array.map (cost median) |> Array.sum |> string
 
     let localMin f minlow maxhigh =
         let rec localMinUtil low high =
@@ -26,8 +22,7 @@ module Day07 =
             let lowv = f (mid - 1L)
             let highv = f (mid + 1L)
 
-            if (mid = minlow || lowv > midv)
-               && (mid = maxhigh || midv < highv) then
+            if (mid = minlow || lowv > midv) && (mid = maxhigh || midv < highv) then
                 mid
             elif mid > minlow && lowv < midv then
                 localMinUtil low (mid - 1L)
@@ -37,8 +32,7 @@ module Day07 =
         localMinUtil minlow maxhigh
 
     let part2 (text: string) =
-        let input =
-            text |> ints |> Array.map int64 |> Array.sort
+        let input = text |> ints |> Array.map int64 |> Array.sort
 
         let median = input.[input.Length / 2]
 

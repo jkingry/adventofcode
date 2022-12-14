@@ -21,11 +21,7 @@ module Day23 =
         }
 
     let move (c: int) (cups: Map<int, Node>) (n: int) =
-        let r =
-            (cs c cups)
-            |> Seq.skip 1
-            |> Seq.take 3
-            |> Seq.toArray
+        let r = (cs c cups) |> Seq.skip 1 |> Seq.take 3 |> Seq.toArray
 
         cups.[r.[0]].prev.Value.next <- cups.[r.[2]].next
         cups.[r.[2]].next.Value.prev <- cups.[r.[0]].prev
@@ -54,18 +50,14 @@ module Day23 =
 
         init
         |> Array.pairwise
-        |> Array.iter
-            (fun (a, b) ->
-                a.next <- Some b
-                b.prev <- Some a)
+        |> Array.iter (fun (a, b) ->
+            a.next <- Some b
+            b.prev <- Some a)
 
         init.[0].prev <- Some init.[n - 1]
         init.[n - 1].next <- Some init.[0]
 
-        let cups =
-            init
-            |> Array.map (fun c -> (c.v, c))
-            |> Map.ofArray
+        let cups = init |> Array.map (fun c -> (c.v, c)) |> Map.ofArray
 
         let mutable c = init.[0].v
 
@@ -82,12 +74,10 @@ module Day23 =
         String.Join("", ss)
 
     let part2 (input: string) =
-        let nn =
-            input.Trim()
-            |> Seq.map (fun c -> c.ToString() |> int)
+        let nn = input.Trim() |> Seq.map (fun c -> c.ToString() |> int)
 
         let init =
-            Seq.append nn [ 10 .. 1000000 ]
+            Seq.append nn [ 10..1000000 ]
             |> Seq.map (fun n -> { prev = None; v = n; next = None })
             |> Seq.toArray
 
@@ -95,18 +85,14 @@ module Day23 =
 
         init
         |> Array.pairwise
-        |> Array.iter
-            (fun (a, b) ->
-                a.next <- Some b
-                b.prev <- Some a)
+        |> Array.iter (fun (a, b) ->
+            a.next <- Some b
+            b.prev <- Some a)
 
         init.[0].prev <- Some init.[n - 1]
         init.[n - 1].next <- Some init.[0]
 
-        let cups =
-            init
-            |> Array.map (fun c -> (c.v, c))
-            |> Map.ofArray
+        let cups = init |> Array.map (fun c -> (c.v, c)) |> Map.ofArray
 
         let mutable c = init.[0].v
 
@@ -114,10 +100,6 @@ module Day23 =
             c <- move c cups n
 
         let [ a; b ] =
-            cs 1 cups
-            |> Seq.skip 1
-            |> Seq.take (2)
-            |> Seq.map int64
-            |> Seq.toList
+            cs 1 cups |> Seq.skip 1 |> Seq.take (2) |> Seq.map int64 |> Seq.toList
 
         a * b |> string

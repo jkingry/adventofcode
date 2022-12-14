@@ -7,16 +7,10 @@ module Day09 =
     let neighbors (x, y) grid =
         [ 1, 0; -1, 0; 0, 1; 0, -1 ]
         |> List.map (fun (dx, dy) -> dx + x, dy + y)
-        |> List.filter
-            (fun (nx, ny) ->
-                nx >= 0
-                && ny >= 0
-                && nx < Array2D.length1 grid
-                && ny < Array2D.length2 grid)
+        |> List.filter (fun (nx, ny) -> nx >= 0 && ny >= 0 && nx < Array2D.length1 grid && ny < Array2D.length2 grid)
 
     let isLow x y v grid =
-        neighbors (x, y) grid
-        |> List.forall (fun (nx, ny) -> grid.[nx, ny] > v)
+        neighbors (x, y) grid |> List.forall (fun (nx, ny) -> grid.[nx, ny] > v)
 
     let part1 (text: string) =
         let grid =
@@ -28,10 +22,9 @@ module Day09 =
         let mutable riskValue = 0
 
         grid
-        |> Array2D.iteri
-            (fun x y v ->
-                if isLow x y v grid then
-                    riskValue <- riskValue + v + 1)
+        |> Array2D.iteri (fun x y v ->
+            if isLow x y v grid then
+                riskValue <- riskValue + v + 1)
 
         riskValue |> string
 
@@ -65,10 +58,7 @@ module Day09 =
 
                             let next =
                                 neighbors (x, y) grid
-                                |> List.filter
-                                    (fun (x, y) ->
-                                        grid.[x, y] > v
-                                        && not (Set.contains (x, y) mapped))
+                                |> List.filter (fun (x, y) -> grid.[x, y] > v && not (Set.contains (x, y) mapped))
 
                             q <- q @ next
 
@@ -77,14 +67,11 @@ module Day09 =
         let mutable lows = []
 
         grid
-        |> Array2D.iteri
-            (fun x y v ->
-                if isLow x y v grid then
-                    lows <- (x, y) :: lows)
+        |> Array2D.iteri (fun x y v ->
+            if isLow x y v grid then
+                lows <- (x, y) :: lows)
 
-        let basins =
-            lows
-            |> List.fold (fun b (x, y) -> (findBasin x y) :: b) []
+        let basins = lows |> List.fold (fun b (x, y) -> (findBasin x y) :: b) []
 
         basins
         |> List.map Set.count

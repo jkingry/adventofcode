@@ -2,8 +2,7 @@ open AdventOfCode.FSharp.NorthPole
 open AdventOfCode.FSharp.Y2022
 
 let days =
-    [ 
-      01, [ Day01.run; Day01.runFast ]
+    [ 01, [ Day01.run; Day01.runFast ]
       02, [ Day02.run; Day02.runFast ]
       03, [ Day03.run ]
       04, [ Day04.run ]
@@ -15,11 +14,11 @@ let days =
       10, [ Day10.run; Day10.runFast ]
       11, [ Day11.run; Day11.runFast ]
       12, [ Day12.run; Day12.runFast ]
-      13, [ Day13.runJson; Day13.run; Day13.runCustom; Day13.runCustom2 ]
-    ]
-    |> List.map (fun (d, r ) ->
-            { year = 2022
-              day = d
-              runs = r })
+      13,
+      [ Day13.runJson
+        Day13.runFParsec
+        Day13.runHandParse
+        Day13.runHandParseNoSort ] ]
+    |> List.map (fun (d, r) -> { year = 2022; day = d; runs = r })
 
 runCommandLine days

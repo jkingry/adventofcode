@@ -11,18 +11,15 @@ module Day12 =
 
         let add (source: 'k) (destination: 'k) (g: graph<'k>) : graph<'k> =
             g
-            |> Map.change
-                source
-                (fun v ->
-                    (match v with
-                     | Some s -> s
-                     | _ -> Set.empty)
-                    |> Set.add destination
-                    |> Some)
+            |> Map.change source (fun v ->
+                (match v with
+                 | Some s -> s
+                 | _ -> Set.empty)
+                |> Set.add destination
+                |> Some)
 
         let fromList (input: ('k * 'k) list) : graph<'k> =
-            input
-            |> List.fold (fun g (src, dest) -> g |> add src dest) empty
+            input |> List.fold (fun g (src, dest) -> g |> add src dest) empty
 
         let filterEdges (fn: 'k -> bool) (graph: graph<'k>) : graph<'k> =
             graph |> Map.map (fun _ v -> v |> Set.filter fn)
@@ -66,12 +63,9 @@ module Day12 =
     let inline small (k: string) = k.ToLower() = k
 
     let inline part1Visitor visited node =
-        if not (small node) then
-            Some visited
-        elif visited |> Set.contains node then
-            None
-        else
-            Some(visited |> Set.add node)
+        if not (small node) then Some visited
+        elif visited |> Set.contains node then None
+        else Some(visited |> Set.add node)
 
     let part1 (text: string) =
         let caves = parse text

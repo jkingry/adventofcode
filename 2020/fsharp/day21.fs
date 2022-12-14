@@ -26,17 +26,10 @@ module Day21 =
 
                 let nd =
                     d
-                    |> List.map
-                        (fun (oi, oa) ->
-                            (Set.remove i oi),
-                            (if Set.contains i oi then
-                                 Set.remove a oa
-                             else
-                                 oa))
+                    |> List.map (fun (oi, oa) -> (Set.remove i oi), (if Set.contains i oi then Set.remove a oa else oa))
                     |> List.filter (fun (oi, oa) -> oa.Count <> 0)
 
-                let bad =
-                    nd |> List.filter (fun (oi, oa) -> oi.Count = 0)
+                let bad = nd |> List.filter (fun (oi, oa) -> oi.Count = 0)
 
                 if bad.Length > 0 then None
                 elif nd.Length = 0 then Some nf
@@ -47,19 +40,17 @@ module Day21 =
     let parse (input: string) =
         input
         |> splitLine
-        |> Array.map
-            (fun line ->
-                let p = line.IndexOf "("
+        |> Array.map (fun line ->
+            let p = line.IndexOf "("
 
-                let ingreds =
-                    line.Substring(0, p - 1).Split(' ') |> Set.ofArray
+            let ingreds = line.Substring(0, p - 1).Split(' ') |> Set.ofArray
 
-                let allergs =
-                    line.Substring(p + 9).Trim(')').Split(',')
-                    |> Array.map (fun s -> s.Trim())
-                    |> Set.ofArray
+            let allergs =
+                line.Substring(p + 9).Trim(')').Split(',')
+                |> Array.map (fun s -> s.Trim())
+                |> Set.ofArray
 
-                (ingreds, allergs))
+            (ingreds, allergs))
         |> Array.toList
 
     let solve2a (a: string) (d: Deck) =
@@ -96,16 +87,12 @@ module Day21 =
 
         let possi = solve2 d
 
-        let noall =
-            Set.difference alli (possi |> Seq.map snd |> Set.unionMany)
+        let noall = Set.difference alli (possi |> Seq.map snd |> Set.unionMany)
 
         // printfn "possi = %A" possi
         // printfn "noall = %A" noall
 
-        d
-        |> Seq.map (fun (i, _) -> (Set.intersect noall i).Count)
-        |> Seq.sum
-        |> string
+        d |> Seq.map (fun (i, _) -> (Set.intersect noall i).Count) |> Seq.sum |> string
 
     let part2 (input: string) =
         let d = parse input
@@ -125,8 +112,7 @@ module Day21 =
 
         let possi = solve2 d |> Seq.toList
 
-        let noall =
-            Set.difference alli (possi |> Seq.map snd |> Set.unionMany)
+        let noall = Set.difference alli (possi |> Seq.map snd |> Set.unionMany)
 
 
         let rec solve3 (p: (string * Set<string>) list) res : Map<string, string> option =
@@ -134,22 +120,17 @@ module Day21 =
             | [] -> Some res
             | (a, sa) :: xs ->
                 sa
-                |> Seq.tryPick
-                    (fun s ->
-                        let nxs =
-                            xs
-                            |> List.map (fun (b, bs) -> (b, Set.remove s bs))
+                |> Seq.tryPick (fun s ->
+                    let nxs = xs |> List.map (fun (b, bs) -> (b, Set.remove s bs))
 
-                        if (nxs |> List.tryFind (fun (_, bs) -> bs.Count = 0))
-                            .IsSome then
-                            None
-                        else
-                            solve3 nxs (Map.add a s res))
+                    if (nxs |> List.tryFind (fun (_, bs) -> bs.Count = 0)).IsSome then
+                        None
+                    else
+                        solve3 nxs (Map.add a s res))
 
         let fres = (solve3 possi Map.empty).Value
 
-        let danger =
-            fres |> Map.toSeq |> Seq.sortBy fst |> Seq.map snd
+        let danger = fres |> Map.toSeq |> Seq.sortBy fst |> Seq.map snd
 
         let dangerlist = System.String.Join(',', danger)
 

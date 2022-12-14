@@ -9,13 +9,12 @@ module Day20 =
     open System
     open System.Collections.Generic
 
-    type Tile = { id: int64; tile: char [,] }
+    type Tile = { id: int64; tile: char[,] }
 
     let parseTile input =
         let lines = splitLine input
 
-        let id =
-            lines.[0].Split(' ').[1].Trim(':') |> int64
+        let id = lines.[0].Split(' ').[1].Trim(':') |> int64
 
         let tile = lines |> Array.skip 1 |> array2D
         { id = id; tile = tile }
@@ -28,25 +27,22 @@ module Day20 =
         |> Seq.filter (puzzle.ContainsKey >> not)
         |> Seq.distinct
 
-    let rotate (tile: char [,]) : char [,] =
+    let rotate (tile: char[,]) : char[,] =
         let n = Array2D.length1 tile
 
-        tile
-        |> Array2D.mapi (fun x y v -> tile.[n - y - 1, x])
+        tile |> Array2D.mapi (fun x y v -> tile.[n - y - 1, x])
 
-    let hflip (tile: char [,]) : char [,] =
+    let hflip (tile: char[,]) : char[,] =
         let n = Array2D.length1 tile
 
-        tile
-        |> Array2D.mapi (fun x y v -> tile.[n - x - 1, y])
+        tile |> Array2D.mapi (fun x y v -> tile.[n - x - 1, y])
 
-    let vflip (tile: char [,]) : char [,] =
+    let vflip (tile: char[,]) : char[,] =
         let n = Array2D.length1 tile
 
-        tile
-        |> Array2D.mapi (fun x y v -> tile.[x, n - y - 1])
+        tile |> Array2D.mapi (fun x y v -> tile.[x, n - y - 1])
 
-    let permute (tile: char [,]) : char [,] seq =
+    let permute (tile: char[,]) : char[,] seq =
         seq {
             let mutable t = tile
 
@@ -67,37 +63,29 @@ module Day20 =
             [ puzzle
               |> Map.tryFind (r, c - 1)
               |> Option.bind (fun t -> Some t.tile.[*, n - 1])
-              puzzle
-              |> Map.tryFind (r, c + 1)
-              |> Option.bind (fun t -> Some t.tile.[*, 0])
+              puzzle |> Map.tryFind (r, c + 1) |> Option.bind (fun t -> Some t.tile.[*, 0])
               puzzle
               |> Map.tryFind (r - 1, c)
               |> Option.bind (fun t -> Some t.tile.[n - 1, *])
-              puzzle
-              |> Map.tryFind (r + 1, c)
-              |> Option.bind (fun t -> Some t.tile.[0, *]) ]
+              puzzle |> Map.tryFind (r + 1, c) |> Option.bind (fun t -> Some t.tile.[0, *]) ]
 
         let ismatch t =
             permute t.tile
             |> Seq.map (fun tile -> { t with tile = tile })
-            |> Seq.tryPick
-                (fun tp ->
-                    let tborders =
-                        [ tp.tile.[*, 0]
-                          tp.tile.[*, n - 1]
-                          tp.tile.[0, *]
-                          tp.tile.[n - 1, *] ]
+            |> Seq.tryPick (fun tp ->
+                let tborders =
+                    [ tp.tile.[*, 0]; tp.tile.[*, n - 1]; tp.tile.[0, *]; tp.tile.[n - 1, *] ]
 
-                    let fits =
-                        List.forall2
-                            (fun tba hb ->
-                                match hb with
-                                | None -> true
-                                | Some hba -> Array.forall2 (fun x y -> x = y) hba tba)
-                            tborders
-                            hborders
+                let fits =
+                    List.forall2
+                        (fun tba hb ->
+                            match hb with
+                            | None -> true
+                            | Some hba -> Array.forall2 (fun x y -> x = y) hba tba)
+                        tborders
+                        hborders
 
-                    if fits then Some tp else None)
+                if fits then Some tp else None)
 
         tiles |> Seq.choose ismatch
 
@@ -108,12 +96,11 @@ module Day20 =
             else
                 puzzle
                 |> holes
-                |> Seq.tryPick
-                    (fun hole ->
-                        let matchtiles = findtiles tiles.Values puzzle hole
+                |> Seq.tryPick (fun hole ->
+                    let matchtiles = findtiles tiles.Values puzzle hole
 
-                        matchtiles
-                        |> Seq.tryPick (fun mt -> solve (tiles |> Map.remove mt.id) (puzzle |> Map.add hole mt)))
+                    matchtiles
+                    |> Seq.tryPick (fun mt -> solve (tiles |> Map.remove mt.id) (puzzle |> Map.add hole mt)))
         else
             let mt = tiles |> Map.values |> Seq.head
             solve (tiles |> Map.remove mt.id) (puzzle |> Map.add (0, 0) mt)
@@ -122,10 +109,7 @@ module Day20 =
         let (ulx, uly) = p |> Map.keys |> Seq.min
         let (brx, bry) = p |> Map.keys |> Seq.max
 
-        [ p.[(ulx, uly)]
-          p.[(ulx, bry)]
-          p.[(brx, bry)]
-          p.[(brx, uly)] ]
+        [ p.[(ulx, uly)]; p.[(ulx, bry)]; p.[(brx, bry)]; p.[(brx, uly)] ]
 
     let parse (input: string) =
         input
@@ -147,9 +131,7 @@ module Day20 =
         result |> string
 
     let monster =
-        [ "                  # "
-          "#    ##    ##    ###"
-          " #  #  #  #  #  #   " ]
+        [ "                  # "; "#    ##    ##    ###"; " #  #  #  #  #  #   " ]
         |> array2D
 
     let monsterHeight = Array2D.length1 monster
@@ -160,21 +142,20 @@ module Day20 =
             let row = markedMap.[r, *]
             printfn "%s" (new string (row))
 
-    let markMonster (row: int) (col: int) (theMap: char [,]) =
+    let markMonster (row: int) (col: int) (theMap: char[,]) =
         let mapSlice =
-            theMap.[row..row + monsterHeight - 1, col..col + monsterWidth - 1]
+            theMap.[row .. row + monsterHeight - 1, col .. col + monsterWidth - 1]
 
         let newMap =
             monster
-            |> Array2D.mapi
-                (fun r c v ->
-                    match v with
-                    | '#' -> 'O'
-                    | _ -> mapSlice.[r, c])
+            |> Array2D.mapi (fun r c v ->
+                match v with
+                | '#' -> 'O'
+                | _ -> mapSlice.[r, c])
 
-        theMap.[row..row + monsterHeight - 1, col..col + monsterWidth - 1] <- newMap
+        theMap.[row .. row + monsterHeight - 1, col .. col + monsterWidth - 1] <- newMap
 
-    let isMonster (row: int) (col: int) (theMap: char [,]) =
+    let isMonster (row: int) (col: int) (theMap: char[,]) =
         let monsterCoords =
             seq {
                 for r = 0 to monsterHeight - 1 do
@@ -184,19 +165,17 @@ module Day20 =
             }
 
         let mapSlice =
-            theMap.[row..row + monsterHeight - 1, col..col + monsterWidth - 1]
+            theMap.[row .. row + monsterHeight - 1, col .. col + monsterWidth - 1]
 
         monsterHeight = (Array2D.length1 mapSlice)
         && monsterWidth = (Array2D.length2 mapSlice)
-        && monsterCoords
-           |> Seq.forall (fun (r, c) -> mapSlice.[r, c] = '#')
+        && monsterCoords |> Seq.forall (fun (r, c) -> mapSlice.[r, c] = '#')
 
-    let markMap (theMap: char [,]) =
+    let markMap (theMap: char[,]) =
         theMap
-        |> Array2D.iteri
-            (fun r c v ->
-                if isMonster r c theMap then
-                    markMonster r c theMap)
+        |> Array2D.iteri (fun r c v ->
+            if isMonster r c theMap then
+                markMonster r c theMap)
 
     let part2 (input: string) =
         let tiles = parse input
@@ -213,8 +192,7 @@ module Day20 =
 
         // printfn "ul = %A" (ulr, ulc)
         // printfn "br = %A" (brr, brc)
-        let n =
-            (tiles.Values |> Seq.head).tile |> Array2D.length1
+        let n = (tiles.Values |> Seq.head).tile |> Array2D.length1
 
         let pn = n - 2
 
@@ -236,21 +214,19 @@ module Day20 =
             let mutable count = 0
 
             input
-            |> Array2D.iter (fun v -> if v = symbol then count <- count + 1)
+            |> Array2D.iter (fun v ->
+                if v = symbol then
+                    count <- count + 1)
 
             count
 
         let markedMap =
             fp
             |> permute
-            |> Seq.pick
-                (fun pfp ->
-                    markMap pfp
+            |> Seq.pick (fun pfp ->
+                markMap pfp
 
-                    if (pfp |> countSymbol 'O') > 0 then
-                        Some pfp
-                    else
-                        None)
+                if (pfp |> countSymbol 'O') > 0 then Some pfp else None)
 
         // printMap markedMap
 

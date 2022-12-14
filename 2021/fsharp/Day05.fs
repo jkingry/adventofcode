@@ -9,7 +9,7 @@ module Day05 =
         | Regex @"(\d+),(\d+) -> (\d+),(\d+)" [ x1; y1; x2; y2 ] -> (int x1, int y1), (int x2, int y2)
         | _ -> failwith "Invalid"
 
-    let points ((x1, y1), (x2, y2)) (grid: int [,]) =
+    let points ((x1, y1), (x2, y2)) (grid: int[,]) =
         let (dx, dy) = (sign (x2 - x1), sign (y2 - y1))
         let mutable (nx, ny) = (x1, y1)
         let mutable doublePoints = 0
@@ -38,19 +38,17 @@ module Day05 =
 
         let grid = Array2D.zeroCreate (mx + 1) (my + 1)
 
-        lines
-        |> Array.fold (fun a line -> a + (points line grid)) 0
+        lines |> Array.fold (fun a line -> a + (points line grid)) 0
 
     let run input (output: int -> string -> unit) =
         let input = input |> text
-        let lines =
-            input |> splitLine |> Array.map parseLine
+        let lines = input |> splitLine |> Array.map parseLine
 
         // part 1
         lines
         |> Array.filter (fun ((x1, y1), (x2, y2)) -> x1 = x2 || y1 = y2)
         |> countPoints
-        |> string 
+        |> string
         |> output 1
 
         // part 2

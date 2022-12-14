@@ -6,23 +6,23 @@ module Day06 =
     open System.Numerics
     open Checked
 
-    let run (input: byte array) (output: int -> string -> unit) =    
+    let run (input: byte[]) (output: int -> string -> unit) =
         let findUniqueWindowIndex windowSize (text: string) =
             let window = Array.zeroCreate windowSize
 
-            seq { 0 .. (text.Length - 1) } 
+            seq { 0 .. (text.Length - 1) }
             |> Seq.pick (fun i ->
                 let c = text[i]
                 let cbit = (1UL <<< ((int c) - (int 'A')))
 
-                let  windowPos = i % windowSize
-                
-                for offset in 0..(windowSize-1) do
+                let windowPos = i % windowSize
+
+                for offset in 0 .. (windowSize - 1) do
                     let wi = (windowPos + offset) % windowSize
                     window[wi] <- window[wi] ||| cbit
-                
+
                 if BitOperations.PopCount(window[windowPos]) = windowSize then
-                    Some (i + 1)
+                    Some(i + 1)
                 else
                     window[windowPos] <- 0UL
                     None)

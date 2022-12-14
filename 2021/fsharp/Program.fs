@@ -4,16 +4,13 @@ open AdventOfCode.FSharp.Y2021
 let inline E v = v |> string |> Some
 
 let inline old (part1: string -> string) (part2: string -> string) =
-  [
-    fun data output ->
-      let text = AdventOfCode.FSharp.Util.text data
-      part1 text |> output 1
-      part2 text |> output 2
-  ]
+    [ fun data output ->
+          let text = AdventOfCode.FSharp.Util.text data
+          part1 text |> output 1
+          part2 text |> output 2 ]
 
 let days =
-    [ 
-      01, [ Day01.run ]
+    [ 01, [ Day01.run ]
       02, [ Day02.run ]
       03, [ Day03.run ]
       04, [ Day04.run ]
@@ -35,11 +32,7 @@ let days =
       20, [ Day20.run ]
       21, [ Day21.run ]
       22, [ Day22.run ]
-      23, [ Day23.run ]
-    ]
-    |> List.map (fun (d, r) ->
-            { year = 2021
-              day = d
-              runs = r })
+      23, [ Day23.run ] ]
+    |> List.map (fun (d, r) -> { year = 2021; day = d; runs = r })
 
 runCommandLine days

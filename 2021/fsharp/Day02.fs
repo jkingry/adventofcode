@@ -5,7 +5,7 @@ module Day02 =
     open AdventOfCode.FSharp.Util
     type Pos = { depth: int; h: int; aim: int }
 
-    let executeInput exec (input: string []) =
+    let executeInput exec (input: string[]) =
         let { depth = depth; h = h } =
             input
             |> Seq.map (fun line -> let p = line.Split(' ') in (p.[0], int p.[1]))
@@ -15,6 +15,7 @@ module Day02 =
 
     let run input output =
         let input = input |> text
+
         let executeCommand1 p (direction, x) =
             match direction with
             | "down" -> { p with depth = p.depth + x }
@@ -24,10 +25,7 @@ module Day02 =
 
         let commands = input |> splitLine
 
-        let part1 =
-            commands
-            |> executeInput executeCommand1
-            |> string
+        let part1 = commands |> executeInput executeCommand1 |> string
         output 1 part1
 
         let executeCommand2 p (direction, x) =
@@ -39,9 +37,6 @@ module Day02 =
                     h = p.h + x
                     depth = p.depth + (p.aim * x) }
             | s -> failwith (sprintf "Unexpected command '%s'" s)
-        
-        let part2 = 
-            commands
-            |> executeInput executeCommand2
-            |> string
+
+        let part2 = commands |> executeInput executeCommand2 |> string
         output 2 part2

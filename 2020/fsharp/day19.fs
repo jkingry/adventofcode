@@ -37,7 +37,7 @@ module Day19 =
                 | Literal c when c = message.[np] -> np <- np + 1
                 | Single a when np + q.Count + a.Length <= message.Length -> //
                     a |> List.rev |> List.iter (fun i -> q.Push(i))
-                | Double (a, b) when np + q.Count + a.Length <= message.Length -> //
+                | Double(a, b) when np + q.Count + a.Length <= message.Length -> //
                     stack.Push((np, a @ (q |> Seq.toList)))
                     stack.Push((np, b @ (q |> Seq.toList)))
                     q.Clear()
@@ -84,9 +84,7 @@ module Day19 =
 
 
     let validateCount rules messages =
-        messages
-        |> Seq.filter (fun m -> validate rules m)
-        |> Seq.length
+        messages |> Seq.filter (fun m -> validate rules m) |> Seq.length
 
     let part1 (input: string) =
         let rules, messages = parseInput input
