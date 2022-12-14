@@ -24,12 +24,14 @@ module NorthPole =
     type DayResult =
         { day: int
           index: int
-          results: Result<string, string> option[]
+          results: (string option * Result<unit, string> option)[]
           elapsedMs: float }
 
     type private BlackBox =
         [<System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
         static member public GetValue a = a
+
+    let MaxOutputs = 10
 
     module private Impl =
         let NullOut = new StreamWriter(Stream.Null)
@@ -146,17 +148,18 @@ module NorthPole =
         let runDay (d: Day) (inputType: InputType) (repeat: int) (silentOutput: bool) =
             let input = getInput d.year d.day inputType |> Option.get
 
-            let expected =
-                [| getExpected d.day inputType 1; getExpected d.day inputType 2; None |]
+            let expected = Array.create MaxOutputs None
+            expected[0] <- getExpected d.day inputType 1
+            expected[1] <- getExpected d.day inputType 2
 
             let actualsToResults actuals =
                 Array.zip actuals expected
                 |> Array.map (function
                     | Some a, Some e when e <> a -> sprintf "Expected: '%s' Actual: '%s'" e a |> Error |> Some
                     | None, Some e -> sprintf "Expected: '%s', Actual: BLANK" e |> Error |> Some
-                    | None, _ -> None
-                    | Some a, None -> sprintf "Unknown: %s" a |> Ok |> Some
-                    | Some a, _ -> a |> Ok |> Some)
+                    | _, None -> None
+                    | _ -> Ok() |> Some)
+                |> Array.zip actuals
 
             let originalOut = Console.Out
 
@@ -164,7 +167,7 @@ module NorthPole =
             |> List.indexed
             |> Seq.ofList
             |> Seq.map (fun (index, thunk) ->
-                let actuals = Array.create 3 None
+                let actuals = Array.create 10 None
 
                 let output part result = actuals[part - 1] <- Some result
 
@@ -218,19 +221,25 @@ module NorthPole =
             let repeats = 1
             let silentOutput = false
 
-            let resToStr (res: Result<string, string> option) =
-                match res with
-                | None -> "BLANK"
-                | Some(Error s) -> sprintf "Error: %s" s
-                | Some(Ok s) -> s
+            let resToStr (output, result) =
+                let output = output |> Option.defaultValue "BLANK"
+
+                let result =
+                    match result with
+                    | None -> "Unknown"
+                    | Some(Ok _) -> "GOOD"
+                    | Some(Error s) -> sprintf "ERROR: %s" s
+
+                sprintf "%s %s" output result
 
             for r in runDay day inputType repeats silentOutput do
                 printfn "%3d %8.3f %4d %s [%d]" r.day r.elapsedMs 1 (resToStr r.results[0]) r.index
+                printfn "%3d %8.3f %4d %s [%d]" r.day r.elapsedMs 2 (resToStr r.results[1]) r.index
 
-                for (p, pr) in r.results |> Array.indexed |> Array.tail do
+                for (p, pr) in r.results |> Array.indexed |> Array.skip 2 do
                     match pr with
-                    | Some v -> printfn "%3d %8s %4d %s" r.day "" (p + 1) (resToStr pr)
-                    | None -> ()
+                    | Some _, _ -> printfn "%3d %8s %4d %s" r.day "" (p + 1) (resToStr pr)
+                    | _ -> ()
 
         let executeTest (dayIndexArg: int option) (repeats: int option) (days: Day list) =
             let days =
@@ -238,42 +247,79 @@ module NorthPole =
                 | Some dayIndex -> days |> List.find (fun d -> d.day = dayIndex) |> List.singleton
                 | None -> days
 
-            printfn "%3s %8s" "Day" "Time"
 
             let silentOutput = true
             let repeats = repeats |> Option.defaultValue 1
-            let mutable totalMs = 0.0
+            let mutable fastestTotalMs = 0.0
+            let mutable slowestTotalMs = 0.0
 
             let mutable dayTimes = Map.empty
 
             printfn "By day:"
+            printfn "%5s %8s %3s" "Day" "Time" "[S]"
+
+            let resultsToState results =
+                let (e, u) =
+                    results
+                    |> Array.take 2
+                    |> Array.fold
+                        (fun (e, u) (_, r) ->
+                            match r with
+                            | None -> (e, u + 1)
+                            | Some(Error _) -> (e + 1, u)
+                            | _ -> (e, u))
+                        (0, 0)
+
+                let es = if e > 0 then sprintf "E%i" e else ""
+                let us = if u > 0 then sprintf "U%i" u else ""
+                sprintf "%s%s" es us
+
+            let multi slow fast =
+                let factor = slow / fast
+
+                if factor < 2.0 then
+                    sprintf "%.2f%%" (100.0 * (factor - 1.0))
+                else
+                    sprintf "x%.2f" factor
+
 
             for day in days do
                 let mutable fastestMs = Double.PositiveInfinity
+                let mutable slowestMs = Double.NegativeInfinity
 
                 for r in runDay day InputType.Default repeats silentOutput do
-                    for o in r.results do
-                        match o with
-                        | Some(Error s) -> eprintfn "Error: %A" s
-                        | _ -> ()
-
                     if r.index > 0 then
-                        let multi = 100.0 - (100.0 * r.elapsedMs / fastestMs)
-                        printfn "%3d %8.3f [%d] %.2f%%" r.day (r.elapsedMs / (float repeats)) r.index multi
+                        printfn
+                            "%5d %8.3f %3s [%d] %s"
+                            r.day
+                            (r.elapsedMs / (float repeats))
+                            (resultsToState r.results)
+                            r.index
+                            (multi fastestMs r.elapsedMs)
                     else
-                        printfn "%3d %8.3f [%d]" r.day (r.elapsedMs / (float repeats)) r.index
+                        printfn
+                            "%5d %8.3f %3s [%d]"
+                            r.day
+                            (r.elapsedMs / (float repeats))
+                            (resultsToState r.results)
+                            r.index
 
                     fastestMs <- min fastestMs r.elapsedMs
+                    slowestMs <- max slowestMs r.elapsedMs
 
                 dayTimes <- dayTimes |> Map.add day.day fastestMs
-                totalMs <- totalMs + fastestMs
+                fastestTotalMs <- fastestTotalMs + fastestMs
+                slowestTotalMs <- slowestTotalMs + slowestMs
 
-            printfn "%3s %8.3f" "Total" (totalMs / (float repeats))
+            printfn "%5s %8.3f" "Total" (slowestTotalMs / (float repeats))
 
-            printfn "By (fastest) time:"
+            printfn "\nBy (fastest) time:"
+            printfn "%5s %8s" "Day" "Time"
 
             for (day, time) in dayTimes |> Map.toList |> List.sortBy snd do
-                printfn "%3d %8.3f" day (time / (float repeats))
+                printfn "%5d %8.3f" day (time / (float repeats))
+
+            printfn "%5s %8.3f %s" "Total " (fastestTotalMs / (float repeats)) (multi slowestTotalMs fastestTotalMs)
 
     open Impl
 
