@@ -18,7 +18,9 @@ let days =
       [ Day13.runJson
         Day13.runFParsec
         Day13.runHandParse
-        Day13.runHandParseNoSort ] ]
+        Day13.runHandParseNoSort ]
+      14, [ Day14.run ]
+       ]
     |> List.map (fun (d, r) -> { year = 2022; day = d; runs = r })
 
 runCommandLine days
