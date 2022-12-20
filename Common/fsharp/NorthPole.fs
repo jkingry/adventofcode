@@ -216,7 +216,7 @@ module NorthPole =
                 | Some dayIndex -> days |> List.find (fun d -> d.day = dayIndex)
                 | None -> days |> List.last
 
-            printfn "%3s %8s %4s %s" "Day" "Time" "Part" "Value"
+            printfn "%3s %8s %3s %4s %8s %s" "Day" "Time" "#" "Part" "Status" "Value"
 
             let repeats = 1
             let silentOutput = false
@@ -230,11 +230,11 @@ module NorthPole =
                     | Some(Ok _) -> "GOOD"
                     | Some(Error s) -> sprintf "ERROR: %s" s
 
-                sprintf "%s %s" output result
+                sprintf "%8s %s" result output
 
             for r in runDay day inputType repeats silentOutput do
-                printfn "%3d %8.3f %4d %s [%d]" r.day r.elapsedMs 1 (resToStr r.results[0]) r.index
-                printfn "%3d %8.3f %4d %s [%d]" r.day r.elapsedMs 2 (resToStr r.results[1]) r.index
+                printfn "%3d %8.3f %3d %4d %s" r.day r.elapsedMs r.index 1 (resToStr r.results[0]) 
+                printfn "%3d %8s %3d %4d %s"   r.day ""          r.index 2 (resToStr r.results[1]) 
 
                 for (p, pr) in r.results |> Array.indexed |> Array.skip 2 do
                     match pr with
