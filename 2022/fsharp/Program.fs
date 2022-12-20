@@ -20,7 +20,7 @@ let days =
         Day13.runHandParse
         Day13.runHandParseNoSort ]
       14, [ Day14.runVisualize; Day14.run ]
-      15, [ Day15.run ] ]
+      15, [ Day15.run; Day15.runFast ] ]
     |> List.map (fun (d, r) -> { year = 2022; day = d; runs = r })
 
 runCommandLine days
