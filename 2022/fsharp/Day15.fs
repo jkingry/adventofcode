@@ -13,6 +13,9 @@ module Day15 =
         | Regex @"Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)" [sx;sy;bx;by] ->
             (int sx), (int sy), (int bx), (int by)
         | line -> failwithf "Failed parsing: %s" line)
+        |> Array.map (fun (sx, sy, bx, by) ->
+            let d = (abs (sx - bx)) + (abs (sy - by))
+            sx, sy, d)
 
     let rec addMarked (s,f) list =
         match list with
@@ -23,11 +26,13 @@ module Day15 =
             else
                 (rs,rf)::(addMarked (s,f) xs)
 
-    let findMarked marked row readings =
+    let findMarked minLength marked row readings =
         let mutable marked = marked
-        
-        for (sx,sy,bx,by ) in readings do
-            let d = (abs (sx - bx)) + (abs (sy - by))
+        let mutable ri = 0
+        while List.length marked > minLength && ri < (Array.length readings) do
+            let (sx,sy,d) = readings[ri]
+            ri <- ri + 1
+
             let drow = d - (abs (sy - row))
 
             if drow > 0 then
@@ -44,7 +49,7 @@ module Day15 =
         // let maxBoundary = 20
 
         readings
-            |> findMarked [] (maxBoundary / 2)  
+            |> findMarked -1 [] (maxBoundary / 2)  
             |> List.map (fun (a,b) -> b - a)
             |> List.sum        
             |> string |> output 1
@@ -53,13 +58,14 @@ module Day15 =
         let mutable row = 0
         let boundaries = [(System.Int32.MinValue, 0); (maxBoundary, System.Int32.MaxValue)]
         while found.IsNone && row <= maxBoundary do
-            let marked = readings |> findMarked boundaries row 
+            let marked = readings |> findMarked 1 boundaries row 
             if marked.Length > 1 then
                 let x = (marked |> List.map snd |> List.min) + 1
                 found <- (x, row) |> Some
 
             row <- row + 1
 
+        printfn "%A" found
         let (x,y) = found.Value
         let x = x |> int64
         let y = y |> int64
