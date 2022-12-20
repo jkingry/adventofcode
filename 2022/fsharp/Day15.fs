@@ -5,6 +5,11 @@ module Day15 =
     open Checked
     open AdventOfCode.FSharp.Util
 
+    let maxBoundary = 4000000
+    // let maxBoundary = 20
+
+    let inline manhattanDistance ax ay bx by = (abs (ax - bx)) + (abs (ay - by))
+
     let parse input =
         input 
         |> text
@@ -14,7 +19,7 @@ module Day15 =
             (int sx), (int sy), (int bx), (int by)
         | line -> failwithf "Failed parsing: %s" line)
         |> Array.map (fun (sx, sy, bx, by) ->
-            let d = (abs (sx - bx)) + (abs (sy - by))
+            let d = manhattanDistance sx sy bx by
             sx, sy, d)
 
     let rec addMarked (s,f) list =
@@ -45,9 +50,6 @@ module Day15 =
     let run (input: byte[]) (output: int -> string -> unit) =
         let readings = parse input
 
-        let maxBoundary = 4000000
-        // let maxBoundary = 20
-
         readings
             |> findMarked -1 [] (maxBoundary / 2)  
             |> List.map (fun (a,b) -> b - a)
@@ -65,9 +67,52 @@ module Day15 =
 
             row <- row + 1
 
-        printfn "%A" found
         let (x,y) = found.Value
         let x = x |> int64
         let y = y |> int64
 
         (x * 4_000_000L) + y |> string |> output 2
+
+    let getManhattanPerimeter x y d =
+        seq {
+            for dx=0 to d do
+                let dy = d - dx
+
+                yield (x + dx, y + dy)
+                yield (x + dx, y - dy)
+                yield (x - dx, y + dy)
+                yield (x - dx, y - dy)
+        }
+
+    let findElf (minX,minY) (maxX, maxY) (readings: (int*int*int)[])  =
+        let mutable elf = None
+        let mutable i = 0 
+
+        while elf.IsNone && i < readings.Length do
+            let (sx, sy, d) = readings[i]
+            let outsideBorder =
+                getManhattanPerimeter sx sy (d + 1)
+                |> Seq.filter (fun (x,y) -> minX <= x && x <= maxX && minY <= y && y <= maxY)
+            
+            elf <-
+                outsideBorder
+                |> Seq.tryFind (fun (x,y) -> readings |> Array.forall (fun (sx,sy,d) -> (manhattanDistance sx sy x y) > d))
+            i <- i + 1
+        elf
+
+    let runFast (input: byte[]) (output: int -> string -> unit) =
+        let readings = parse input
+
+        readings
+            |> findMarked -1 [] (maxBoundary / 2)  
+            |> List.map (fun (a,b) -> b - a)
+            |> List.sum        
+            |> string |> output 1
+
+        let found = findElf (0,0) (maxBoundary, maxBoundary) readings
+
+        let (x,y) = found.Value
+        let x = x |> int64
+        let y = y |> int64
+        (x * 4_000_000L) + y |> string |> output 2
+
