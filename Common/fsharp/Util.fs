@@ -246,22 +246,27 @@ module Util =
 
     let inline parseIntToAny (s: byte[]) (pos: int) =
         let mutable res = 0
-        let mutable sign = 1
         let mutable pos' = pos
         let mutable foundNonDigit = false
 
-        while pos' < (s.Length - 1) && not ('0'B <= s[pos'] && s[pos'] <= '9'B)  do
+        while pos' < (s.Length - 1) && s[pos'] <> '-'B && not ('0'B <= s[pos'] && s[pos'] <= '9'B)  do
             pos' <- pos' + 1
+
+        let sign = 
+            if s[pos'] = '-'B then
+                pos' <- pos' + 1
+                -1 
+            else 
+                1
 
         while (not foundNonDigit) && pos' < s.Length do
             let c = s[pos']
 
             match c with
-            | '-'B -> sign <- -1
-            | c when '0'B <= c && c <= '9'B -> res <- res * 10 + int (c - '0'B)
+            | c when '0'B <= c && c <= '9'B -> 
+                res <- res * 10 + int (c - '0'B)
+                pos' <- pos' + 1
             | _ -> foundNonDigit <- true
-
-            pos' <- pos' + 1
 
         (pos', sign * res)        
 
