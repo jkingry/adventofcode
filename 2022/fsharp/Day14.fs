@@ -30,16 +30,19 @@ module Day14 =
 
         while i < input.Length do
             let (i2, x) = parseIntToAny input i
-            let (i3, y) = parseIntToAny input i2
-            i <- i3
+            let (i3, y) = parseIntToAny input (i2 + 1)
+
             wall <- (x, y) :: wall
 
             if y > maxY then
                 maxY <- y
 
-            if input[i - 1] = '\n'B then
+            if i3 >= input.Length || input[i3] = '\n'B then
                 wallLists <- wall :: wallLists
                 wall <- []
+                i <- i3 + 1
+            else
+                i <- i3 + 4
 
         wallLists <- wall :: wallLists
 
