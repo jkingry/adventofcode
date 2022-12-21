@@ -69,6 +69,10 @@ module Util =
         let empty<'a, 'b when 'a: comparison and 'b: comparison> =
             (Map.empty: Map<'a, 'b>), ((Heap.empty false): Heap<'b * 'a>)
 
+        let emptyMax<'a, 'b when 'a: comparison and 'b: comparison> =
+            (Map.empty: Map<'a, 'b>), ((Heap.empty true): Heap<'b * 'a>)
+
+
         let add state cost (costs: Map<'a, 'b>, q) =
             let costs' = costs |> Map.add state cost
             let q' = q |> Heap.insert (cost, state)
@@ -81,7 +85,9 @@ module Util =
             let mutable found = false
 
             while not (found || Heap.isEmpty q) do
-                let (_, current), nq = Heap.uncons q
+                let (currentCost, current), nq = Heap.uncons q
+
+                printfn "%A %A" currentCost current
 
                 if goalFunc current then
                     found <- true
@@ -94,8 +100,61 @@ module Util =
                         if tentativeScore < (scores |> Map.tryFind move |> Option.defaultValue infiniteCost) then
                             scores <- scores |> Map.add move tentativeScore
                             q <- q |> Heap.insert (tentativeScore, move)
-
             scores, q
+
+        let runAstar infiniteCost movesFunc goalFunc h (s: Map<'a, 'b>, q) =
+            let mutable q = q
+            let mutable gScores = s
+            let mutable fScores = s
+
+            let mutable found = false
+
+            while not (found || Heap.isEmpty q) do
+                let (currentCost, current), nq = Heap.uncons q
+
+                printfn "%A %A" currentCost current
+
+                if goalFunc current then
+                    found <- true
+                else
+                    q <- nq
+
+                    for (move, moveCost) in movesFunc current do
+                        let tentative_gScore = gScores[current] + moveCost
+                        let existing_gScore = gScores |> Map.tryFind move |> Option.defaultValue infiniteCost
+                        
+                        if tentative_gScore < existing_gScore then
+                            gScores <- gScores |> Map.add move tentative_gScore
+                            
+                            let tentative_fScore = tentative_gScore + h (move)
+                            
+                            fScores <- fScores |> Map.add move tentative_fScore
+                            q <- q |> Heap.insert (tentative_fScore, move)
+            gScores, q            
+
+        let runMax zeroCost movesFunc goalFunc (scores: Map<'a, 'b>, q) =
+            let mutable q = q
+            let mutable scores = scores
+
+            let mutable found = false
+
+            while not (found || Heap.isEmpty q) do
+                let (currentCost, current), nq = Heap.uncons q
+
+                printfn "%A %A" currentCost current
+
+                if goalFunc current then
+                    found <- true
+                else
+                    q <- nq
+
+                    for (move, moveCost) in movesFunc current do
+                        let tentativeScore = scores[current] + moveCost
+
+                        if tentativeScore > (scores |> Map.tryFind move |> Option.defaultValue zeroCost) then
+                            scores <- scores |> Map.add move tentativeScore
+                            q <- q |> Heap.insert (tentativeScore, move)
+            scores, q            
 
     module Dijkstra2D =
         open FSharpx.Collections
