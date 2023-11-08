@@ -49,3 +49,25 @@ module Day08 =
 
     let part2 (text: string) =
         parse text |> Array.map solve |> Array.sum |> string
+
+    let runOld (input: byte array) (output: int -> string -> unit) =
+        let inputText = input |> text
+        inputText |> part1 |> output 1
+        inputText |> part2 |> output 2
+
+    let run (input: byte array) (output: int -> string -> unit) =
+        let parsed = input |> text |> parse
+
+        let uniqueNumbers = set [ 2; 3; 4; 7 ]
+        parsed
+        |> Array.map (fun (_, e) -> e |> Array.filter (fun s -> uniqueNumbers |> Set.contains s.Length))
+        |> Array.map Array.length
+        |> Array.sum
+        |> string
+        |> output 1
+
+        parsed
+        |> Array.map solve
+        |> Array.sum
+        |> string
+        |> output 2
