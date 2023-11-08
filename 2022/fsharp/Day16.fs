@@ -6,7 +6,6 @@ module Day16 =
     open AdventOfCode.FSharp.Util
     open FSharpx.Collections
 
-
     let LineRegex =
         @"^Valve (..) has flow rate=(\d+); tunnel(?:(?: leads to valve (..))|(?:s lead to valves (.+)))$"
 

@@ -102,6 +102,8 @@ module NorthPole =
                 else
                     dir <- Path.GetDirectoryName dir
 
+            if sessionValue = None then
+                failwith "Could not find .adventofcode.session file"
             sessionValue.Value
 
         let downloadInput year day inputPath =
