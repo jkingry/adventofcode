@@ -56,8 +56,8 @@ module Day12 =
         costs[firstA.Value] |> string |> output 2
 
     let runFast (input: byte[]) (output: int -> string -> unit) =
-        let lines = input |> text |> splitLine
-        let a = lines |> Array.map (fun s -> s.ToCharArray()) |> array2D
+        let lines = input |> bsplit '\n'B
+        let a = lines |> array2D
 
         let mutable (sx, sy) = (0, 0)
         let mutable (gx, gy) = (0, 0)
@@ -66,11 +66,11 @@ module Day12 =
             a
             |> Array2D.mapi (fun x y v ->
                 match v with
-                | 'S' ->
+                | 'S'B ->
                     sx <- x
                     sy <- y
                     0uy
-                | 'E' ->
+                | 'E'B ->
                     gx <- x
                     gy <- y
                     25uy

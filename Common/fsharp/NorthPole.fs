@@ -171,7 +171,7 @@ module NorthPole =
                         File.WriteAllText(htmlCachePath, htmlText)
                         htmlText
 
-                let answerRegex = System.Text.RegularExpressions.Regex "Your puzzle answer was <code>(.+)</code>"
+                let answerRegex = System.Text.RegularExpressions.Regex "Your puzzle answer was <code>(.+?)</code>"
                 let answers: string array = answerRegex.Matches data |> Seq.map (fun m -> m.Groups[1].Value) |> Seq.toArray
 
                 if answers.Length < part then

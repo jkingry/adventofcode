@@ -257,6 +257,22 @@ module Util =
     let splitDoubleLine (s: string) =
         s.Split([| "\r\n\r\n"; "\n\n" |], StringSplitOptions.RemoveEmptyEntries)
 
+    let bsplit (splitBy: byte) (b: byte[]) =
+        let lenEstimate = b.Length / 81
+        let mutable res = []
+        let item = System.Collections.Generic.List<byte>(lenEstimate)
+        for i = 0 to b.Length - 1 do
+            let c = b.[i]
+            if c = splitBy then
+                res <- item.ToArray() :: res
+                item.Clear()
+            else
+                item.Add(c)
+        if item.Count > 0 then
+            res <- item.ToArray() :: res
+        res |> List.rev |> Array.ofList
+
+
     let intersects aStart aEnd bStart bEnd =
         aStart <= bEnd && aEnd >= bStart
 

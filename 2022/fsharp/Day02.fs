@@ -47,7 +47,7 @@ module Day02 =
         let part3 = part2 - elfScore
         part3 |> string |> output 3
 
-    let runFast input output =
+    let runFast (input: byte array) output =
         let s = new System.ReadOnlySpan<byte>(input)
 
         let mutable part1 = 0
