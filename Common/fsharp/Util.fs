@@ -329,6 +329,17 @@ module Util =
 
         (pos', sign * res)        
 
+    let parseInts (s: byte[]) =
+        let mutable i = 0
+        let mutable res = []
+
+        while i < (s.Length - 1) do
+            let (ni, v) = parseIntToAny s i
+            res <- v :: res
+            i <- ni
+
+        res |> List.rev |> Array.ofList        
+
     let inline parseIntToDelim (s: byte[]) (pos: int) (delimChar: byte) =
         let mutable res = 0
         let mutable sign = 1
