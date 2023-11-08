@@ -135,6 +135,53 @@ module NorthPole =
                 File.WriteAllBytes(inputPath, data)
                 Some data
 
+        let downloadExpected year day part (expectedPath: string) =
+            let releaseDate = getReleaseTime year day
+
+            if releaseDate > DateTime.UtcNow then
+                printf "%A is in the future, no expected result yet" releaseDate
+                None
+            else
+                let htmlCachePath = Path.Combine ( (Path.GetDirectoryName expectedPath), (sprintf "%02i.html" day) )
+
+                let data = 
+                    if htmlCachePath |> File.Exists then
+                        printfn "Using cached HTML file %s" htmlCachePath
+                        File.ReadAllText htmlCachePath
+                    else
+                        let session = getSessionValue ()
+
+                        ensureRequestLimit ()
+
+                        let client = new Net.Http.HttpClient()
+                        client.DefaultRequestHeaders.Clear()
+
+                        client.DefaultRequestHeaders.Add(
+                            "User-Agent",
+                            "github.com/0.1 jkingry/adventofcode by joe-at-kingry.ca"
+                        )
+
+                        client.DefaultRequestHeaders.Add("Cookie", sprintf "session=%s" session)
+
+                        let inputUrl = sprintf "https://adventofcode.com/%i/day/%i" year day |> Uri
+                        printfn "Downloading %O" inputUrl
+                        let task = client.GetStringAsync inputUrl
+                        let htmlText = task.Result
+                        printfn "Saving to %s" htmlCachePath
+                        File.WriteAllText(htmlCachePath, htmlText)
+                        htmlText
+
+                let answerRegex = System.Text.RegularExpressions.Regex "Your puzzle answer was <code>(.+)</code>"
+                let answers: string array = answerRegex.Matches data |> Seq.map (fun m -> m.Groups[1].Value) |> Seq.toArray
+
+                if answers.Length < part then
+                    printfn "No answer for part %i" part
+                    None
+                else
+                    printfn "Saving to %s" expectedPath
+                    File.WriteAllText(expectedPath, answers.[part - 1])
+                    answers.[part - 1] |> Some
+
         let getInput (year: int) (day: int) (inputType: InputType) =
             let path = getInputPath day inputType
 
@@ -143,16 +190,19 @@ module NorthPole =
             | None when inputType = InputType.Default -> downloadInput year day path
             | None -> None
 
-        let getExpected (day: int) (inputType: InputType) (part: int) =
+        let getExpected (year: int) (day: int) (inputType: InputType) (part: int) =
             let path = getExpectedPath day inputType part
-            readFile path |> Option.map text
+            match readFile path with 
+            | Some data -> data |> text |> Some
+            | None when inputType = InputType.Default -> downloadExpected year day part path
+            | None -> None
 
         let runDay (d: Day) (inputType: InputType) (repeat: int) (silentOutput: bool) =
             let input = getInput d.year d.day inputType |> Option.get
 
             let expected = Array.create MaxOutputs None
-            expected[0] <- getExpected d.day inputType 1
-            expected[1] <- getExpected d.day inputType 2
+            expected[0] <- getExpected d.year d.day inputType 1
+            expected[1] <- getExpected d.year d.day inputType 2
 
             let actualsToResults actuals =
                 Array.zip actuals expected
@@ -172,12 +222,16 @@ module NorthPole =
                 let actuals = Array.create 10 None
 
                 let output part result = actuals[part - 1] <- Some result
+                let dummyOut part result = ()
 
                 let w = Diagnostics.Stopwatch()
 
                 try
                     if silentOutput then
                         Console.SetOut NullOut
+
+                    if repeat > 1 then
+                        thunk (BlackBox.GetValue input) dummyOut
 
                     w.Start()
 
