@@ -16,7 +16,7 @@ let days =
       04, [ Day04.run ]
       05, [ Day05.run ]
       06, [ Day06.runOld; Day06.run ]
-      07, old Day07.part1 Day07.part2
+      07, [ Day07.runOld; Day07.run ]
       08, old Day08.part1 Day08.part2
       09, old Day09.part1 Day09.part2
       10, old Day10.part1 Day10.part2
