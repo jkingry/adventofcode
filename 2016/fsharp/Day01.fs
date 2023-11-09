@@ -1,14 +1,13 @@
-namespace AdventOfCode.FSharp.Y2017
+namespace AdventOfCode.FSharp.Y2016
 
-open System
+module Day01 =
+    open System
+    open AdventOfCode.FSharp.Util
 
-module Day1 =
+    let parse input =
+        input |> splitLine |> Array.map int
 
-    let parse (input: string seq) =
-        input |> Seq.map Int32.Parse |> Seq.toArray
-
-
-    let part1 (input: string seq) =
+    let part1 input =
         let x = input |> parse
 
         Array.allPairs x x
@@ -16,11 +15,9 @@ module Day1 =
         |> Seq.map (fun (a, b) -> a * b)
         |> Seq.head
         |> bigint
+        |> string
 
-    let list3tuple (l: 'a list list) =
-        l |> List.map (fun x -> x.[0], x.[1], x.[2])
-
-    let part2 (input: string seq) =
+    let part2 input =
         let x = input |> parse
 
         Array.allPairs x x
@@ -29,3 +26,4 @@ module Day1 =
         |> Seq.map (fun (a, (b, c)) -> a * b * c)
         |> Seq.head
         |> bigint
+        |> string

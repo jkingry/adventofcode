@@ -1,7 +1,8 @@
 namespace AdventOfCode.FSharp.Y2018
 
-module Day2 =
-    let part1 (input: string seq) =
+module Day02 =
+    open AdventOfCode.FSharp.Util
+    let part1 (input: string) =
         let check s =
             let c =
                 s
@@ -12,12 +13,12 @@ module Day2 =
             (if (Set.contains 2 c) then 1 else 0), (if (Set.contains 3 c) then 1 else 0)
 
         let (two, three) =
-            input |> Seq.map check |> Seq.fold (fun (a, b) (c, d) -> (a + c, b + d)) (0, 0)
+            input |> splitLine |> Seq.map check |> Seq.fold (fun (a, b) (c, d) -> (a + c, b + d)) (0, 0)
 
-        two * three
+        two * three |> string
 
-    let part2 (input: string seq) =
-        let x = input |> Seq.toList
+    let part2 (input: string) =
+        let x = input |> splitLine
 
         let mutable found: (string * string) option = None
 
