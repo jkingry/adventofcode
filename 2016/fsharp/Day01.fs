@@ -1,7 +1,7 @@
 namespace AdventOfCode.FSharp.Y2016
 
+// Day 1: No Time for a Taxicab
 module Day01 =
-    open System
     open AdventOfCode.FSharp.Util
 
     type Turn =
