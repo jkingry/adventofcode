@@ -4,26 +4,71 @@ module Day01 =
     open System
     open AdventOfCode.FSharp.Util
 
-    let parse input =
-        input |> splitLine |> Array.map int
+    type Turn =
+        | Left
+        | Right
+        | Straight
 
-    let part1 input =
-        let x = input |> parse
+    let run (input: byte array) output =
+        let instructions =             
+            seq {
+                let mutable pos = 0
+                while pos < input.Length do
+                    let (pos', steps) = parseIntToDelim input (pos + 1) ','B
+                    let turn = 
+                        match input[pos] with
+                        | 'L'B -> Left
+                        | 'R'B -> Right
+                        | c -> failwithf "bad format, invalid turn: %A" (char c)
+                    
+                    pos <- pos' + 1
 
-        Array.allPairs x x
-        |> Seq.filter (fun (a, b) -> a <> b && (a + b) = 2020)
-        |> Seq.map (fun (a, b) -> a * b)
-        |> Seq.head
-        |> bigint
-        |> string
+                    yield turn, steps
+            }
+            |> List.ofSeq   
 
-    let part2 input =
-        let x = input |> parse
+        let followDirection (facing, x, y) (turn, steps) =
+            let facing' = 
+                match turn with
+                | Right -> (4 + (facing + 1)) % 4
+                | Left -> (4 + (facing - 1)) % 4
+                | Straight -> facing
 
-        Array.allPairs x x
-        |> Array.allPairs x
-        |> Seq.filter (fun (a, (b, c)) -> a <> b && a <> c && (a + b + c) = 2020)
-        |> Seq.map (fun (a, (b, c)) -> a * b * c)
-        |> Seq.head
-        |> bigint
-        |> string
+            let (x', y') = 
+                match facing' with
+                | 0 -> x, y + steps
+                | 1 -> x + steps, y
+                | 2 -> x, y - steps
+                | 3 -> x - steps, y
+                | f -> failwithf "impossible: %A" f
+            facing', x', y'             
+        
+        let (_, x, y) =
+            instructions
+                |> List.fold followDirection (0, 0, 0)
+
+        x + y |> string |> output 1
+
+        let rec findVisitedTwice visited pos instructions =
+            match instructions with
+            | (turn, steps)::xs ->
+                let (facing', x', y') = followDirection pos (turn, 1)
+
+                if visited |> Set.contains (x', y') then 
+                    Some (x', y')
+                else
+                    let rest = 
+                        if steps > 1 then
+                            (Straight, steps - 1)::xs
+                        else 
+                            xs
+                    let visited' = visited |> Set.add (x', y')
+                    rest |> findVisitedTwice visited' (facing', x', y')
+            | _ -> None
+        
+        let (vx, vy) = 
+            instructions
+                |> findVisitedTwice Set.empty (0, 0, 0)
+                |> Option.get
+        
+        vx + vy |> string |> output 2
