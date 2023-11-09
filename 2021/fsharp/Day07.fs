@@ -49,7 +49,7 @@ module Day07 =
         let inputText = input |> text
         inputText |> part1 |> output 1
         inputText |> part2 |> output 2
-    
+
     let run (input: byte array) output =
         let input = input |> parseInts |> Array.map int64 |> Array.sort
 
@@ -69,4 +69,3 @@ module Day07 =
         let min = localMin totalCost 0L (Array.max input)
 
         totalCost min |> string |> output 2
-

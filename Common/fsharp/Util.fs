@@ -100,6 +100,7 @@ module Util =
                         if tentativeScore < (scores |> Map.tryFind move |> Option.defaultValue infiniteCost) then
                             scores <- scores |> Map.add move tentativeScore
                             q <- q |> Heap.insert (tentativeScore, move)
+
             scores, q
 
         let runAstar infiniteCost movesFunc goalFunc h (s: Map<'a, 'b>, q) =
@@ -121,16 +122,19 @@ module Util =
 
                     for (move, moveCost) in movesFunc current do
                         let tentative_gScore = gScores[current] + moveCost
-                        let existing_gScore = gScores |> Map.tryFind move |> Option.defaultValue infiniteCost
-                        
+
+                        let existing_gScore =
+                            gScores |> Map.tryFind move |> Option.defaultValue infiniteCost
+
                         if tentative_gScore < existing_gScore then
                             gScores <- gScores |> Map.add move tentative_gScore
-                            
+
                             let tentative_fScore = tentative_gScore + h (move)
-                            
+
                             fScores <- fScores |> Map.add move tentative_fScore
                             q <- q |> Heap.insert (tentative_fScore, move)
-            gScores, q            
+
+            gScores, q
 
         let runMax zeroCost movesFunc goalFunc (scores: Map<'a, 'b>, q) =
             let mutable q = q
@@ -154,7 +158,8 @@ module Util =
                         if tentativeScore > (scores |> Map.tryFind move |> Option.defaultValue zeroCost) then
                             scores <- scores |> Map.add move tentativeScore
                             q <- q |> Heap.insert (tentativeScore, move)
-            scores, q            
+
+            scores, q
 
     module Dijkstra2D =
         open FSharpx.Collections
@@ -261,20 +266,23 @@ module Util =
         let lenEstimate = b.Length / 81
         let mutable res = []
         let item = System.Collections.Generic.List<byte>(lenEstimate)
+
         for i = 0 to b.Length - 1 do
             let c = b.[i]
+
             if c = splitBy then
                 res <- item.ToArray() :: res
                 item.Clear()
             else
                 item.Add(c)
+
         if item.Count > 0 then
             res <- item.ToArray() :: res
+
         res |> List.rev |> Array.ofList
 
 
-    let intersects aStart aEnd bStart bEnd =
-        aStart <= bEnd && aEnd >= bStart
+    let intersects aStart aEnd bStart bEnd = aStart <= bEnd && aEnd >= bStart
 
     let rec distribute e =
         function
@@ -324,26 +332,28 @@ module Util =
         let mutable pos' = pos
         let mutable foundNonDigit = false
 
-        while pos' < (s.Length - 1) && s[pos'] <> '-'B && not ('0'B <= s[pos'] && s[pos'] <= '9'B)  do
+        while pos' < (s.Length - 1)
+              && s[pos'] <> '-'B
+              && not ('0'B <= s[pos'] && s[pos'] <= '9'B) do
             pos' <- pos' + 1
 
-        let sign = 
+        let sign =
             if s[pos'] = '-'B then
                 pos' <- pos' + 1
-                -1 
-            else 
+                -1
+            else
                 1
 
         while (not foundNonDigit) && pos' < s.Length do
             let c = s[pos']
 
             match c with
-            | c when '0'B <= c && c <= '9'B -> 
+            | c when '0'B <= c && c <= '9'B ->
                 res <- res * 10 + int (c - '0'B)
                 pos' <- pos' + 1
             | _ -> foundNonDigit <- true
 
-        (pos', sign * res)        
+        (pos', sign * res)
 
     let parseInts (s: byte[]) =
         let mutable i = 0
@@ -354,7 +364,7 @@ module Util =
             res <- v :: res
             i <- ni
 
-        res |> List.rev |> Array.ofList        
+        res |> List.rev |> Array.ofList
 
     let inline parseIntToDelim (s: byte[]) (pos: int) (delimChar: byte) =
         let mutable res = 0

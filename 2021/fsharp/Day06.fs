@@ -12,6 +12,7 @@ module Day06 =
             let nextBirthDay = ((day + offset) + gestationTime) % maxAge
 
             ages.[nextBirthDay] <- ages.[nextBirthDay] + ages.[birthDay]
+
     let part1 (input: string) =
         let ages: int64[] = Array.zeroCreate 9
 
@@ -43,6 +44,7 @@ module Day06 =
         let ages: int64[] = Array.zeroCreate 9
 
         let mutable i = 0
+
         while i < (input.Length - 1) do
             let (ni, v) = parseIntToAny input i
             ages.[v] <- ages.[v] + 1L

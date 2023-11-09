@@ -59,6 +59,7 @@ module Day08 =
         let parsed = input |> text |> parse
 
         let uniqueNumbers = set [ 2; 3; 4; 7 ]
+
         parsed
         |> Array.map (fun (_, e) -> e |> Array.filter (fun s -> uniqueNumbers |> Set.contains s.Length))
         |> Array.map Array.length
@@ -66,8 +67,4 @@ module Day08 =
         |> string
         |> output 1
 
-        parsed
-        |> Array.map solve
-        |> Array.sum
-        |> string
-        |> output 2
+        parsed |> Array.map solve |> Array.sum |> string |> output 2

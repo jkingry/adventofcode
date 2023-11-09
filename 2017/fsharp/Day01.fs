@@ -4,8 +4,7 @@ open System
 
 module Day01 =
 
-    let parse (input: string) =
-        input.ToCharArray () |> Array.map int
+    let parse (input: string) = input.ToCharArray() |> Array.map int
 
 
     let part1 (input: string) =

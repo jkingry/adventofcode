@@ -9,11 +9,7 @@ module Day16 =
     let LineRegex =
         @"^Valve (..) has flow rate=(\d+); tunnel(?:(?: leads to valve (..))|(?:s lead to valves (.+)))$"
 
-    type Valve = 
-        {
-            rate: int
-            dests: string[]
-        }
+    type Valve = { rate: int; dests: string[] }
 
     let parse (input: byte[]) =
         input
@@ -21,22 +17,26 @@ module Day16 =
         |> splitLine
         |> Array.map (function
             | Regex LineRegex [ src; rate; dest; dests ] ->
-                src, {
-                    rate = int rate
-                    dests = 
-                        if dest.Length > 0 then
-                            [| dest |]
-                        else
-                            (dests.Split ',' |> Array.map (fun s -> s.Trim()))
+                src,
+                { rate = int rate
+                  dests =
+                    if dest.Length > 0 then
+                        [| dest |]
+                    else
+                        (dests.Split ',' |> Array.map (fun s -> s.Trim()))
 
-                    }
+                }
             | line -> failwithf "Failed parsing: %s" line)
         |> Map.ofArray
 
     let run (input: byte[]) (output: int -> string -> unit) =
         let valves = parse input
 
-        let nonZeroValves = valves |> Map.toSeq |> Seq.choose (fun (k, v) -> if v.rate > 0 then k |> Some else None) |> Set.ofSeq
+        let nonZeroValves =
+            valves
+            |> Map.toSeq
+            |> Seq.choose (fun (k, v) -> if v.rate > 0 then k |> Some else None)
+            |> Set.ofSeq
 
         let calculateDistances (adj: string -> seq<string>) (src: string) =
             let mutable q = Deque.empty |> Deque.conj src
@@ -48,21 +48,22 @@ module Day16 =
                 q <- nq
 
                 let dv = distances |> Map.find v
-                
+
                 for w in adj v do
-                    if distances |> Map.containsKey w then () else
+                    if distances |> Map.containsKey w then
+                        ()
+                    else
 
-                    distances <- distances |> Map.add w (dv + 1)
+                        distances <- distances |> Map.add w (dv + 1)
 
-                    q <- q |> Deque.conj w
+                        q <- q |> Deque.conj w
+
             distances
 
-        let valveAdj v = (valves |> Map.find v).dests |> Array.toSeq
+        let valveAdj v =
+            (valves |> Map.find v).dests |> Array.toSeq
 
-        let distances =
-            valves 
-            |> Map.map (fun k _ ->
-                    k |> calculateDistances valveAdj)  
+        let distances = valves |> Map.map (fun k _ -> k |> calculateDistances valveAdj)
 
         let mutable maxPressure = 0
         let mutable maxPressureState = None
@@ -70,7 +71,7 @@ module Day16 =
         let mutable q = Deque.empty |> Deque.conj (0, (30, "AA", nonZeroValves, 0))
 
         let mutable parents = Map.empty
-        
+
         while q |> Deque.isEmpty |> not do
             let ((pressure, state), nq) = q |> Deque.uncons
 
@@ -82,41 +83,40 @@ module Day16 =
                 maxPressure <- pressure
                 maxPressureState <- state |> Some
 
-            if timeLeft = 0 then () else
-            
-            let newPressure = pressure + (timeLeft * openValvePressure)
-            let newState = (0, currentValve, Set.empty, openValvePressure)
-            parents <- parents |> Map.add newState state
-            q <- q |> Deque.conj (newPressure, newState)
+            if timeLeft = 0 then
+                ()
+            else
 
-            let currentDistances = distances |> Map.find currentValve
+                let newPressure = pressure + (timeLeft * openValvePressure)
+                let newState = (0, currentValve, Set.empty, openValvePressure)
+                parents <- parents |> Map.add newState state
+                q <- q |> Deque.conj (newPressure, newState)
 
-            for closedValve in closedValves do
-                let closedValveDistance = currentDistances |> Map.find closedValve
+                let currentDistances = distances |> Map.find currentValve
 
-                let operationTime = closedValveDistance + 1
+                for closedValve in closedValves do
+                    let closedValveDistance = currentDistances |> Map.find closedValve
 
-                if timeLeft > operationTime then
-                    // open valve
+                    let operationTime = closedValveDistance + 1
 
-                    let newClosedValves = closedValves |> Set.remove closedValve
-                    let newOpenValvePressure = (valves |> Map.find closedValve).rate + openValvePressure 
-                    let newPressure = pressure + (operationTime * openValvePressure)
-                    
-                    let newState = 
-                        timeLeft - operationTime,
-                        closedValve,
-                        newClosedValves,
-                        newOpenValvePressure
-                    
-                    // printfn "Move to %A = %A = %A" closedValve newState newPressure
-                    parents <- parents |> Map.add newState state
-                    q <- q |> Deque.conj (newPressure, newState)
+                    if timeLeft > operationTime then
+                        // open valve
 
-        let path = 
-            maxPressureState 
+                        let newClosedValves = closedValves |> Set.remove closedValve
+                        let newOpenValvePressure = (valves |> Map.find closedValve).rate + openValvePressure
+                        let newPressure = pressure + (operationTime * openValvePressure)
+
+                        let newState =
+                            timeLeft - operationTime, closedValve, newClosedValves, newOpenValvePressure
+
+                        // printfn "Move to %A = %A = %A" closedValve newState newPressure
+                        parents <- parents |> Map.add newState state
+                        q <- q |> Deque.conj (newPressure, newState)
+
+        let path =
+            maxPressureState
             |> List.unfold (fun sv ->
-                match sv with 
+                match sv with
                 | Some s -> (s, (parents |> Map.tryFind s)) |> Some
                 | None -> None)
             |> List.rev
@@ -125,44 +125,51 @@ module Day16 =
 
         for p in path do
             printfn "%A" p
-                
+
         maxPressure |> string |> output 1
 
 
     let runOld (input: byte[]) (output: int -> string -> unit) =
         let valves = parse input
-        let numValves = valves |> Map.values |> Seq.filter (fun v -> v.rate > 0) |> Seq.length
-        let closedValves = valves |> Map.filter (fun _ v -> v.rate > 0) |> Map.keys |> Set.ofSeq
 
-        let moves valve = 
+        let numValves =
+            valves |> Map.values |> Seq.filter (fun v -> v.rate > 0) |> Seq.length
+
+        let closedValves =
+            valves |> Map.filter (fun _ v -> v.rate > 0) |> Map.keys |> Set.ofSeq
+
+        let moves valve =
             let v = valves |> Map.find valve
-            v.dests |> Array.map (fun d -> (d, 1)) 
+            v.dests |> Array.map (fun d -> (d, 1))
 
-        let distances = 
-            valves 
-            |> Map.keys 
+        let distances =
+            valves
+            |> Map.keys
             |> Seq.map (fun src ->
-                let dests = 
-                    valves 
-                    |> Map.keys 
-                    |> Seq.map (fun dest -> 
-                        let c, _ = 
+                let dests =
+                    valves
+                    |> Map.keys
+                    |> Seq.map (fun dest ->
+                        let c, _ =
                             DijkstraMap.empty
                             |> DijkstraMap.add src 0
                             |> DijkstraMap.run System.Int32.MaxValue moves (fun n -> n = dest)
+
                         dest, c[dest])
-                src, (dests |> Map.ofSeq)) 
+
+                src, (dests |> Map.ofSeq))
             |> Map.ofSeq
 
         let valveMoves (timeLeft, valve, cvalves) =
-            let openPressure = 
+            let openPressure =
                 Set.difference closedValves cvalves
                 |> Seq.map (fun o -> (valves |> Map.find o).rate)
                 |> Seq.sum
 
-            seq {                
-                if timeLeft <= 0 then () 
-                elif cvalves |> Set.isEmpty then 
+            seq {
+                if timeLeft <= 0 then
+                    ()
+                elif cvalves |> Set.isEmpty then
                     yield (timeLeft - 1, valve, cvalves), openPressure
                 else
                     let destDistances = distances |> Map.find valve
@@ -171,8 +178,9 @@ module Day16 =
                         let dist = destDistances |> Map.find dest
 
                         let travelTimeAndValveChange = dist + 1
+
                         if travelTimeAndValveChange < timeLeft then
-                            let pressureChange = openPressure * travelTimeAndValveChange                            
+                            let pressureChange = openPressure * travelTimeAndValveChange
                             let newTime = timeLeft - travelTimeAndValveChange
                             let newValves = cvalves |> Set.remove dest
 
@@ -180,15 +188,16 @@ module Day16 =
             }
 
         let h (timeLeft, _, cvalves) =
-            let openPressure = 
+            let openPressure =
                 Set.difference closedValves cvalves
                 |> Seq.map (fun o -> (valves |> Map.find o).rate)
                 |> Seq.sum
+
             -(openPressure * timeLeft)
 
         let (costs, _) =
             DijkstraMap.empty
             |> DijkstraMap.add (30, "AA", closedValves) 0
-            |> DijkstraMap.runAstar System.Int32.MaxValue valveMoves (fun (t, _, _) ->  t = 0) h
- 
+            |> DijkstraMap.runAstar System.Int32.MaxValue valveMoves (fun (t, _, _) -> t = 0) h
+
         costs |> Map.values |> Seq.map abs |> Seq.max |> string |> output 1
