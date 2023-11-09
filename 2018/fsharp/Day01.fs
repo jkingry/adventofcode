@@ -1,15 +1,15 @@
 namespace AdventOfCode.FSharp.Y2018
 
-open System
-
-module Day1 =
+module Day01 =
+    open System
+    open AdventOfCode.FSharp.Util
 
     let parse input =
-        input |> Seq.map Int32.Parse |> Seq.toArray
+        input |> splitLine |> Seq.map Int32.Parse |> Seq.toArray
 
-    let part1 (input: string seq) = parse input |> Seq.sum
+    let part1 (input: string) = parse input |> Seq.sum |> string
 
-    let part2 (input: string seq) =
+    let part2 (input: string) =
         let x = parse input
 
         let mutable dupe: int option = None
@@ -25,10 +25,10 @@ module Day1 =
 
                 found <- Set.add sum found
 
-        dupe.Value
+        dupe.Value |> string
 
 
-    let part3 (input: string seq) =
+    let part3 (input: string) =
         let x = parse input
 
         let rec f i sum found =
@@ -40,4 +40,4 @@ module Day1 =
             else
                 f (ni + 1) nsum (Set.add nsum found)
 
-        f 0 0 Set.empty
+        f 0 0 Set.empty |> string

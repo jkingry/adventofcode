@@ -11,6 +11,6 @@ let inline old (part1: string -> string) (part2: string -> string) =
 
 let days =
     [ 01, old Day01.part1 Day01.part2 ]
-    |> List.map (fun (d, r) -> { year = 2021; day = d; runs = r })
+    |> List.map (fun (d, r) -> { year = 2019; day = d; runs = r })
 
 runCommandLine days
