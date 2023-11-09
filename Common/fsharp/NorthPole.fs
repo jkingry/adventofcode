@@ -104,6 +104,7 @@ module NorthPole =
 
             if sessionValue = None then
                 failwith "Could not find .adventofcode.session file"
+
             sessionValue.Value
 
         let downloadInput year day inputPath =
@@ -142,9 +143,10 @@ module NorthPole =
                 printf "%A is in the future, no expected result yet" releaseDate
                 None
             else
-                let htmlCachePath = Path.Combine ( (Path.GetDirectoryName expectedPath), (sprintf "%02i.html" day) )
+                let htmlCachePath =
+                    Path.Combine((Path.GetDirectoryName expectedPath), (sprintf "%02i.html" day))
 
-                let data = 
+                let data =
                     if htmlCachePath |> File.Exists then
                         printfn "Using cached HTML file %s" htmlCachePath
                         File.ReadAllText htmlCachePath
@@ -171,8 +173,11 @@ module NorthPole =
                         File.WriteAllText(htmlCachePath, htmlText)
                         htmlText
 
-                let answerRegex = System.Text.RegularExpressions.Regex "Your puzzle answer was <code>(.+?)</code>"
-                let answers: string array = answerRegex.Matches data |> Seq.map (fun m -> m.Groups[1].Value) |> Seq.toArray
+                let answerRegex =
+                    System.Text.RegularExpressions.Regex "Your puzzle answer was <code>(.+?)</code>"
+
+                let answers: string array =
+                    answerRegex.Matches data |> Seq.map (fun m -> m.Groups[1].Value) |> Seq.toArray
 
                 if answers.Length < part then
                     printfn "No answer for part %i" part
@@ -192,13 +197,14 @@ module NorthPole =
 
         let getExpected (year: int) (day: int) (inputType: InputType) (part: int) =
             let path = getExpectedPath day inputType part
-            match readFile path with 
+
+            match readFile path with
             | Some data -> data |> text |> Some
             | None when inputType = InputType.Default -> downloadExpected year day part path
             | None -> None
 
-        let runDay (d: Day) (inputType: InputType) (repeat: int) (silentOutput: bool) =            
-            let input = 
+        let runDay (d: Day) (inputType: InputType) (repeat: int) (silentOutput: bool) =
+            let input =
                 match getInput d.year d.day inputType with
                 | Some s -> s
                 | _ -> failwithf "No %A input exists for %d day %d" inputType d.year d.day
@@ -292,8 +298,8 @@ module NorthPole =
                 sprintf "%8s %s" result output
 
             for r in runDay day inputType repeats silentOutput do
-                printfn "%3d %8.3f %3d %4d %s" r.day r.elapsedMs r.index 1 (resToStr r.results[0]) 
-                printfn "%3d %8s %3d %4d %s"   r.day ""          r.index 2 (resToStr r.results[1]) 
+                printfn "%3d %8.3f %3d %4d %s" r.day r.elapsedMs r.index 1 (resToStr r.results[0])
+                printfn "%3d %8s %3d %4d %s" r.day "" r.index 2 (resToStr r.results[1])
 
                 for (p, pr) in r.results |> Array.indexed |> Array.skip 2 do
                     match pr with

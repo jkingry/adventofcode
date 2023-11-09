@@ -10,9 +10,7 @@ let inline old (part1: string -> string) (part2: string -> string) =
           part2 text |> output 2 ]
 
 let days =
-    [ 
-        01, old Day01.part1 Day01.part2 
-        02, old Day02.part1 Day02.part2 ]
+    [ 01, old Day01.part1 Day01.part2; 02, old Day02.part1 Day02.part2 ]
     |> List.map (fun (d, r) -> { year = 2018; day = d; runs = r })
 
 runCommandLine days
