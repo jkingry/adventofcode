@@ -197,8 +197,11 @@ module NorthPole =
             | None when inputType = InputType.Default -> downloadExpected year day part path
             | None -> None
 
-        let runDay (d: Day) (inputType: InputType) (repeat: int) (silentOutput: bool) =
-            let input = getInput d.year d.day inputType |> Option.get
+        let runDay (d: Day) (inputType: InputType) (repeat: int) (silentOutput: bool) =            
+            let input = 
+                match getInput d.year d.day inputType with
+                | Some s -> s
+                | _ -> failwithf "No %A input exists for %d day %d" inputType d.year d.day
 
             let expected = Array.create MaxOutputs None
             expected[0] <- getExpected d.year d.day inputType 1
