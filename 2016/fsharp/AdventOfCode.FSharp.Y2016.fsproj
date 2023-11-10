@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Day*.fs" />
-    <!-- <Compile Include="Day02.fs" /> -->
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
