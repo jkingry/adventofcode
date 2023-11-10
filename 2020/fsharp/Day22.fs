@@ -86,3 +86,8 @@ module Day22 =
 
         let n = winnerDeck.Length
         winnerDeck |> List.mapi (fun i v -> (n - i) * v) |> List.sum |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

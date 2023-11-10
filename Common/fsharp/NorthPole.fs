@@ -14,7 +14,9 @@ module NorthPole =
         | Test = 1
         | Alt = 2
 
-    type RunDayThunk = byte[] -> (int -> string -> unit) -> unit
+    type OutputThunk = int -> string -> unit
+
+    type RunDayThunk = byte[] -> OutputThunk -> unit
 
     type Day =
         { year: int
@@ -420,3 +422,63 @@ module NorthPole =
         | Command.Run -> days |> executeRun dayIndexArg inputTypeArg
         | Command.Test -> days |> executeTest dayIndexArg repeatsArg
         | x -> failwithf "Unexpected command: %A" x
+
+    open FSharp.Quotations.Evaluator
+    open FSharp.Quotations
+
+    let findDays () =
+        let dayRegex = System.Text.RegularExpressions.Regex "Day([0-9]{2})"
+        let yearRegex = System.Text.RegularExpressions.Regex "Y([0-9]{4})"
+
+        let chooseValidYearDay (t: Type) =
+            let yearMatch = yearRegex.Match t.FullName
+            let dayMatch = dayRegex.Match t.Name
+
+            if yearMatch.Success && dayMatch.Success then
+                Some((int yearMatch.Groups[1].Value), (int dayMatch.Groups[1].Value))
+            else
+                None
+
+        let isValidRunMethod (m: System.Reflection.MethodInfo) =
+            let ps = m.GetParameters()
+
+            if ps.Length <> 2 then
+                false
+            else
+                let firstIsByteArray = ps[0].ParameterType = typeof<byte array>
+                let secondIsOutputAction = ps[1].ParameterType = typeof<(int -> string -> unit)>
+                firstIsByteArray && secondIsOutputAction
+
+        let chooseValidRuns (t: Type) =
+            let validRunMethods = t.GetMethods() |> Array.filter isValidRunMethod
+
+            if Array.isEmpty validRunMethods then
+                None
+            else
+                Some validRunMethods
+
+        let translateMethod (m: System.Reflection.MethodInfo) =
+            let inputVar = Var("input", typeof<byte[]>)
+            let inputVarExpr = Expr.Var inputVar
+            let outputVar = Var("output", typeof<OutputThunk>)
+            let outputVarExpr = Expr.Var outputVar
+
+            let expr =
+                Expr.Lambda(inputVar, Expr.Lambda(outputVar, Expr.Call(m, [ inputVarExpr; outputVarExpr ])))
+                |> Expr.Cast<RunDayThunk>
+
+            QuotationEvaluator.Evaluate expr
+
+        let a = System.Reflection.Assembly.GetEntryAssembly()
+
+        a.GetExportedTypes()
+        |> Seq.choose (fun t -> chooseValidYearDay t |> Option.map (fun (year, day) -> (t, year, day)))
+        |> Seq.choose (fun (t, year, day) -> chooseValidRuns t |> Option.map (fun runs -> (year, day, runs)))
+        |> Seq.map (fun (year, day, runs) ->
+            let typedRuns = runs |> Array.map translateMethod |> Array.toList
+
+            { year = year
+              day = day
+              runs = typedRuns })
+        |> List.ofSeq
+        |> List.sortBy (fun d -> d.day)

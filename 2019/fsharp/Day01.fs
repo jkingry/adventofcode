@@ -20,3 +20,8 @@ module Day01 =
         let h x = (List.unfold g x) |> List.sum
 
         input |> splitLine |> Seq.map int |> Seq.map h |> Seq.sum |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

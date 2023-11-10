@@ -88,3 +88,8 @@ module Day12 =
         |> Graph.findPaths [ "start" ] "end" part2Visitor (Set.empty, false)
         |> Seq.length
         |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

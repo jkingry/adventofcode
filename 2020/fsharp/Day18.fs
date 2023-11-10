@@ -45,3 +45,8 @@ module Day18 =
         roppa.AddOperator(InfixOperator("+", ws, 2, Associativity.Left, (fun x y -> x + y)))
 
         input |> splitLine |> Seq.map (runParser rparithmetic) |> Seq.sum |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

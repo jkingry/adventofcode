@@ -41,3 +41,8 @@ module Day01 =
                 f (ni + 1) nsum (Set.add nsum found)
 
         f 0 0 Set.empty |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

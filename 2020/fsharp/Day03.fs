@@ -32,3 +32,8 @@ module Day03 =
         let x = paths |> List.map (fun (right, down) -> findTrees down right input)
 
         x |> List.fold (fun a b -> a * b) 1 |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

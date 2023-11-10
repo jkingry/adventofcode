@@ -186,3 +186,8 @@ module Day17 =
             p <- cycle4 p
 
         p |> countOn4 |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

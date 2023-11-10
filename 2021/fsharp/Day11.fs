@@ -64,3 +64,8 @@ module Day11 =
         Seq.initInfinite (fun i -> i, step grid)
         |> Seq.pick (fun (i, v) -> if v = n then Some(i + 1) else None)
         |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

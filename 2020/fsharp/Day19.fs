@@ -101,3 +101,8 @@ module Day19 =
             |> Map.add 11 (Double([ 42; 31 ], [ 42; 11; 31 ]))
 
         validateCount newRules messages |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2
