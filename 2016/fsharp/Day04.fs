@@ -4,11 +4,6 @@ namespace AdventOfCode.FSharp.Y2016
 module Day04 =
     open AdventOfCode.FSharp.Util
 
-    type LineParts =
-        | EncryptedName
-        | SectorID
-        | Checksum
-
     let run (input: byte array) output =
 
         let lines = input |> bsplit '\n'B
@@ -49,16 +44,18 @@ module Day04 =
 
             valid
 
-        let part1 (line: byte array) =
+        let parseValid (line: byte array) =
             let (sectorPos, counts) = parseEncryptedName line
             let (checksumPos, sectorId) = parseIntToDelim line sectorPos '['B
 
             if hasValidChecksum counts checksumPos line then
-                sectorId
+                (line, sectorId) |> Some
             else
-                0
+                None
 
-        lines |> Array.fold (fun sum line -> sum + (part1 line)) 0 |> string |> output 1
+        let validLines = lines |> Array.choose parseValid
+
+        validLines |> Array.map snd |> Array.sum |> string |> output 1
 
         let decryptName (line: byte array) (sectorId: int) =
             let buf = System.Text.StringBuilder line.Length
@@ -79,14 +76,11 @@ module Day04 =
 
             buf.ToString()
 
-        let part2 (objectiveRoom: string) (line: byte array) =
-            let (sectorPos, counts) = parseEncryptedName line
-            let (checksumPos, sectorId) = parseIntToDelim line sectorPos '['B
-
-            if hasValidChecksum counts checksumPos line then
-                let name = decryptName line sectorId
-                if name = objectiveRoom then sectorId |> Some else None
+        validLines
+        |> Array.pick (fun (line, sectorId) ->
+            if (decryptName line sectorId) = "northpole object storage " then
+                Some sectorId
             else
-                None
-
-        lines |> Seq.pick (part2 "northpole object storage ") |> string |> output 2
+                None)
+        |> string
+        |> output 2
