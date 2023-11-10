@@ -1,8 +1,7 @@
 namespace AdventOfCode.FSharp.Y2017
 
-open System
-
 module Day01 =
+    open AdventOfCode.FSharp.Util
 
     let parse (input: string) = input.ToCharArray() |> Array.map int
 
@@ -30,3 +29,8 @@ module Day01 =
         |> Seq.head
         |> bigint
         |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

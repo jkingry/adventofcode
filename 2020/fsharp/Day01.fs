@@ -23,3 +23,8 @@ module Day01 =
             else
                 None)
         |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2

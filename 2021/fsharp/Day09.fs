@@ -79,3 +79,8 @@ module Day09 =
         |> List.take 3
         |> List.reduce (fun a b -> a * b)
         |> string
+
+    let run (input: byte array) output =
+        let textInput = text input
+        part1 textInput |> output 1
+        part2 textInput |> output 2
