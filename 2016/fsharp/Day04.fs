@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2016
 
-// Day 4
+// Day 4: Security Through Obscurity
 module Day04 =
     open AdventOfCode.FSharp.Util
 
