@@ -5,6 +5,76 @@ module Day07 =
     open AdventOfCode.FSharp.Util
     open System.Text.RegularExpressions
 
+    let runManual (input: byte array) output =
+        let detect (line: string) =
+            let mutable p0 = ' '
+            let mutable p1 = ' '
+            let mutable p2 = ' '
+            let mutable hypernet = 0
+
+            let mutable tls = None
+            let mutable tls_partial = false
+
+            let mutable ssl = None
+            let ssl_partials = [| []; [] |]
+
+            let mutable pos = 0
+
+            while pos < line.Length && ((Option.isNone tls) || (Option.isNone ssl)) do
+                let c = line[pos]
+
+                match c with
+                | x when 'a' <= x && x <= 'z' ->
+                    // TLS
+                    if Option.isNone tls then
+                        if c <> p0 && c = p2 && p1 = p0 then
+                            if hypernet = 1 then
+                                tls <- Some false
+                            else
+                                tls_partial <- true
+                    // SSL
+                    if Option.isNone ssl then
+                        if c <> p0 && c = p1 then
+                            let supernet = (hypernet + 1) % 2
+
+                            ssl <-
+                                if ssl_partials[supernet] |> List.contains (p0, c) then
+                                    Some true
+                                else
+                                    ssl_partials[hypernet] <- (c, p0) :: ssl_partials[hypernet]
+                                    None
+                | '[' ->
+                    if hypernet = 1 then
+                        failwith "Invalid hypernet open '['"
+                    else
+                        hypernet <- 1
+                | ']' ->
+                    if hypernet = 0 then
+                        failwith "Invalid hypernet close ']'"
+                    else
+                        hypernet <- 0
+                | x -> failwithf "Invalid IP7: '%c'" x
+
+                p2 <- p1
+                p1 <- p0
+                p0 <- c
+                pos <- pos + 1
+
+            (tls |> Option.defaultValue tls_partial), (ssl |> Option.defaultValue false)
+
+        let (tls_count, ssl_count) =
+            input
+            |> text
+            |> splitLine
+            |> Array.fold
+                (fun (tls_count, ssl_count) line ->
+                    let (is_tls, is_ssl) = detect line
+                    (tls_count + if is_tls then 1 else 0), (ssl_count + if is_ssl then 1 else 0))
+                (0, 0)
+
+        tls_count |> string |> output 1
+        ssl_count |> string |> output 2
+
     let run (input: byte array) output =
         let lines = input |> text |> splitLine
 
@@ -14,31 +84,22 @@ module Day07 =
         let ssl2 = Regex "\\[[a-z]*([a-z])(?!\\1)([a-z])\\1.*(?<!\\[[a-z]*)\\2\\1\\2"
 
         let isIp7 (line: string) =
-            (re.IsMatch line) && not (nre.IsMatch line) 
+            (re.IsMatch line) && not (nre.IsMatch line)
 
-        lines 
-            |> Array.fold (
-                fun count line ->
-                    let x =
-                        if isIp7 line then
-                            1
-                        else    
-                            0
-                    count + x) 0
-            |> string 
-            |> output 1
+        lines
+        |> Array.fold
+            (fun count line ->
+                let x = if isIp7 line then 1 else 0
+                count + x)
+            0
+        |> string
+        |> output 1
 
-        lines 
-            |> Array.fold (
-                fun count line ->
-                    let x =
-                        if (ssl.IsMatch line) || (ssl2.IsMatch line) then
-                            printfn 
-                                "%s"
-                                (ssl.Match line).Value
-                            1
-                        else    
-                            0
-                    count + x) 0
-            |> string 
-            |> output 2
+        lines
+        |> Array.fold
+            (fun count line ->
+                let x = if (ssl.IsMatch line) || (ssl2.IsMatch line) then 1 else 0
+                count + x)
+            0
+        |> string
+        |> output 2
