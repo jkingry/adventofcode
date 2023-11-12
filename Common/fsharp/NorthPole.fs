@@ -442,12 +442,12 @@ module NorthPole =
         let isValidRunMethod (m: System.Reflection.MethodInfo) =
             let ps = m.GetParameters()
 
-            if ps.Length <> 2 then
-                false
-            else
+            if m.Name.StartsWith("run") && ps.Length = 2 then
                 let firstIsByteArray = ps[0].ParameterType = typeof<byte array>
                 let secondIsOutputAction = ps[1].ParameterType = typeof<(int -> string -> unit)>
                 firstIsByteArray && secondIsOutputAction
+            else 
+                false
 
         let chooseValidRuns (t: Type) =
             let validRunMethods = t.GetMethods() |> Array.filter isValidRunMethod
