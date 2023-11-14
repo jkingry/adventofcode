@@ -35,8 +35,7 @@ module Day02 =
 
         let getCode keypad start dirs =
             let res =
-                input
-                |> bsplit '\n'B
+                dirs
                 |> Array.scan (getButton keypad) start
                 |> Array.tail
                 |> Array.map (fun (x, y) -> keypad[x, y])
