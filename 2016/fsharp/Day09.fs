@@ -4,44 +4,46 @@ namespace AdventOfCode.FSharp.Y2016
 module Day09 =
     open AdventOfCode.FSharp.Util
 
-    let decompress (line: string) =
-        let mutable buf = System.Text.StringBuilder()
-        let mutable pos = 0
+    let rec decompressLength (recurse: bool) (line: char array) =
+        match line |> Array.tryFindIndex (fun c -> c = '(') with
+        | Some startMarkerPos ->
+            let prefixLen = startMarkerPos |> max 0 |> int64
 
-        while pos < line.Length do
-            let startMarkerPos = line.IndexOf('(', pos)
+            let endMarkerPos = line |> Array.findIndex (fun c -> c = ')')
 
-            if startMarkerPos > pos then
-                buf <- buf.Append(line.Substring(pos, startMarkerPos - pos))
+            let marker = (System.String line[startMarkerPos + 1 .. endMarkerPos - 1]).Split('x')
 
-            if startMarkerPos >= 0 then
-                let endMarkerPos = line.IndexOf(')', startMarkerPos)
+            let dataLen = marker[0] |> int
+            let dataRep = marker[1] |> int64
 
-                let marker =
-                    line.Substring(startMarkerPos + 1, endMarkerPos - startMarkerPos - 1).Split('x')
+            let dataStart = endMarkerPos + 1
+            let dataEnd = dataStart + dataLen - 1
 
-                let dataLen = marker[0] |> int
-                let dataRep = marker[1] |> int
-                let data = line.Substring(endMarkerPos + 1, dataLen)
+            let patternLen =
+                if recurse then
+                    decompressLength recurse line[dataStart..dataEnd]
+                else
+                    dataLen |> int64
 
-                for _ = 1 to dataRep do
-                    buf <- buf.Append(data)
-
-                pos <- endMarkerPos + dataLen + 1
-            else
-                buf <- buf.Append(line.Substring(pos, line.Length - pos))
-                pos <- line.Length
-
-        buf.ToString()
+            let suffixLen = decompressLength recurse line[dataEnd + 1 ..]
+            prefixLen + (dataRep * patternLen) + suffixLen
+        | None -> line |> Array.length |> int64
 
     let run (input: byte array) output =
+        let lines = input |> text |> splitLine
 
-        input
-        |> text
-        |> splitLine
-        |> Array.map (decompress >> String.length)
+        let part1Decompress = decompressLength false
+
+        lines
+        |> Array.map (fun s -> part1Decompress (s.ToCharArray()))
         |> Array.sum
         |> string
         |> output 1
 
-        0 |> string |> output 2
+        let part2Decompress = decompressLength true
+
+        lines
+        |> Array.map (fun s -> part2Decompress (s.ToCharArray()))
+        |> Array.sum
+        |> string
+        |> output 2
