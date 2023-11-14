@@ -113,7 +113,7 @@ module Util =
             while not (found || Heap.isEmpty q) do
                 let (currentCost, current), nq = Heap.uncons q
 
-                printfn "%A %A" currentCost current
+                // printfn "%A %A" currentCost current
 
                 if goalFunc current then
                     found <- true
@@ -317,7 +317,7 @@ module Util =
         let m = Regex.Match(input, pattern)
 
         if m.Success then
-            Some(List.tail [ for g in m.Groups -> g.Value ])
+            [ for g in m.Groups -> g.Value ] |> List.tail |> Some
         else
             None
 

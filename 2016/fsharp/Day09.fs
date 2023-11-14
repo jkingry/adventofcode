@@ -32,18 +32,9 @@ module Day09 =
     let run (input: byte array) output =
         let lines = input |> text |> splitLine
 
-        let part1Decompress = decompressLength false
+        let totalLength decompressMethod =
+            lines |> Array.map (fun s -> decompressMethod (s.ToCharArray())) |> Array.sum
 
-        lines
-        |> Array.map (fun s -> part1Decompress (s.ToCharArray()))
-        |> Array.sum
-        |> string
-        |> output 1
+        totalLength (decompressLength false) |> string |> output 1
 
-        let part2Decompress = decompressLength true
-
-        lines
-        |> Array.map (fun s -> part2Decompress (s.ToCharArray()))
-        |> Array.sum
-        |> string
-        |> output 2
+        totalLength (decompressLength true) |> string |> output 2

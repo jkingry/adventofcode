@@ -123,8 +123,8 @@ module Day16 =
         // for k,v in distances |> Map.toSeq do
         //     printfn "%A = %A" k v
 
-        for p in path do
-            printfn "%A" p
+        // for p in path do
+        //     printfn "%A" p
 
         maxPressure |> string |> output 1
 
