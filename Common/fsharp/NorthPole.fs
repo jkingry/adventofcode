@@ -18,14 +18,16 @@ module NorthPole =
 
     type RunDayThunk = byte[] -> OutputThunk -> unit
 
+    type RunDef = { run: RunDayThunk; name: string }
+
     type Day =
         { year: int
           day: int
-          runs: RunDayThunk list }
+          runs: RunDef list }
 
     type DayResult =
         { day: int
-          index: int
+          name: string
           results: (string option * Result<unit, string> option)[]
           elapsedMs: float }
 
@@ -227,10 +229,10 @@ module NorthPole =
             let originalOut = Console.Out
 
             d.runs
-            |> List.indexed
-            |> Seq.ofList
-            |> Seq.map (fun (index, thunk) ->
+            |> Seq.map (fun def ->
                 let actuals = Array.create 10 None
+                let name = def.name
+                let thunk = def.run
 
                 let output part result = actuals[part - 1] <- Some result
                 let dummyOut part result = ()
@@ -255,7 +257,7 @@ module NorthPole =
                         Console.SetOut originalOut
 
                 { day = d.day
-                  index = index
+                  name = name
                   results = actualsToResults actuals
                   elapsedMs = w.Elapsed.TotalMilliseconds })
 
@@ -283,7 +285,7 @@ module NorthPole =
                 | Some dayIndex -> days |> List.find (fun d -> d.day = dayIndex)
                 | None -> days |> List.last
 
-            printfn "%3s %8s %3s %4s %8s %s" "Day" "Time" "#" "Part" "Status" "Value"
+            printfn "%3s %8s %8s %4s %8s %s" "Day" "Method" "Time" "Part" "Status" "Value"
 
             let repeats = 1
             let silentOutput = false
@@ -300,8 +302,8 @@ module NorthPole =
                 sprintf "%8s %s" result output
 
             for r in runDay day inputType repeats silentOutput do
-                printfn "%3d %8.3f %3d %4d %s" r.day r.elapsedMs r.index 1 (resToStr r.results[0])
-                printfn "%3d %8s %3d %4d %s" r.day "" r.index 2 (resToStr r.results[1])
+                printfn "%3d %8s %8.3f %4d %s" r.day r.name r.elapsedMs 1 (resToStr r.results[0])
+                printfn "%3d %8s %8s %4d %s" r.day "" "" 2 (resToStr r.results[1])
 
                 for (p, pr) in r.results |> Array.indexed |> Array.skip 2 do
                     match pr with
@@ -355,21 +357,21 @@ module NorthPole =
                 let mutable slowestMs = Double.NegativeInfinity
 
                 for r in runDay day InputType.Default repeats silentOutput do
-                    if r.index > 0 then
+                    if fastestMs < Double.PositiveInfinity then
                         printfn
-                            "%5d %8.3f %3s [%d] %s"
+                            "%5d %8.3f %3s %s %s"
                             r.day
                             (r.elapsedMs / (float repeats))
                             (resultsToState r.results)
-                            r.index
+                            r.name
                             (multi fastestMs r.elapsedMs)
                     else
                         printfn
-                            "%5d %8.3f %3s [%d]"
+                            "%5d %8.3f %3s %s"
                             r.day
                             (r.elapsedMs / (float repeats))
                             (resultsToState r.results)
-                            r.index
+                            r.name
 
                     fastestMs <- min fastestMs r.elapsedMs
                     slowestMs <- max slowestMs r.elapsedMs
@@ -446,7 +448,7 @@ module NorthPole =
                 let firstIsByteArray = ps[0].ParameterType = typeof<byte array>
                 let secondIsOutputAction = ps[1].ParameterType = typeof<(int -> string -> unit)>
                 firstIsByteArray && secondIsOutputAction
-            else 
+            else
                 false
 
         let chooseValidRuns (t: Type) =
@@ -467,7 +469,8 @@ module NorthPole =
                 Expr.Lambda(inputVar, Expr.Lambda(outputVar, Expr.Call(m, [ inputVarExpr; outputVarExpr ])))
                 |> Expr.Cast<RunDayThunk>
 
-            QuotationEvaluator.Evaluate expr
+            { run = QuotationEvaluator.Evaluate expr
+              name = m.Name }
 
         let a = System.Reflection.Assembly.GetEntryAssembly()
 
