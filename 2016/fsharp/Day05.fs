@@ -49,9 +49,7 @@ module Day05 =
                 if bag.TryTake &result then
                     results <- result :: results
 
-            for o in results |> List.sortBy (fun (i, _, _) -> i) do
-                let (_, a, b) = o
-
+            for (_, a, b) in results |> List.sortBy (fun (i, _, _) -> i) do
                 if part1need > 0 then
                     part1 <- part1 + (a |> string)
                     part1need <- part1need - 1

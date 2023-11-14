@@ -19,20 +19,17 @@ module Day03 =
         let isValidTriangle (side: int[]) =
             if side[0] + side[1] > side[2] then 1 else 0
 
-        let countValidTriangles (sides: int[][]) =
-            sides |> Array.fold (fun count side -> count + (isValidTriangle side)) 0
-
         numbers
         |> Array.chunkBySize 3
-        |> Array.map Array.sort
-        |> countValidTriangles
+        |> Array.map (Array.sort >> isValidTriangle)
+        |> Array.sum
         |> string
         |> output 1
 
         numbers
         |> Array.chunkBySize 9
         |> Array.collect (Array.chunkBySize 3 >> Array.transpose)
-        |> Array.map Array.sort
-        |> countValidTriangles
+        |> Array.map (Array.sort >> isValidTriangle)
+        |> Array.sum
         |> string
         |> output 2

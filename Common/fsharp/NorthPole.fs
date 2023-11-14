@@ -285,7 +285,7 @@ module NorthPole =
                 | Some dayIndex -> days |> List.find (fun d -> d.day = dayIndex)
                 | None -> days |> List.last
 
-            printfn "%3s %8s %8s %4s %8s %s" "Day" "Method" "Time" "Part" "Status" "Value"
+            printfn "%3s %8s %9s %4s %8s %s" "Day" "Method" "Time" "Part" "Status" "Value"
 
             let repeats = 1
             let silentOutput = false
@@ -302,8 +302,8 @@ module NorthPole =
                 sprintf "%8s %s" result output
 
             for r in runDay day inputType repeats silentOutput do
-                printfn "%3d %8s %8.3f %4d %s" r.day r.name r.elapsedMs 1 (resToStr r.results[0])
-                printfn "%3d %8s %8s %4d %s" r.day "" "" 2 (resToStr r.results[1])
+                printfn "%3d %8s %9.3f %4d %s" r.day r.name r.elapsedMs 1 (resToStr r.results[0])
+                printfn "%3d %8s %9s %4d %s" r.day "" "" 2 (resToStr r.results[1])
 
                 for (p, pr) in r.results |> Array.indexed |> Array.skip 2 do
                     match pr with
@@ -325,7 +325,7 @@ module NorthPole =
             let mutable dayTimes = Map.empty
 
             printfn "By day:"
-            printfn "%5s %8s %3s" "Day" "Time" "[S]"
+            printfn "%5s %9s %3s" "Day" "Time" "[S]"
 
             let resultsToState results =
                 let (e, u) =
@@ -359,7 +359,7 @@ module NorthPole =
                 for r in runDay day InputType.Default repeats silentOutput do
                     if fastestMs < Double.PositiveInfinity then
                         printfn
-                            "%5d %8.3f %3s %s %s"
+                            "%5d %9.3f %3s %s %s"
                             r.day
                             (r.elapsedMs / (float repeats))
                             (resultsToState r.results)
@@ -367,7 +367,7 @@ module NorthPole =
                             (multi fastestMs r.elapsedMs)
                     else
                         printfn
-                            "%5d %8.3f %3s %s"
+                            "%5d %9.3f %3s %s"
                             r.day
                             (r.elapsedMs / (float repeats))
                             (resultsToState r.results)
@@ -380,15 +380,15 @@ module NorthPole =
                 fastestTotalMs <- fastestTotalMs + fastestMs
                 slowestTotalMs <- slowestTotalMs + slowestMs
 
-            printfn "%5s %8.3f" "Total" (slowestTotalMs / (float repeats))
+            printfn "%5s %9.3f" "Total" (slowestTotalMs / (float repeats))
 
             printfn "\nBy (fastest) time:"
-            printfn "%5s %8s" "Day" "Time"
+            printfn "%5s %9s" "Day" "Time"
 
             for (day, time) in dayTimes |> Map.toList |> List.sortBy snd do
-                printfn "%5d %8.3f" day (time / (float repeats))
+                printfn "%5d %9.3f" day (time / (float repeats))
 
-            printfn "%5s %8.3f %s" "Total " (fastestTotalMs / (float repeats)) (multi slowestTotalMs fastestTotalMs)
+            printfn "%5s %9.3f %s" "Total " (fastestTotalMs / (float repeats)) (multi slowestTotalMs fastestTotalMs)
 
     open Impl
 
