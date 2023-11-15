@@ -42,19 +42,30 @@ module NorthPole =
 
         let RequestLimit = TimeSpan.FromSeconds 30
 
+        let getInputFolder (day: int) = 
+            let baseName = sprintf "%02i" day
+
+            let relativePath = Path.Combine("..", "inputs", baseName)
+
+            let path = Path.GetFullPath relativePath
+
+            if Directory.Exists path |> not then
+                Directory.CreateDirectory path |> ignore
+
+            path
+
         let getInputPath (day: int) (inputType: InputType) =
-            let baseFilename = sprintf "%02i.txt" day
 
             let filename =
                 match inputType with
-                | InputType.Default -> baseFilename
-                | InputType.Test -> Path.ChangeExtension(baseFilename, ".test.txt")
-                | InputType.Alt -> Path.ChangeExtension(baseFilename, ".alt.txt")
+                | InputType.Default -> "input.txt"
+                | InputType.Test -> "test.txt"
+                | InputType.Alt -> "alt.txt"
                 | e -> failwithf "Unsupported value: %A" e
 
-            let relativePath = Path.Combine("..", "inputs", filename)
-
-            Path.GetFullPath relativePath
+            let inputFolder = getInputFolder day
+            
+            Path.Combine(inputFolder, filename)
 
         let getExpectedPath (day: int) (inputType: InputType) (part: int) =
             let inputPath = getInputPath day inputType
@@ -148,7 +159,7 @@ module NorthPole =
                 None
             else
                 let htmlCachePath =
-                    Path.Combine((Path.GetDirectoryName expectedPath), (sprintf "%02i.html" day))
+                    Path.Combine((Path.GetDirectoryName expectedPath), "day.html")
 
                 let data =
                     if htmlCachePath |> File.Exists then
