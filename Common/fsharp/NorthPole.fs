@@ -42,7 +42,7 @@ module NorthPole =
 
         let RequestLimit = TimeSpan.FromSeconds 30
 
-        let getInputFolder (day: int) = 
+        let getInputFolder (day: int) =
             let baseName = sprintf "%02i" day
 
             let relativePath = Path.Combine("..", "inputs", baseName)
@@ -64,7 +64,7 @@ module NorthPole =
                 | e -> failwithf "Unsupported value: %A" e
 
             let inputFolder = getInputFolder day
-            
+
             Path.Combine(inputFolder, filename)
 
         let getExpectedPath (day: int) (inputType: InputType) (part: int) =
@@ -158,8 +158,7 @@ module NorthPole =
                 printf "%A is in the future, no expected result yet" releaseDate
                 None
             else
-                let htmlCachePath =
-                    Path.Combine((Path.GetDirectoryName expectedPath), "day.html")
+                let htmlCachePath = Path.Combine((Path.GetDirectoryName expectedPath), "day.html")
 
                 let data =
                     if htmlCachePath |> File.Exists then

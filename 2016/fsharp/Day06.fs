@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2016
 
-// Day 6: Signals and Noise 
+// Day 6: Signals and Noise
 module Day06 =
     open AdventOfCode.FSharp.Util
 
