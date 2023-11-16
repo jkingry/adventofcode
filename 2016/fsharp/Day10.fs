@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2016
 
-// Day 10: Balance Bots 
+// Day 10: Balance Bots
 module Day10 =
     open AdventOfCode.FSharp.Util
 
