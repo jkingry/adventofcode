@@ -4,10 +4,6 @@ namespace AdventOfCode.FSharp.Y2016
 module Day11 =
     open AdventOfCode.FSharp.Util
 
-    type Device =
-        | RTG of element: string
-        | Chip of element: string
-
     let parseInput (input: string) =
         let lines = input |> splitLine
 

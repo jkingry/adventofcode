@@ -32,8 +32,6 @@ module Day05 =
 
                         index <- index + workerCount))
 
-
-
         let mutable part1 = ""
         let mutable part1need = 8
         let mutable part2 = Array.create 8 ' '
