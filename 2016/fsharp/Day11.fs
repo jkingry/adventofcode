@@ -39,19 +39,168 @@ module Day11 =
                         i <- i + 2
                     | c -> failwithf "Invalid layout: %s" c
             }
-
     let runFast (input: byte array) output =
-        let state =         
+        let items =         
             input
             |> text
             |> splitLine
             |> Array.mapi parseInput
-            |> Array.map Set.ofSeq
+            |> Array.indexed
+            |> Array.fold (fun s (floor: int, items) -> 
+                items |> Seq.fold (fun s' item -> 
+                    match item with
+                    | RTG e ->  s' |> Map.change e (function | None -> Some (floor, -1) | Some (_, x) -> Some (floor, x))
+                    | Chip e -> s' |> Map.change e (function | None -> Some (-1, floor) | Some (x, _) -> Some (x, floor))) s) Map.empty
+            |> Map.values
+            |> Seq.groupBy id
+            |> Seq.map (fun (k, s) -> k, s |> Seq.length)
+            |> Map.ofSeq
 
-        0 |> string |> output 1
-        1 |> string |> output 2
+        let maxFloor = 3
 
-    let run (input: byte array) output =
+        let validItems items =
+            let floors = Array.zeroCreate (maxFloor + 1)
+            items 
+            |> Map.keys
+            |> Seq.forall (fun item -> 
+                match item with
+                | (rf, cf) when rf = cf -> 
+                    match floors[rf] with
+                    | 0 -> floors[rf] <- -1; true
+                    | -1 -> true
+                    | _ -> false                
+                | (rf, cf) ->
+                    (match floors[cf] with
+                    | 0 -> floors[cf] <- 1; true
+                    | 1 -> true
+                    | _ -> 
+                    false) &&
+                    (match floors[rf] with
+                    | 0 -> floors[rf] <- -1; true
+                    | -1 -> true
+                    | _ -> false))
+
+        let applyMove des items move = 
+            match move with
+            | (0, rf, cf) -> 
+                items |> mapDecrDel (rf, cf) |> mapIncr (des, cf)
+            | (1, rf, cf) -> 
+                items |> mapDecrDel (rf, cf) |> mapIncr (rf, des)
+            | (2, rf, cf) -> 
+                items |> mapDecrDel (rf, cf) |> mapIncr (des, des)
+            | _ -> failwithf "Invalid move: %A" move
+
+        let applyMoves dest items moves = 
+            moves
+            |> List.distinct 
+            |> List.map (fun move -> move |> List.fold (applyMove dest) items)
+            |> List.filter validItems
+            |> List.map (fun s -> dest, s)
+
+        let moves (e, items) =
+            let itemMoves = 
+                items 
+                |> Map.keys 
+                |> Seq.collect (function
+                    // | (rf, cf) when rf = e && cf = e ->
+                    // List.replicate (items |> Map.find (rf, cf)) (2, rf, cf)
+                    | (rf, cf) when rf = e && cf = e ->
+                        List.replicate (items |> Map.find (rf, cf)) (0, rf, cf)
+                        @                    
+                        List.replicate (items |> Map.find (rf, cf)) (1, rf, cf)                    
+                    | (rf, cf) when rf = e ->
+                        List.replicate (items |> Map.find (rf, cf)) (0, rf, cf)
+                    | (rf, cf) when cf = e ->
+                        List.replicate (items |> Map.find (rf, cf)) (1, rf, cf)
+                    | _ -> [])
+                |> List.ofSeq
+
+            // let pairMoves, nonPairMoves = itemMoves |> List.partition (fun (ord, _, _) -> ord = 2)
+            // let splitPairs = pairMoves |> List.collect (fun (_, rf, cf) -> [(0, rf, cf); (1, rf, cf)])
+
+            let doubleMoves = 
+                comb 2 itemMoves
+                |> List.map (function 
+                    | [ (0, a, b); (1, c, d)] when a = b && c = d && a = c -> 
+                        [ (2, a, b) ]
+                    | x -> x)
+
+            let singleMoves = comb 1 itemMoves
+
+            let minFloor = items |> Map.keys |> Seq.fold (fun a (rf, cf) -> a |> min rf |> min cf) e
+
+            seq {
+                if e < maxFloor then
+                    let validDoubleMoves = doubleMoves |> applyMoves (e + 1) items
+                    yield! validDoubleMoves
+
+                    if validDoubleMoves.Length = 0 then
+                        yield! singleMoves |> applyMoves (e + 1) items
+
+                if e > minFloor then
+                    let validSingleMoves = singleMoves |> applyMoves (e - 1) items
+                    yield! validSingleMoves
+
+                    if validSingleMoves.Length = 0 then
+                        yield! doubleMoves |> applyMoves (e - 1) items
+            }
+
+        let print prefix (e, items) =
+
+            let mitems = 
+                items 
+                |> Map.toSeq
+                |> Seq.collect (fun (k, v) -> Seq.replicate v k)
+                |> Seq.indexed
+                |> List.ofSeq
+
+            for i = 0 to 3 do
+                let floor = 3 - i
+                let floorItems = 
+                    mitems
+                    |> List.collect (function 
+                        | j, (rf, cf) when rf = floor && cf = floor -> [ (sprintf "G%d" j); (sprintf "M%d" j) ]
+                        | j, (rf, _) when rf = floor -> [ (sprintf "G%d" j); "." ]
+                        | j, (_, cf) when cf = floor -> [ "."; (sprintf "M%d" j) ]
+                        | _ -> [ "."; "." ])
+                    |> List.map (sprintf "%3s")
+                    |> String.concat " "
+                
+                let elevText = if e = floor then "E" else "."
+
+                printfn "%sF%d %s %s" prefix (floor + 1) elevText floorItems
+
+        let movesWithCost s =
+            moves s
+            |> Seq.map (fun s' -> 
+                s', 1)
+        
+        let goalState = (3, Map [ (3,3), items.Values |> Seq.sum ])
+
+        let goal s = s = goalState
+        
+        let intInfinity = System.Int32.MaxValue
+
+        let costs, _ =
+            DijkstraMap.empty
+            |> DijkstraMap.add (0, items) 0
+            |> DijkstraMap.run intInfinity movesWithCost goal
+
+        costs |> Map.tryFind goalState |> Option.defaultValue intInfinity |> string |> output 1        
+
+        let items2 = items |> mapIncr (0, 0) |> mapIncr (0, 0)
+
+        let goalState2 = (3, Map [ (3,3), items2.Values |> Seq.sum ])
+        let goal2 s = s = goalState
+
+        let costs2, _ =
+            DijkstraMap.empty
+            |> DijkstraMap.add (0, items2) 0
+            |> DijkstraMap.run intInfinity movesWithCost goal2
+
+        costs2 |> Map.tryFind goalState2 |> Option.defaultValue intInfinity  |> string |> output 2        
+
+    let skipRun (input: byte array) output =
         let state =         
             input
             |> text
