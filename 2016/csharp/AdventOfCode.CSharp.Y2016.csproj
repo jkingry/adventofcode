@@ -13,7 +13,4 @@
   <ItemGroup>
     <ProjectReference Include="../../Common/csharp/AdventOfCode.CSharp.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="../fsharp/Day05.fs" />
-  </ItemGroup>
 </Project>
