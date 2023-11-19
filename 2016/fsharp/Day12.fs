@@ -114,15 +114,12 @@ module Day12 =
         let compiled: System.Action<int[]> =
             downcast method.CreateDelegate(typeof<System.Action<int[]>>)
 
-        let part1 = Array.zeroCreate 4
+        let part1 = [| 0; 0; 0; 0 |]
         compiled.Invoke part1
-
         part1[0] |> string |> output 1
 
-        let part2 = Array.zeroCreate 4
-        part2[2] <- 1
+        let part2 = [| 0; 0; 1; 0 |]
         compiled.Invoke part2
-
         part2[0] |> string |> output 2
 
     let run (input: byte array) (output: int -> string -> unit) =

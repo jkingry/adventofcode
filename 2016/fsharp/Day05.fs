@@ -6,7 +6,7 @@ module Day05 =
     open System.Security.Cryptography
     open System.Text
 
-    let run (input: byte array) output =
+    let runThreaded (input: byte array) output =
         let doorId = input |> text |> splitLine |> Array.head
 
         let workerCount = System.Environment.ProcessorCount - 1
@@ -68,15 +68,10 @@ module Day05 =
         (System.String part2).ToLowerInvariant() |> output 2
 
 
-    let skipRun (input: byte array) output =
+    let run (input: byte array) output =
         let doorId = input |> text |> splitLine |> Array.head
 
-        let hasher = MD5.Create()
-
-        let computeHash index =
-            let targetText = doorId + (string index)
-            let targetBytes = Encoding.Default.GetBytes targetText
-            hasher.ComputeHash targetBytes |> System.Convert.ToHexString
+        let hashes = md5Sequence 5 doorId
 
         let updatePasswordCharFromHash (part1: char array, part2: char array) (hash: string) =
             if hash.StartsWith("00000") then
@@ -95,8 +90,8 @@ module Day05 =
         let naturals = Seq.unfold (fun state -> Some(state, state + 1)) 0
 
         let (part1, part2) =
-            naturals
-            |> Seq.map computeHash
+            hashes
+            |> Seq.map System.Convert.ToHexString
             |> Seq.scan updatePasswordCharFromHash ((Array.create 8 ' '), (Array.create 8 ' '))
             |> Seq.skipWhile (fun (p1, p2) -> (p1 |> Array.contains ' ') || (p2 |> Array.contains ' '))
             |> Seq.head

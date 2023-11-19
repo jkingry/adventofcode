@@ -222,6 +222,40 @@ module Util =
 
         let inline decr (key: 'T) (counter: Map<'T, int64>) : Map<'T, int64> = add key -1 counter
 
+    let md5Sequence (day: int) (prefix: string) =
+        let cacheFile =
+            System.IO.Path.Combine [| ".."; "inputs"; sprintf "%02i" day; sprintf "%s.hash" prefix |]
+
+        let encoding = System.Text.Encoding.UTF8
+
+        seq {
+            let mutable index = 0
+
+            if System.IO.File.Exists cacheFile then
+                use f = System.IO.File.OpenRead cacheFile
+                let buffer = Array.zeroCreate 16
+                let mutable eof = false
+
+                while not eof do
+                    if f.Read(buffer, 0, 16) = 0 then
+                        eof <- true
+                    else
+                        yield buffer |> Array.copy
+                        index <- index + 1
+
+            use f = System.IO.File.Open(cacheFile, IO.FileMode.Append)
+            use hasher = System.Security.Cryptography.MD5.Create()
+
+            while true do
+                let targetText = sprintf "%s%i" prefix index
+                let targetBytes = encoding.GetBytes targetText
+                let hash = hasher.ComputeHash targetBytes
+
+                f.Write(hash, 0, hash.Length)
+                yield hash
+                index <- index + 1
+        }
+
     let text (data: byte[]) : string = Text.Encoding.ASCII.GetString(data)
 
     let rec comb n l =
