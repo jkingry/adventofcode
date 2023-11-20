@@ -67,12 +67,7 @@ module Day05 =
         (System.String part1).ToLowerInvariant() |> output 1
         (System.String part2).ToLowerInvariant() |> output 2
 
-
     let run (input: byte array) output =
-        let doorId = input |> text |> splitLine |> Array.head
-
-        let hashes = md5Sequence 5 doorId
-
         let updatePasswordCharFromHash (part1: char array, part2: char array) (hash: string) =
             if hash.StartsWith("00000") then
                 match part1 |> Array.tryFindIndex (fun c -> c = ' ') with
@@ -87,10 +82,25 @@ module Day05 =
 
             part1, part2
 
+        let doorId = input |> text |> splitLine |> Array.head
+
+        let encoding = System.Text.Encoding.UTF8
+        let hasher = MD5.Create()
+
+        let computeHash index =
+            let targetText = sprintf "%s%i" doorId index
+            let targetBytes = encoding.GetBytes targetText
+            hasher.ComputeHash targetBytes
+
         let naturals = Seq.unfold (fun state -> Some(state, state + 1)) 0
 
         let (part1, part2) =
-            hashes
+            naturals
+            |> Seq.map computeHash
+            |> Seq.map System.Convert.ToHexString
+            |> Seq.filter (fun s -> s.StartsWith("00000"))
+            |> Seq.map System.Convert.FromHexString
+            |> cacheSequence 5 doorId
             |> Seq.map System.Convert.ToHexString
             |> Seq.scan updatePasswordCharFromHash ((Array.create 8 ' '), (Array.create 8 ' '))
             |> Seq.skipWhile (fun (p1, p2) -> (p1 |> Array.contains ' ') || (p2 |> Array.contains ' '))
