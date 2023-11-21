@@ -176,6 +176,7 @@ module Day11 =
         |> output 1
 
         // Solve Part 2
+        // Add two more RTG/Chip pairs to the firt floor
         let items2 = items |> mapIncr (0, 0) |> mapIncr (0, 0)
         let goalState2 = (topFloor, Map [ (topFloor, topFloor), items2.Values |> Seq.sum ])
         let goal2 s = s = goalState
