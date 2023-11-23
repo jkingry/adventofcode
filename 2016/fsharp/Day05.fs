@@ -6,7 +6,7 @@ module Day05 =
     open System.Security.Cryptography
     open System.Text
 
-    let runThreaded (input: byte array) output =
+    let _runThreaded (input: byte array) output =
         let doorId = input |> text |> splitLine |> Array.head
 
         let workerCount = System.Environment.ProcessorCount - 1

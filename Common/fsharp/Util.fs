@@ -145,8 +145,6 @@ module Util =
             while not (found || Heap.isEmpty q) do
                 let (currentCost, current), nq = Heap.uncons q
 
-                printfn "%A %A" currentCost current
-
                 if goalFunc current then
                     found <- true
                 else
