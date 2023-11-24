@@ -6,10 +6,10 @@ module Day07 =
     open System.Text.RegularExpressions
 
     let runManual (input: byte array) output =
-        let detect (line: string) =
-            let mutable p0 = ' '
-            let mutable p1 = ' '
-            let mutable p2 = ' '
+        let detect (line: byte[]) =
+            let mutable p0 = 0uy
+            let mutable p1 = 0uy
+            let mutable p2 = 0uy
             let mutable hypernet = 0
 
             let mutable tls = None
@@ -24,7 +24,7 @@ module Day07 =
                 let c = line[pos]
 
                 match c with
-                | x when 'a' <= x && x <= 'z' ->
+                | x when 'a'B <= x && x <= 'z'B ->
                     // TLS
                     if Option.isNone tls then
                         if c <> p0 && c = p2 && p1 = p0 then
@@ -43,17 +43,17 @@ module Day07 =
                                 else
                                     ssl_partials[hypernet] <- (c, p0) :: ssl_partials[hypernet]
                                     None
-                | '[' ->
+                | '['B ->
                     if hypernet = 1 then
                         failwith "Invalid hypernet open '['"
                     else
                         hypernet <- 1
-                | ']' ->
+                | ']'B ->
                     if hypernet = 0 then
                         failwith "Invalid hypernet close ']'"
                     else
                         hypernet <- 0
-                | x -> failwithf "Invalid IP7: '%c'" x
+                | x -> failwithf "Invalid IP7: '%c'" (char x)
 
                 p2 <- p1
                 p1 <- p0
@@ -64,8 +64,7 @@ module Day07 =
 
         let (tls_count, ssl_count) =
             input
-            |> text
-            |> splitLine
+            |> bsplit '\n'B
             |> Array.fold
                 (fun (tls_count, ssl_count) line ->
                     let (is_tls, is_ssl) = detect line
@@ -75,7 +74,7 @@ module Day07 =
         tls_count |> string |> output 1
         ssl_count |> string |> output 2
 
-    let run (input: byte array) output =
+    let runRegex (input: byte array) output =
         let lines = input |> text |> splitLine
 
         let re = Regex "([a-z])(?!\\1)([a-z])\\2\\1"
