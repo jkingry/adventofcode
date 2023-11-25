@@ -4,8 +4,6 @@ namespace AdventOfCode.FSharp.Y2016
 module Day19 =
     open AdventOfCode.FSharp.Util
 
-    type bits = System.Collections.BitArray
-
     let nextElf (circle: bits) elf =
         let len = circle.Count
 
