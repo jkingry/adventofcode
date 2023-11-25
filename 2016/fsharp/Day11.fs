@@ -164,29 +164,25 @@ module Day11 =
         let goalState = (topFloor, Map [ (topFloor, topFloor), items.Values |> Seq.sum ])
         let goal s = s = goalState
 
-        let costs, _ =
-            DijkstraMap.empty
-            |> DijkstraMap.add (0, items) 0
-            |> DijkstraMap.run intInfinity movesWithCost goal
-
-        costs
+        DijkstraMap.empty
+        |> DijkstraMap.add (0, items) 0
+        |> DijkstraMap.run intInfinity movesWithCost goal
+        |> fst
         |> Map.tryFind goalState
         |> Option.defaultValue intInfinity
         |> string
         |> output 1
 
         // Solve Part 2
-        // Add two more RTG/Chip pairs to the firt floor
+        // Add two more RTG/Chip pairs to the first floor
         let items2 = items |> mapIncr (0, 0) |> mapIncr (0, 0)
         let goalState2 = (topFloor, Map [ (topFloor, topFloor), items2.Values |> Seq.sum ])
         let goal2 s = s = goalState
 
-        let costs2, _ =
-            DijkstraMap.empty
-            |> DijkstraMap.add (0, items2) 0
-            |> DijkstraMap.run intInfinity movesWithCost goal2
-
-        costs2
+        DijkstraMap.empty
+        |> DijkstraMap.add (0, items2) 0
+        |> DijkstraMap.run intInfinity movesWithCost goal2
+        |> fst
         |> Map.tryFind goalState2
         |> Option.defaultValue intInfinity
         |> string
