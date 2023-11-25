@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2016
 
-// Day 17
+// Day 17: Two Steps Forward
 module Day17 =
     open AdventOfCode.FSharp.Util
 
