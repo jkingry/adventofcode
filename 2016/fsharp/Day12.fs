@@ -146,6 +146,7 @@ module Day12 =
                     jump <- true
                 | INop -> ()
 
+
                 if not jump then
                     ptr <- ptr + 1
 
