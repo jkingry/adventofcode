@@ -19,6 +19,7 @@ module Day21 =
         input
         |> text
         |> splitLine
+        |> Seq.filter (fun line -> (line.Trim()).Length > 0)
         |> Seq.map (function
             | Regex @"move position ([0-9]) to position ([0-9])" [ fromPos; toPos ] ->
                 Move(fromPos |> int, toPos |> int)
