@@ -335,23 +335,18 @@ module NorthPole =
             let mutable dayTimes = Map.empty
 
             printfn "By day:"
-            printfn "%5s %9s %3s" "Day" "Time" "[S]"
+            printfn "%5s %9s %-3s" "Day" "Time" "[S]"
 
             let resultsToState results =
-                let (e, u) =
-                    results
-                    |> Array.take 2
-                    |> Array.fold
-                        (fun (e, u) (_, r) ->
-                            match r with
-                            | None -> (e, u + 1)
-                            | Some(Error _) -> (e + 1, u)
-                            | _ -> (e, u))
-                        (0, 0)
-
-                let es = if e > 0 then sprintf "E%i" e else ""
-                let us = if u > 0 then sprintf "U%i" u else ""
-                sprintf "%s%s" es us
+                results
+                |> Array.take 2
+                |> Array.fold
+                    (fun s (_, r) ->
+                        match r with
+                        | None -> s + "❔"
+                        | Some(Error _) -> s + "❌"
+                        | _ -> s + "✅")
+                    ""
 
             let multi slow fast =
                 let factor = slow / fast
@@ -369,7 +364,7 @@ module NorthPole =
                 for r in runDay day InputType.Default repeats silentOutput do
                     if fastestMs < Double.PositiveInfinity then
                         printfn
-                            "%5d %9.3f %3s %s %s"
+                            "%5d %9.3f %-3s %s %s"
                             r.day
                             (r.elapsedMs / (float repeats))
                             (resultsToState r.results)
@@ -377,7 +372,7 @@ module NorthPole =
                             (multi fastestMs r.elapsedMs)
                     else
                         printfn
-                            "%5d %9.3f %3s %s"
+                            "%5d %9.3f %-3s %s"
                             r.day
                             (r.elapsedMs / (float repeats))
                             (resultsToState r.results)
@@ -400,18 +395,16 @@ module NorthPole =
 
             let totalAvgFastestMs = fastestTotalMs / (float repeats)
             let expectedMs = 250.0 * (float dayTimes.Count)
-            printfn 
-                "%6s %9.1f- %s faster then slowest" 
-                "Total" 
-                totalAvgFastestMs 
-                (multi slowestTotalMs fastestTotalMs)
 
             printfn
-                "%s %9.1f - Diff %.1f %s" 
-                "Expect"
-                expectedMs
-                (totalAvgFastestMs - expectedMs)
-                (multi expectedMs totalAvgFastestMs)
+                "%6s %9.1f or %s faster then slowest"
+                "Total"
+                totalAvgFastestMs
+                (multi slowestTotalMs fastestTotalMs)
+
+            printfn "%6s %9.1f a difference of %.1fms" "Expect" expectedMs (totalAvgFastestMs - expectedMs)
+
+            printfn "%6s %10.2f%%" "Grade" (100.0 * expectedMs / totalAvgFastestMs)
 
     open Impl
 
