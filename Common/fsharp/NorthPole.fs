@@ -393,12 +393,25 @@ module NorthPole =
             printfn "%5s %9.3f" "Total" (slowestTotalMs / (float repeats))
 
             printfn "\nBy (fastest) time:"
-            printfn "%5s %9s" "Day" "Time"
+            printfn "%3s %5s %9s" "Rnk" "Day" "Time"
 
-            for (day, time) in dayTimes |> Map.toList |> List.sortBy snd do
-                printfn "%5d %9.3f" day (time / (float repeats))
+            for index, (day, time) in dayTimes |> Map.toList |> List.sortBy snd |> List.indexed do
+                printfn "%3d %5d %9.3f" (index + 1) day (time / (float repeats))
 
-            printfn "%5s %9.3f %s" "Total " (fastestTotalMs / (float repeats)) (multi slowestTotalMs fastestTotalMs)
+            let totalAvgFastestMs = fastestTotalMs / (float repeats)
+            let expectedMs = 250.0 * (float dayTimes.Count)
+            printfn 
+                "%6s %9.1f- %s faster then slowest" 
+                "Total" 
+                totalAvgFastestMs 
+                (multi slowestTotalMs fastestTotalMs)
+
+            printfn
+                "%s %9.1f - Diff %.1f %s" 
+                "Expect"
+                expectedMs
+                (totalAvgFastestMs - expectedMs)
+                (multi expectedMs totalAvgFastestMs)
 
     open Impl
 

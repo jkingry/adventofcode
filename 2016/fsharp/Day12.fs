@@ -36,6 +36,43 @@ module Day12 =
                 ICmp(v - 'a' |> int, parts[2] |> int)
         | _ -> failwithf "Invalid line: %s" line
 
+    let run (input: byte array) (output: int -> string -> unit) =
+
+        let instructions = input |> text |> splitLine |> Array.map parseLine
+
+        let executeProgram (reg: int[]) =
+            let mutable ptr = 0
+
+            while ptr < instructions.Length do
+                let mutable jump = false
+
+                match instructions[ptr] with
+                | ICpy(r0, r1) -> reg[r1] <- reg[r0]
+                | ISet(v, r0) -> reg[r0] <- v
+                | IDec r0 -> reg[r0] <- reg[r0] - 1
+                | IInc r0 -> reg[r0] <- reg[r0] + 1
+                | ICmp(r0, v) ->
+                    if reg[r0] <> 0 then
+                        ptr <- ptr + v
+                        jump <- true
+                | IJmp(v) ->
+                    ptr <- ptr + v
+                    jump <- true
+                | INop -> ()
+
+
+                if not jump then
+                    ptr <- ptr + 1
+
+        let reg1 = Array.zeroCreate 4
+        executeProgram reg1
+        reg1[0] |> string |> output 1
+
+        let reg2 = Array.zeroCreate 4
+        reg2[2] <- 1
+        executeProgram reg2
+        reg2[0] |> string |> output 2
+
     open System.Reflection.Emit
 
     let runMsil (input: byte array) (output: int -> string -> unit) =
@@ -121,40 +158,3 @@ module Day12 =
         let part2 = [| 0; 0; 1; 0 |]
         compiled.Invoke part2
         part2[0] |> string |> output 2
-
-    let run (input: byte array) (output: int -> string -> unit) =
-
-        let instructions = input |> text |> splitLine |> Array.map parseLine
-
-        let executeProgram (reg: int[]) =
-            let mutable ptr = 0
-
-            while ptr < instructions.Length do
-                let mutable jump = false
-
-                match instructions[ptr] with
-                | ICpy(r0, r1) -> reg[r1] <- reg[r0]
-                | ISet(v, r0) -> reg[r0] <- v
-                | IDec r0 -> reg[r0] <- reg[r0] - 1
-                | IInc r0 -> reg[r0] <- reg[r0] + 1
-                | ICmp(r0, v) ->
-                    if reg[r0] <> 0 then
-                        ptr <- ptr + v
-                        jump <- true
-                | IJmp(v) ->
-                    ptr <- ptr + v
-                    jump <- true
-                | INop -> ()
-
-
-                if not jump then
-                    ptr <- ptr + 1
-
-        let reg1 = Array.zeroCreate 4
-        executeProgram reg1
-        reg1[0] |> string |> output 1
-
-        let reg2 = Array.zeroCreate 4
-        reg2[2] <- 1
-        executeProgram reg2
-        reg2[0] |> string |> output 2
