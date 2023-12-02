@@ -100,7 +100,7 @@ module Day23 =
             c <- move c cups n
 
         match cs 1 cups |> Seq.skip 1 |> Seq.take (2) |> Seq.map int64 |> Seq.toList with
-        | [a ; b ] -> a * b |> string
+        | [ a; b ] -> a * b |> string
         | _ -> failwith "I don't know"
 
     let run (input: byte array) output =
