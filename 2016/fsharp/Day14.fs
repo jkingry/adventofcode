@@ -93,7 +93,7 @@ module Day14 =
 
         naturals
         |> Seq.map (part1 salt)
-        |> cacheSequence 14 part1cache
+        |> cacheSequence part1cache
         |> findKeys
         |> Seq.take 64
         |> Seq.last
@@ -104,7 +104,7 @@ module Day14 =
 
         naturals
         |> Seq.map (part2 salt 2016)
-        |> cacheSequence 14 part2cache
+        |> cacheSequence part2cache
         |> findKeys
         |> Seq.take 64
         |> Seq.last

@@ -1,3 +1,3 @@
-open AdventOfCode.FSharp.NorthPole
+open AdventOfCode.FSharp
 
-findDays () |> runCommandLine
+NorthPole.findDays () |> Spectre.runCommandLine |> exit

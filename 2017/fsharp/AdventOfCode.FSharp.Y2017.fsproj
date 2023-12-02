@@ -5,12 +5,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Day*.fs" />
+    <Compile Include="Calendar.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.1.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../Common/fsharp/AdventOfCode.FSharp.fsproj" />
+    <ProjectReference Include="../../Common/fsharp/AdventOfCode.FSharp.Common.fsproj" />
   </ItemGroup>
 </Project>

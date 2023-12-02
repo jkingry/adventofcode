@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Day*.fs" />
+    <Compile Include="Calendar.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
@@ -12,6 +13,6 @@
     <PackageReference Include="fsharpx.collections" Version="3.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../Common/fsharp/AdventOfCode.FSharp.fsproj" />
+    <ProjectReference Include="../../Common/fsharp/AdventOfCode.FSharp.Common.fsproj" />
   </ItemGroup>
 </Project>

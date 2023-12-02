@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>    
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Util.fs" />
-    <Compile Include="NorthPole.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,5 +15,8 @@
     <PackageReference Include="FSharpx.Collections" Version="3.1.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="Common/fsharp/AdventOfCode.FSharp.Common.fsproj" />
+    <ProjectReference Include="20*/fsharp/AdventOfCode.FSharp.*.fsproj" />
+  </ItemGroup>
 </Project>
