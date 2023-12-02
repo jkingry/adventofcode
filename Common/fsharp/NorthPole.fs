@@ -40,6 +40,7 @@ module NorthPole =
     let MaxOutputs = 10
 
     module internal Impl =
+        open Spectre.Console
         let NullOut = new StreamWriter(Stream.Null)
 
         let RequestLimit = TimeSpan.FromSeconds 30
@@ -126,6 +127,30 @@ module NorthPole =
                 fs.Close()
                 None
 
+        let delayWithProgress delayMs = 
+            let watch = System.Diagnostics.Stopwatch.StartNew ()
+            let p = AnsiConsole.Progress()
+            p.AutoClear <- true
+
+            let mutable columns: ProgressColumn list = [
+                new TaskDescriptionColumn()
+                new ProgressBarColumn()
+                new RemainingTimeColumn()
+            ]
+            p.Columns (columns |> List.toArray) |> ignore
+
+            let delay = System.TimeSpan.FromMilliseconds delayMs
+            let delayMs = (delay - watch.Elapsed).TotalMilliseconds
+            let description = sprintf "Sleeping for %3.2fs" delay.TotalSeconds
+            p.Start(fun ctx ->
+                let delayTask = ctx.AddTask(description, maxValue = delayMs)
+                
+                while not ctx.IsFinished do
+                    delayTask.Value <- watch.Elapsed.TotalMilliseconds
+                    let sleepTime = min (delay - watch.Elapsed) (System.TimeSpan.FromMilliseconds 100)
+                    System.Threading.Thread.Sleep(sleepTime)
+                    ctx.Refresh ())
+
         let ensureRequestLimit () =
             let aocTrackerPath = Path.Combine(Path.GetTempPath(), "aoc.tracker")
             let now = DateTime.UtcNow
@@ -135,8 +160,7 @@ module NorthPole =
                 let waitTime = (lastRequestTime + RequestLimit) - now
 
                 if waitTime > TimeSpan.Zero then
-                    printfn "Sleeping for %3.2fs" waitTime.TotalSeconds
-                    Threading.Thread.Sleep waitTime
+                    delayWithProgress waitTime.TotalMilliseconds
             else
                 (File.Create aocTrackerPath).Close()
 

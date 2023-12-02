@@ -123,7 +123,7 @@ type TestCommand() =
         0
 
 let runCommandLine (days: Day list) =
-    let app = CommandApp<RunCommand>()
+    let app = CommandApp<RunCommand>().WithData(days)
     app.Configure (fun config ->
         config.PropagateExceptions () |> ignore
         config.AddCommand<RunCommand>("run").WithData(days) |> ignore
