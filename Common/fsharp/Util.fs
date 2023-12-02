@@ -220,9 +220,10 @@ module Util =
 
         let inline decr (key: 'T) (counter: Map<'T, int64>) : Map<'T, int64> = add key -1 counter
 
-    let cacheSequence (day: int) (cacheName: string) (a: byte[] seq) =
-        let cacheFile =
-            System.IO.Path.Combine [| ".."; "inputs"; sprintf "%02i" day; sprintf "%s.cache" cacheName |]
+    let cacheSequence (cacheName: string) (a: byte[] seq) =
+        let year, day = NorthPole.executingYearDay.Value
+        let inputPath = NorthPole.Impl.getInputFolder year day
+        let cacheFile = System.IO.Path.Combine [| inputPath; sprintf "%s.cache" cacheName |]
 
         seq {
             let mutable index = 0

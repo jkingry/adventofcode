@@ -100,7 +100,7 @@ module Day05 =
             |> Seq.map System.Convert.ToHexString
             |> Seq.filter (fun s -> s.StartsWith("00000"))
             |> Seq.map System.Convert.FromHexString
-            |> cacheSequence 5 doorId
+            |> cacheSequence doorId
             |> Seq.map System.Convert.ToHexString
             |> Seq.scan updatePasswordCharFromHash ((Array.create 8 ' '), (Array.create 8 ' '))
             |> Seq.skipWhile (fun (p1, p2) -> (p1 |> Array.contains ' ') || (p2 |> Array.contains ' '))

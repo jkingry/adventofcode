@@ -3,7 +3,6 @@ namespace AdventOfCode.FSharp
 module NorthPole =
     open System
     open System.IO
-    open Util
 
     type Command =
         | Run = 0
@@ -20,13 +19,16 @@ module NorthPole =
 
     type RunDef = { run: RunDayThunk; name: string }
 
+    let mutable executingYearDay: (int * int) option = None
+
     type Day =
         { year: int
           day: int
           runs: RunDef list }
 
     type DayResult =
-        { day: int
+        { year: int
+          day: int
           name: string
           results: (string option * Result<unit, string> option)[]
           elapsedMs: float }
@@ -37,24 +39,62 @@ module NorthPole =
 
     let MaxOutputs = 10
 
-    module private Impl =
+    module internal Impl =
         let NullOut = new StreamWriter(Stream.Null)
 
         let RequestLimit = TimeSpan.FromSeconds 30
 
-        let getInputFolder (day: int) =
-            let baseName = sprintf "%02i" day
+        let rec getDirectoryParents dir =
+            seq {
+                let mutable cd = dir
+                while cd <> null do
+                    yield cd
+                    cd <- Path.GetDirectoryName cd
+            }
 
-            let relativePath = Path.Combine("..", "inputs", baseName)
+        let sessionValuePath = lazy (
+            Directory.GetCurrentDirectory()
+            |> getDirectoryParents 
+            |> Seq.tryPick (fun dir ->
+                let sessionPath = Path.Combine(dir, ".adventofcode.session")
+                if File.Exists sessionPath then sessionPath |> Some
+                else None)
+            |> Option.defaultWith (fun () -> failwith "Could not find .adventofcode.session file"))
 
-            let path = Path.GetFullPath relativePath
+        let sessionValue = lazy (sessionValuePath.Force () |> File.ReadAllText)
 
-            if Directory.Exists path |> not then
-                Directory.CreateDirectory path |> ignore
+        let getInputFolder (year: int) (day: int) =
+            let possibleSuffixes = [
+                $"%04i{year}/inputs/%02i{day}"
+                $"inputs/%04i{year}/%02i{day}"
+            ]
 
-            path
+            let suffixParts = possibleSuffixes |> List.map (fun s -> s.Split('/'))
+            let maxSuffixLen = suffixParts |> List.map Array.length |> List.max            
 
-        let getInputPath (day: int) (inputType: InputType) =
+            let findCreateDir dir i (suffixParts: string[]) =
+                if i >= suffixParts.Length then None else
+                    let find, missing = suffixParts |> Array.splitAt i
+                    let path = Array.append [| dir |] find |> Path.Combine 
+                    if Path.Exists path then
+                        printfn "find=%A missing=%A dir=%A" find missing dir
+                        let fullPath = Array.concat [ [| dir |]; find; missing ] |> Path.Combine
+                        Directory.CreateDirectory fullPath |> ignore
+                        Some fullPath
+                    else None
+                    
+            [maxSuffixLen ..1]
+            |> List.tryPick (fun i ->
+                Directory.GetCurrentDirectory()
+                |> getDirectoryParents 
+                |> Seq.tryPick (fun dir -> suffixParts |> List.tryPick (findCreateDir dir i)))
+            |> Option.defaultWith (fun () -> 
+                let rootPath = sessionValuePath.Force () |> Path.GetDirectoryName 
+                let fullPath = Path.Combine (rootPath, (possibleSuffixes |> List.head))
+                Directory.CreateDirectory fullPath |> ignore
+                fullPath)
+            
+        let getInputPath (year: int) (day: int) (inputType: InputType) =
 
             let filename =
                 match inputType with
@@ -63,12 +103,12 @@ module NorthPole =
                 | InputType.Alt -> "alt.txt"
                 | e -> failwithf "Unsupported value: %A" e
 
-            let inputFolder = getInputFolder day
+            let inputFolder = getInputFolder year day
 
             Path.Combine(inputFolder, filename)
 
-        let getExpectedPath (day: int) (inputType: InputType) (part: int) =
-            let inputPath = getInputPath day inputType
+        let getExpectedPath (year: int) (day: int) (inputType: InputType) (part: int) =
+            let inputPath = getInputPath year day inputType
 
             Path.ChangeExtension(inputPath, sprintf ".s%i.txt" part)
 
@@ -105,23 +145,6 @@ module NorthPole =
         let getReleaseTime year day =
             new DateTime(year, 12, day, 5, 0, 0, DateTimeKind.Utc)
 
-        let getSessionValue () =
-            let mutable dir = Directory.GetCurrentDirectory()
-            let mutable sessionValue = None
-
-            while dir <> null && sessionValue = None do
-                let sessionPath = Path.Combine(dir, ".adventofcode.session")
-
-                if File.Exists sessionPath then
-                    sessionValue <- Some(File.ReadAllText sessionPath)
-                else
-                    dir <- Path.GetDirectoryName dir
-
-            if sessionValue = None then
-                failwith "Could not find .adventofcode.session file"
-
-            sessionValue.Value
-
         let downloadInput year day inputPath =
             let releaseDate = getReleaseTime year day
 
@@ -129,7 +152,7 @@ module NorthPole =
                 printf "%A is in the future, no input file yet" releaseDate
                 None
             else
-                let session = getSessionValue ()
+                let session = sessionValue.Force ()
 
                 ensureRequestLimit ()
 
@@ -165,7 +188,7 @@ module NorthPole =
                         printfn "Using cached HTML file %s" htmlCachePath
                         File.ReadAllText htmlCachePath
                     else
-                        let session = getSessionValue ()
+                        let session = sessionValue.Force ()
 
                         ensureRequestLimit ()
 
@@ -202,7 +225,7 @@ module NorthPole =
                     answers.[part - 1] |> Some
 
         let getInput (year: int) (day: int) (inputType: InputType) =
-            let path = getInputPath day inputType
+            let path = getInputPath year day inputType
 
             match readFile path with
             | Some data -> Some data
@@ -210,10 +233,10 @@ module NorthPole =
             | None -> None
 
         let getExpected (year: int) (day: int) (inputType: InputType) (part: int) =
-            let path = getExpectedPath day inputType part
+            let path = getExpectedPath year day inputType part
 
             match readFile path with
-            | Some data -> data |> text |> Some
+            | Some data -> data |> Text.Encoding.ASCII.GetString |> Some
             | None when inputType = InputType.Default -> downloadExpected year day part path
             | None -> None
 
@@ -248,6 +271,7 @@ module NorthPole =
                 let dummyOut part result = ()
 
                 let w = Diagnostics.Stopwatch()
+                executingYearDay <- (d.year, d.day) |> Some
 
                 try
                     if silentOutput then
@@ -263,10 +287,12 @@ module NorthPole =
 
                     w.Stop()
                 finally
+                    executingYearDay <- None
                     if silentOutput then
                         Console.SetOut originalOut
 
-                { day = d.day
+                { year = d.year
+                  day = d.day
                   name = name
                   results = actualsToResults actuals
                   elapsedMs = w.Elapsed.TotalMilliseconds })
@@ -289,12 +315,7 @@ module NorthPole =
             | true, e when Enum.IsDefined(e) -> Some e
             | _ -> None
 
-        let executeRun (dayIndexArg: int option) (inputType: InputType) (days: Day list) =
-            let day =
-                match dayIndexArg with
-                | Some dayIndex -> days |> List.find (fun d -> d.day = dayIndex)
-                | None -> days |> List.last
-
+        let executeRun (inputType: InputType) (day: Day) =
             printfn "%3s %8s %9s %4s %8s %s" "Day" "Method" "Time" "Part" "Status" "Value"
 
             let repeats = 1
@@ -320,13 +341,7 @@ module NorthPole =
                     | Some _, _ -> printfn "%3d %8s %4d %s" r.day "" (p + 1) (resToStr pr)
                     | _ -> ()
 
-        let executeTest (dayIndexArg: int option) (repeats: int option) (days: Day list) =
-            let days =
-                match dayIndexArg with
-                | Some dayIndex -> days |> List.find (fun d -> d.day = dayIndex) |> List.singleton
-                | None -> days
-
-
+        let executeTest (repeats: int option) (days: Day list) =
             let silentOutput = true
             let repeats = repeats |> Option.defaultValue 1
             let mutable fastestTotalMs = 0.0
@@ -335,7 +350,7 @@ module NorthPole =
             let mutable dayTimes = Map.empty
 
             printfn "By day:"
-            printfn "%5s %9s %-3s" "Day" "Time" "[S]"
+            printfn "%4s %3s %9s %-3s" "Year" "Day" "Time" "[S]"
 
             let resultsToState results =
                 results
@@ -364,7 +379,8 @@ module NorthPole =
                 for r in runDay day InputType.Default repeats silentOutput do
                     if fastestMs < Double.PositiveInfinity then
                         printfn
-                            "%5d %9.3f %-3s %s %s"
+                            "%4d %3d %9.3f %-3s %s %s"
+                            r.year
                             r.day
                             (r.elapsedMs / (float repeats))
                             (resultsToState r.results)
@@ -372,7 +388,8 @@ module NorthPole =
                             (multi fastestMs r.elapsedMs)
                     else
                         printfn
-                            "%5d %9.3f %-3s %s"
+                            "%4d %3d %9.3f %-3s %s"
+                            r.year
                             r.day
                             (r.elapsedMs / (float repeats))
                             (resultsToState r.results)
@@ -381,17 +398,17 @@ module NorthPole =
                     fastestMs <- min fastestMs r.elapsedMs
                     slowestMs <- max slowestMs r.elapsedMs
 
-                dayTimes <- dayTimes |> Map.add day.day fastestMs
+                dayTimes <- dayTimes |> Map.add (day.year, day.day) fastestMs
                 fastestTotalMs <- fastestTotalMs + fastestMs
                 slowestTotalMs <- slowestTotalMs + slowestMs
 
             printfn "%5s %9.3f" "Total" (slowestTotalMs / (float repeats))
 
             printfn "\nBy (fastest) time:"
-            printfn "%3s %5s %9s" "Rnk" "Day" "Time"
+            printfn "%3s %4s %3s %9s" "Rnk" "Year" "Day" "Time"
 
-            for index, (day, time) in dayTimes |> Map.toList |> List.sortBy snd |> List.indexed do
-                printfn "%3d %5d %9.3f" (index + 1) day (time / (float repeats))
+            for index, ((year, day), time) in dayTimes |> Map.toList |> List.sortBy snd |> List.indexed do
+                printfn "%3d %4d %3d %9.3f" (index + 1) year day (time / (float repeats))
 
             let totalAvgFastestMs = fastestTotalMs / (float repeats)
             let expectedMs = 250.0 * (float dayTimes.Count)
@@ -405,41 +422,6 @@ module NorthPole =
             printfn "%6s %9.1f a difference of %.1fms" "Expect" expectedMs (totalAvgFastestMs - expectedMs)
 
             printfn "%6s %10.2f%%" "Grade" (100.0 * expectedMs / totalAvgFastestMs)
-
-    open Impl
-
-    let runCommandLine (days: Day list) =
-        let args = Environment.GetCommandLineArgs() |> Array.tail
-
-        let mutable n = 0
-
-        let parseArg (parseThunk: string -> 'a option) : 'a option =
-            if args.Length <= n then
-                None
-            else
-                match parseThunk args[n] with
-                | Some v ->
-                    n <- n + 1
-                    Some v
-                | None -> None
-
-        let commandArg = parseArg tryParseCommand |> Option.defaultValue Command.Run
-
-        let repeatsArg =
-            if commandArg = Command.Test then
-                parseArg tryParse
-            else
-                None
-
-        let dayIndexArg = parseArg tryParse
-
-        let inputTypeArg =
-            parseArg tryParseInputType |> Option.defaultValue InputType.Default
-
-        match commandArg with
-        | Command.Run -> days |> executeRun dayIndexArg inputTypeArg
-        | Command.Test -> days |> executeTest dayIndexArg repeatsArg
-        | x -> failwithf "Unexpected command: %A" x
 
     open FSharp.Quotations.Evaluator
     open FSharp.Quotations
@@ -488,7 +470,7 @@ module NorthPole =
             { run = QuotationEvaluator.Evaluate expr
               name = m.Name }
 
-        let a = System.Reflection.Assembly.GetEntryAssembly()
+        let a = System.Reflection.Assembly.GetCallingAssembly ()
 
         a.GetExportedTypes()
         |> Seq.choose (fun t -> chooseValidYearDay t |> Option.map (fun (year, day) -> (t, year, day)))

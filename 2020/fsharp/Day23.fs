@@ -99,10 +99,9 @@ module Day23 =
         for i = 1 to 10000000 do
             c <- move c cups n
 
-        let [ a; b ] =
-            cs 1 cups |> Seq.skip 1 |> Seq.take (2) |> Seq.map int64 |> Seq.toList
-
-        a * b |> string
+        match cs 1 cups |> Seq.skip 1 |> Seq.take (2) |> Seq.map int64 |> Seq.toList with
+        | [a ; b ] -> a * b |> string
+        | _ -> failwith "I don't know"
 
     let run (input: byte array) output =
         let textInput = text input
