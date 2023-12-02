@@ -48,53 +48,60 @@ module NorthPole =
         let rec getDirectoryParents dir =
             seq {
                 let mutable cd = dir
+
                 while cd <> null do
                     yield cd
                     cd <- Path.GetDirectoryName cd
             }
 
-        let sessionValuePath = lazy (
-            Directory.GetCurrentDirectory()
-            |> getDirectoryParents 
-            |> Seq.tryPick (fun dir ->
-                let sessionPath = Path.Combine(dir, ".adventofcode.session")
-                if File.Exists sessionPath then sessionPath |> Some
-                else None)
-            |> Option.defaultWith (fun () -> failwith "Could not find .adventofcode.session file"))
+        let sessionValuePath =
+            lazy
+                (Directory.GetCurrentDirectory()
+                 |> getDirectoryParents
+                 |> Seq.tryPick (fun dir ->
+                     let sessionPath = Path.Combine(dir, ".adventofcode.session")
 
-        let sessionValue = lazy (sessionValuePath.Force () |> File.ReadAllText)
+                     if File.Exists sessionPath then
+                         sessionPath |> Some
+                     else
+                         None)
+                 |> Option.defaultWith (fun () -> failwith "Could not find .adventofcode.session file"))
+
+        let sessionValue = lazy (sessionValuePath.Force() |> File.ReadAllText)
 
         let getInputFolder (year: int) (day: int) =
-            let possibleSuffixes = [
-                $"%04i{year}/inputs/%02i{day}"
-                $"inputs/%04i{year}/%02i{day}"
-            ]
+            let possibleSuffixes =
+                [ $"%04i{year}/inputs/%02i{day}"; $"inputs/%04i{year}/%02i{day}" ]
 
             let suffixParts = possibleSuffixes |> List.map (fun s -> s.Split('/'))
-            let maxSuffixLen = suffixParts |> List.map Array.length |> List.max            
+            let maxSuffixLen = suffixParts |> List.map Array.length |> List.max
 
             let findCreateDir dir i (suffixParts: string[]) =
-                if i >= suffixParts.Length then None else
+                if i >= suffixParts.Length then
+                    None
+                else
                     let find, missing = suffixParts |> Array.splitAt i
-                    let path = Array.append [| dir |] find |> Path.Combine 
+                    let path = Array.append [| dir |] find |> Path.Combine
+
                     if Path.Exists path then
                         printfn "find=%A missing=%A dir=%A" find missing dir
                         let fullPath = Array.concat [ [| dir |]; find; missing ] |> Path.Combine
                         Directory.CreateDirectory fullPath |> ignore
                         Some fullPath
-                    else None
-                    
-            [maxSuffixLen ..1]
+                    else
+                        None
+
+            [ maxSuffixLen..1 ]
             |> List.tryPick (fun i ->
                 Directory.GetCurrentDirectory()
-                |> getDirectoryParents 
+                |> getDirectoryParents
                 |> Seq.tryPick (fun dir -> suffixParts |> List.tryPick (findCreateDir dir i)))
-            |> Option.defaultWith (fun () -> 
-                let rootPath = sessionValuePath.Force () |> Path.GetDirectoryName 
-                let fullPath = Path.Combine (rootPath, (possibleSuffixes |> List.head))
+            |> Option.defaultWith (fun () ->
+                let rootPath = sessionValuePath.Force() |> Path.GetDirectoryName
+                let fullPath = Path.Combine(rootPath, (possibleSuffixes |> List.head))
                 Directory.CreateDirectory fullPath |> ignore
                 fullPath)
-            
+
         let getInputPath (year: int) (day: int) (inputType: InputType) =
 
             let filename =
@@ -127,29 +134,30 @@ module NorthPole =
                 fs.Close()
                 None
 
-        let delayWithProgress delayMs = 
-            let watch = System.Diagnostics.Stopwatch.StartNew ()
+        let delayWithProgress delayMs =
+            let watch = System.Diagnostics.Stopwatch.StartNew()
             let p = AnsiConsole.Progress()
             p.AutoClear <- true
 
-            let mutable columns: ProgressColumn list = [
-                new TaskDescriptionColumn()
-                new ProgressBarColumn()
-                new RemainingTimeColumn()
-            ]
-            p.Columns (columns |> List.toArray) |> ignore
+            let mutable columns: ProgressColumn list =
+                [ new TaskDescriptionColumn()
+                  new ProgressBarColumn()
+                  new RemainingTimeColumn() ]
+
+            p.Columns(columns |> List.toArray) |> ignore
 
             let delay = System.TimeSpan.FromMilliseconds delayMs
             let delayMs = (delay - watch.Elapsed).TotalMilliseconds
             let description = sprintf "Sleeping for %3.2fs" delay.TotalSeconds
+
             p.Start(fun ctx ->
                 let delayTask = ctx.AddTask(description, maxValue = delayMs)
-                
+
                 while not ctx.IsFinished do
                     delayTask.Value <- watch.Elapsed.TotalMilliseconds
                     let sleepTime = min (delay - watch.Elapsed) (System.TimeSpan.FromMilliseconds 100)
                     System.Threading.Thread.Sleep(sleepTime)
-                    ctx.Refresh ())
+                    ctx.Refresh())
 
         let ensureRequestLimit () =
             let aocTrackerPath = Path.Combine(Path.GetTempPath(), "aoc.tracker")
@@ -176,7 +184,7 @@ module NorthPole =
                 printf "%A is in the future, no input file yet" releaseDate
                 None
             else
-                let session = sessionValue.Force ()
+                let session = sessionValue.Force()
 
                 ensureRequestLimit ()
 
@@ -212,7 +220,7 @@ module NorthPole =
                         printfn "Using cached HTML file %s" htmlCachePath
                         File.ReadAllText htmlCachePath
                     else
-                        let session = sessionValue.Force ()
+                        let session = sessionValue.Force()
 
                         ensureRequestLimit ()
 
@@ -312,6 +320,7 @@ module NorthPole =
                     w.Stop()
                 finally
                     executingYearDay <- None
+
                     if silentOutput then
                         Console.SetOut originalOut
 
@@ -494,7 +503,7 @@ module NorthPole =
             { run = QuotationEvaluator.Evaluate expr
               name = m.Name }
 
-        let a = System.Reflection.Assembly.GetCallingAssembly ()
+        let a = System.Reflection.Assembly.GetCallingAssembly()
 
         a.GetExportedTypes()
         |> Seq.choose (fun t -> chooseValidYearDay t |> Option.map (fun (year, day) -> (t, year, day)))
