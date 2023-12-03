@@ -49,49 +49,64 @@ module Day03 =
         | _ -> None
 
     let matchPartsSymbols matchFunc values =
-        let parts = [| List.empty; List.empty |]
-        let symbols = [| List.empty; List.empty |]
+        let mutable prevParts = List.empty
+        let mutable currParts = List.empty
+        let mutable prevSymbs = List.empty
+        let mutable currSymbs = List.empty
 
         for entry in values do
             match entry with
             | Row ->
-                parts[0] <- parts[1]
-                parts[1] <- List.empty
-                symbols[0] <- symbols[1]
-                symbols[1] <- List.empty
+                // Only keep previous row of part map to match against
+                prevParts <- currParts
+                currParts <- List.empty
+                prevSymbs <- currSymbs
+                currSymbs <- List.empty
             | Symbol _ ->
-                parts[1]
-                |> List.tryHead
-                |> Option.bind (isAdj entry)
-                |> function
-                    | Some(v, b) ->
-                        if matchFunc b v then
-                            parts[1] <- parts[1] |> List.tail
-                    | None -> ()
+                // See if the previous entry in this row was an adj. part
+                let removePart =
+                    currParts
+                    |> List.tryHead
+                    |> Option.bind (isAdj entry)
+                    |> Option.bind (fun (v, b) -> matchFunc b v |> Some)
+                    |> Option.defaultValue false
 
-                let mutable p0 = []
+                if removePart then
+                    currParts <- currParts |> List.tail
 
-                for p in parts[0] do
-                    match isAdj entry p with
-                    | Some(v, b) ->
-                        if matchFunc b v |> not then
-                            p0 <- p :: p0
-                    | None -> p0 <- p :: p0
+                let mutable prevParts' = []
 
-                symbols[1] <- entry :: symbols[1]
+                // check row above for parts
+                prevParts <-
+                    prevParts
+                    |> List.fold
+                        (fun newPrev p ->
+                            let removePart =
+                                isAdj entry p
+                                |> Option.bind (fun (v, b) -> matchFunc b v |> Some)
+                                |> Option.defaultValue false
+
+                            if removePart then newPrev else p :: newPrev)
+                        List.empty
+
+                currSymbs <- entry :: currSymbs
             | Part _ ->
+                // Add the previous symbol in this row if available
                 let s =
-                    symbols[1]
+                    currSymbs
                     |> List.tryHead
                     |> function
-                        | Some s -> s :: symbols[0]
-                        | None -> symbols[0]
+                        | Some s -> s :: prevSymbs
+                        | None -> prevSymbs
 
-                match s |> List.tryPick (fun s -> isAdj s entry) with
-                | Some(v, b) ->
-                    if matchFunc b v |> not then
-                        parts[1] <- entry :: parts[1]
-                | None -> parts[1] <- entry :: parts[1]
+                let removePart =
+                    s
+                    |> List.tryPick (fun s -> isAdj s entry)
+                    |> Option.bind (fun (v, b) -> matchFunc b v |> Some)
+                    |> Option.defaultValue false
+
+                if not removePart then
+                    currParts <- entry :: currParts
 
     let run (input: byte[]) (output: int -> string -> unit) =
         let parsed = input |> parse |> Seq.cache
