@@ -61,21 +61,26 @@ module Day01 =
         res |> Array.sum |> string |> output 2
 
     let matchToNumber wordMap (m: System.Text.RegularExpressions.Match) =
-        wordMap 
-        |> Map.tryFind m.Value
-        |> Option.defaultWith (fun () -> m.Value |> int) 
+        wordMap |> Map.tryFind m.Value |> Option.defaultWith (fun () -> m.Value |> int)
 
-    let words = [| "one"; "two"; "three"; "four"; "five"; "six"; "seven"; "eight"; "nine" |]
-    let wordMap = words |> Array.indexed |> Array.map (fun (a,b) -> (b,a + 1)) |> Map.ofArray
+    let words =
+        [| "one"; "two"; "three"; "four"; "five"; "six"; "seven"; "eight"; "nine" |]
+
+    let wordMap =
+        words |> Array.indexed |> Array.map (fun (a, b) -> (b, a + 1)) |> Map.ofArray
+
     let rePart2First =
         System.Text.RegularExpressions.Regex("[1-9]|" + (words |> String.concat "|"))
-    
+
     let rev (s: string) =
-        s.ToCharArray() |> Array.rev |> System.String    
+        s.ToCharArray() |> Array.rev |> System.String
 
     let revWords = words |> Array.map rev
-    let revWordMap = revWords |> Array.indexed |> Array.map (fun (a,b) -> (b,a + 1)) |> Map.ofArray
-    let rePart2Last = 
+
+    let revWordMap =
+        revWords |> Array.indexed |> Array.map (fun (a, b) -> (b, a + 1)) |> Map.ofArray
+
+    let rePart2Last =
         System.Text.RegularExpressions.Regex("[1-9]|" + (revWords |> String.concat "|"))
 
     let runRegex (input: byte[]) (output: int -> string -> unit) =
@@ -83,21 +88,20 @@ module Day01 =
             input
             |> text
             |> splitLine
-            |> Array.fold (fun (p1, p2) line ->
-                let lineArray = line.ToCharArray ()
-                let p1firstChar = lineArray |> Array.find (fun c -> '1' <= c && c <= '9')
-                let p1lastChar = lineArray |> Array.findBack (fun c -> '1' <= c && c <= '9')
-                let p1first = p1firstChar - '0' |> int
-                let p1last = p1lastChar - '0' |> int
+            |> Array.fold
+                (fun (p1, p2) line ->
+                    let lineArray = line.ToCharArray()
+                    let p1firstChar = lineArray |> Array.find (fun c -> '1' <= c && c <= '9')
+                    let p1lastChar = lineArray |> Array.findBack (fun c -> '1' <= c && c <= '9')
+                    let p1first = p1firstChar - '0' |> int
+                    let p1last = p1lastChar - '0' |> int
 
-                let lineRev = line |> rev
-                let p2first = line |> rePart2First.Match |> (matchToNumber wordMap)
-                let p2last = lineRev |> rePart2Last.Match |> (matchToNumber revWordMap)
+                    let lineRev = line |> rev
+                    let p2first = line |> rePart2First.Match |> (matchToNumber wordMap)
+                    let p2last = lineRev |> rePart2Last.Match |> (matchToNumber revWordMap)
 
-                p1 + (p1first * 10) + p1last, p2 + (p2first * 10) + p2last) (0,0)
+                    p1 + (p1first * 10) + p1last, p2 + (p2first * 10) + p2last)
+                (0, 0)
+
         part1 |> string |> output 1
         part2 |> string |> output 2
-
-
-
-
