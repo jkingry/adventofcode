@@ -43,25 +43,25 @@ module Day04 =
                 | _ -> ()
         }
 
-    let scoreGamePart1 (winning, yours) =
+    let countMatches (winning, yours) =
         let w = winning |> Set.ofList
 
         yours
         |> List.fold (fun score you -> score + if w |> Set.contains you then 1 else 0) 0
 
-    let rec scoreGamePart2 (games: Game[]) (cache: int[]) index =
+    let rec countCards (games: int[]) (cache: int[]) index =
         if cache[index] >= 0 then
             cache[index]
         else
-            let cards = scoreGamePart1 (games[index])
+            let cards = games[index]
 
             if cards = 0 then
                 cache[index] <- 1
                 1
             else
                 let totalScore =
-                    [ index + 1 .. index + cards ]
-                    |> List.fold (fun count copyIndex -> count + scoreGamePart2 games cache copyIndex) 1
+                    [ 1..cards ]
+                    |> List.fold (fun count offset -> count + countCards games cache (index + offset)) 1
 
                 cache[index] <- totalScore
                 totalScore
@@ -69,17 +69,18 @@ module Day04 =
     let run (input: byte[]) (output: int -> string -> unit) =
         let games = input |> parse |> Seq.toArray
 
-        games
-        |> Seq.map scoreGamePart1
-        |> Seq.map (fun s -> if s > 0 then 1 <<< (s - 1) else 0)
-        |> Seq.sum
+        let matching = games |> Array.map countMatches
+
+        matching
+        |> Array.map (fun s -> if s > 0 then 1 <<< (s - 1) else 0)
+        |> Array.sum
         |> string
         |> output 1
 
         let cache = Array.create (games.Length) (-1)
 
         [ 0 .. games.Length - 1 ]
-        |> Seq.map (scoreGamePart2 games cache)
-        |> Seq.sum
+        |> List.map (countCards matching cache)
+        |> List.sum
         |> string
         |> output 2
