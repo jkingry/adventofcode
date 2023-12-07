@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2023
 
-// Day 5
+// Day 5: If You Give A Seed A Fertilizer
 module Day05 =
     open AdventOfCode.FSharp.Util
 
@@ -51,7 +51,8 @@ module Day05 =
             for (inputSrc, inputRange) in ranges do
                 let intersecting =
                     section
-                    |> Array.filter (fun (_, src, rng) -> intersects inputSrc (inputSrc + inputRange - 1L) src (src + rng - 1L))
+                    |> Array.filter (fun (_, src, rng) ->
+                        intersects inputSrc (inputSrc + inputRange - 1L) src (src + rng - 1L))
                     |> Array.sortBy (fun (_, src, _) -> src)
 
                 let mutable remSrc = inputSrc
