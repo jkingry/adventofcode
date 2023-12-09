@@ -437,14 +437,40 @@ module NorthPole =
 
             printfn "%5s %9.3f" "Total" (slowestTotalMs / (float repeats))
 
-            printfn "\nBy (fastest) time:"
-            printfn "%3s %4s %3s %9s" "Rnk" "Year" "Day" "Time"
+            // printfn "%3s %4s %3s %9s" "Rnk" "Year" "Day" "Time"
 
-            for index, ((year, day), time) in dayTimes |> Map.toList |> List.sortBy snd |> List.indexed do
-                printfn "%3d %4d %3d %9.3f" (index + 1) year day (time / (float repeats))
+            // for index, ((year, day), time) in dayTimes |> Map.toList |> List.sortBy snd |> List.indexed do
+            //     printfn "%3d %4d %3d %9.3f" (index + 1) year day (time / (float repeats))
 
             let totalAvgFastestMs = fastestTotalMs / (float repeats)
+            let n = dayTimes.Count |> float
+            let dayAvg = totalAvgFastestMs / n
+            let dayStddev = dayTimes |> Map.values |> Seq.sumBy (fun t -> (t - dayAvg) ** 2)
+            let dayStddev = dayStddev / n |> sqrt
             let expectedMs = 250.0 * (float dayTimes.Count)
+
+            printfn "\nBy (fastest) time:"
+
+            let minTime = dayTimes.Values |> Seq.min
+            let maxTime = dayTimes.Values |> Seq.max
+
+            let timeToColor t =
+                let red = 255.0 * (t - minTime) / (maxTime - minTime)
+                let green = 255.0 - red
+
+                new Color((byte red), (byte green), 0uy)
+
+            dayTimes
+            |> Map.toList
+            |> List.sortBy snd
+            |> List.indexed
+            |> Seq.fold
+                (fun (bc: BarChart) (index, ((year, day), time)) ->
+                    bc.AddItem($"[bold]%3d{index}[/] [green]%d{year}[/] %2d{day}", time, (timeToColor time)))
+                (BarChart())
+            |> AnsiConsole.Write
+
+            let years = dayTimes |> Map.keys |> Seq.toList |> List.groupBy fst
 
             printfn
                 "%6s %9.1f or %s faster then slowest"
@@ -455,6 +481,19 @@ module NorthPole =
             printfn "%6s %9.1f a difference of %.1fms" "Expect" expectedMs (totalAvgFastestMs - expectedMs)
 
             printfn "%6s %10.2f%%" "Grade" (100.0 * expectedMs / totalAvgFastestMs)
+
+            let randomColor () =
+                let color = Array.zeroCreate 3
+                System.Random.Shared.NextBytes color
+                Color(color[0], color[1], color[2])
+
+            if years.Length > 1 then
+                years
+                |> List.map (fun (year, items) -> year, (items |> List.sumBy (fun k -> dayTimes[k])))
+                |> List.fold
+                    (fun (bc: BreakdownChart) (year, totalTime) -> bc.AddItem($"{year}", totalTime, (randomColor ())))
+                    (BreakdownChart())
+                |> AnsiConsole.Write
 
     open FSharp.Quotations.Evaluator
     open FSharp.Quotations
