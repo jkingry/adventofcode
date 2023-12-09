@@ -599,7 +599,6 @@ module Util =
             row.CopyTo(dest, 0)
             dest |> Array.map (uint >> System.Numerics.BitOperations.PopCount) |> Array.sum
 
-
     let intersects aStart aEnd bStart bEnd = aStart <= bEnd && aEnd >= bStart
 
     let rec distribute e =
@@ -709,3 +708,13 @@ module Util =
             pos' <- pos' + 1
 
         (pos', sign * res)
+
+    let inline gcd (a: ^a) (b: ^a) =
+        let mutable a = a
+        let mutable b = b
+        while a <> LanguagePrimitives.GenericZero && b <> LanguagePrimitives.GenericZero do
+            if a > b then
+                a <- a % b
+            else
+                b <- b % a
+        a ||| b
