@@ -712,9 +712,8 @@ module Util =
     let inline gcd (a: ^a) (b: ^a) =
         let mutable a = a
         let mutable b = b
+
         while a <> LanguagePrimitives.GenericZero && b <> LanguagePrimitives.GenericZero do
-            if a > b then
-                a <- a % b
-            else
-                b <- b % a
+            if a > b then a <- a % b else b <- b % a
+
         a ||| b
