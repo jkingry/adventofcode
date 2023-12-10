@@ -636,7 +636,6 @@ module Util =
             let v' = (v |> Option.get) - 1
             if v' = 0 then None else Some v')
 
-
     let (|Regex|_|) pattern input =
         let m = Regex.Match(input, pattern)
 
