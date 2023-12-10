@@ -443,10 +443,6 @@ module NorthPole =
             //     printfn "%3d %4d %3d %9.3f" (index + 1) year day (time / (float repeats))
 
             let totalAvgFastestMs = fastestTotalMs / (float repeats)
-            let n = dayTimes.Count |> float
-            let dayAvg = totalAvgFastestMs / n
-            let dayStddev = dayTimes |> Map.values |> Seq.sumBy (fun t -> (t - dayAvg) ** 2)
-            let dayStddev = dayStddev / n |> sqrt
             let expectedMs = 250.0 * (float dayTimes.Count)
 
             printfn "\nBy (fastest) time:"
@@ -466,7 +462,7 @@ module NorthPole =
             |> List.indexed
             |> Seq.fold
                 (fun (bc: BarChart) (index, ((year, day), time)) ->
-                    bc.AddItem($"[bold]%3d{index}[/] [green]%d{year}[/] %2d{day}", time, (timeToColor time)))
+                    bc.AddItem($"[bold]%3d{(index + 1)}[/] [green]%d{year}[/] %2d{day}", time / (float repeats), (timeToColor time)))
                 (BarChart())
             |> AnsiConsole.Write
 
