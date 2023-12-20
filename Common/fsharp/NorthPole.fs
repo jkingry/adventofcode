@@ -43,7 +43,7 @@ module NorthPole =
         open Spectre.Console
         let NullOut = new StreamWriter(Stream.Null)
 
-        let RequestLimit = TimeSpan.FromSeconds 30
+        let RequestLimit = TimeSpan.FromSeconds 10
 
         let rec getDirectoryParents dir =
             seq {
@@ -156,7 +156,8 @@ module NorthPole =
                 while not ctx.IsFinished do
                     delayTask.Value <- watch.Elapsed.TotalMilliseconds
                     let sleepTime = min (delay - watch.Elapsed) (System.TimeSpan.FromMilliseconds 100)
-                    System.Threading.Thread.Sleep(sleepTime)
+                    if sleepTime > TimeSpan.Zero then
+                        System.Threading.Thread.Sleep(sleepTime)
                     ctx.Refresh())
 
         let ensureRequestLimit () =

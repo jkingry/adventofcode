@@ -1,5 +1,7 @@
 open AdventOfCode.FSharp
 
+System.Console.OutputEncoding <- System.Text.Encoding.UTF8
+
 [ Y2015.Calendar.days
   Y2016.Calendar.days
   Y2017.Calendar.days
