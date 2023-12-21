@@ -196,7 +196,7 @@ module Util =
             let q' = q |> Heap.insert (cost, (x, y))
             costs, q'
 
-        let run maxMoves zeroCost moveFunc goalFunc (costs: 'a[,], q) =
+        let inline run maxMoves zeroCost moveFunc goalFunc (costs: 'a[,], q) =
             let mutable q = q
 
             let mutable found = false
