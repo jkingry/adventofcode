@@ -174,6 +174,6 @@ module Day10 =
         let visited =
             visitedMap |> Array2D.fold (fun s v -> if v < infiniteCost then s + 1 else s) 0
 
-        printMap parsed (border - pipes) pipes (fun x y -> visitedMap[x,y] < infiniteCost)
+        printMap parsed (border - pipes) pipes (fun x y -> visitedMap[x, y] < infiniteCost)
 
         (parsed.Length - (pipes.Count + visited)) |> string |> output 2
