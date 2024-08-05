@@ -150,8 +150,7 @@ let runCommandLine (days: Day list) =
 
     try
         System.Environment.GetCommandLineArgs() |> Array.tail |> app.Run
-    with
-    | InvalidSessionFileException message ->
+    with InvalidSessionFileException message ->
         fprintfn stderr "Please visit http://adventofcode.com and login to create a session cookie."
         fprintfn stderr "Then save the cookie to a file named '%s' in this directory." message
         1

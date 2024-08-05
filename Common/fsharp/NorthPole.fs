@@ -68,6 +68,7 @@ module NorthPole =
                      else
                          None)
                  |> Option.defaultWith (fun () -> raise (InvalidSessionFileException ".adventofcode.session")))
+
         let sessionValue = lazy (sessionValuePath.Force() |> File.ReadAllText)
 
         let getInputFolder (year: int) (day: int) =
@@ -157,8 +158,10 @@ module NorthPole =
                 while not ctx.IsFinished do
                     delayTask.Value <- watch.Elapsed.TotalMilliseconds
                     let sleepTime = min (delay - watch.Elapsed) (System.TimeSpan.FromMilliseconds 100)
+
                     if sleepTime > TimeSpan.Zero then
                         System.Threading.Thread.Sleep(sleepTime)
+
                     ctx.Refresh())
 
         let ensureRequestLimit () =
@@ -246,14 +249,17 @@ module NorthPole =
 
                 let answerRegex =
                     System.Text.RegularExpressions.Regex "Your puzzle answer was <code>(.+?)</code>"
-                let santaAnswerRegex = 
+
+                let santaAnswerRegex =
                     System.Text.RegularExpressions.Regex "input type=\"hidden\" name=\"answer\" value=\"(.+?)\""
 
                 let answers: string array =
                     answerRegex.Matches data |> Seq.map (fun m -> m.Groups[1].Value) |> Seq.toArray
 
                 let santaAnswers: string array =
-                    santaAnswerRegex.Matches data |> Seq.map (fun m -> m.Groups[1].Value) |> Seq.toArray
+                    santaAnswerRegex.Matches data
+                    |> Seq.map (fun m -> m.Groups[1].Value)
+                    |> Seq.toArray
 
                 let answers = Array.append answers santaAnswers
 
@@ -471,7 +477,11 @@ module NorthPole =
             |> List.indexed
             |> Seq.fold
                 (fun (bc: BarChart) (index, ((year, day), time)) ->
-                    bc.AddItem($"[bold]%3d{(index + 1)}[/] [green]%d{year}[/] %2d{day}", time / (float repeats), (timeToColor time)))
+                    bc.AddItem(
+                        $"[bold]%3d{(index + 1)}[/] [green]%d{year}[/] %2d{day}",
+                        time / (float repeats),
+                        (timeToColor time)
+                    ))
                 (BarChart())
             |> AnsiConsole.Write
 
