@@ -246,9 +246,16 @@ module NorthPole =
 
                 let answerRegex =
                     System.Text.RegularExpressions.Regex "Your puzzle answer was <code>(.+?)</code>"
+                let santaAnswerRegex = 
+                    System.Text.RegularExpressions.Regex "input type=\"hidden\" name=\"answer\" value=\"(.+?)\""
 
                 let answers: string array =
                     answerRegex.Matches data |> Seq.map (fun m -> m.Groups[1].Value) |> Seq.toArray
+
+                let santaAnswers: string array =
+                    santaAnswerRegex.Matches data |> Seq.map (fun m -> m.Groups[1].Value) |> Seq.toArray
+
+                let answers = Array.append answers santaAnswers
 
                 if answers.Length < part then
                     printfn "No answer for part %i" part
