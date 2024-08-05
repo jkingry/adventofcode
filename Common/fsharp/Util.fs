@@ -10,26 +10,30 @@ module Util =
     module Array2D =
         let tryItem x y a =
             if x >= 0 && x < (Array2D.length1 a) && y >= 0 && y < (Array2D.length2 a) then
-                a[x,y] |> Some
-            else 
+                a[x, y] |> Some
+            else
                 None
-        let findIndex f (a: 'a[,]) = 
+
+        let findIndex f (a: 'a[,]) =
             let mutable found = false
             let mutable i = 0
+
             while not found && i < a.Length do
                 let x = i / (Array2D.length2 a)
                 let y = i % (Array2D.length2 a)
-                found <- f a[x,y]
-                if not found then i <- i + 1
+                found <- f a[x, y]
+
+                if not found then
+                    i <- i + 1
 
             let x = i / (Array2D.length2 a)
             let y = i % (Array2D.length2 a)
-            x,y
+            x, y
 
         let fold folder state (array: 'a[,]) =
             let mutable total = state
             array |> Array2D.iter (fun v -> total <- folder total v)
-            total 
+            total
 
     module OrthoGrid =
         let movesToSeq (mx, my) (x, y) =
