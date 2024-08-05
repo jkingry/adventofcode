@@ -1,5 +1,7 @@
 namespace AdventOfCode.FSharp
 
+exception InvalidSessionFileException of string
+
 module NorthPole =
     open System
     open System.IO
@@ -65,8 +67,7 @@ module NorthPole =
                          sessionPath |> Some
                      else
                          None)
-                 |> Option.defaultWith (fun () -> failwith "Could not find .adventofcode.session file"))
-
+                 |> Option.defaultWith (fun () -> raise (InvalidSessionFileException ".adventofcode.session")))
         let sessionValue = lazy (sessionValuePath.Force() |> File.ReadAllText)
 
         let getInputFolder (year: int) (day: int) =
