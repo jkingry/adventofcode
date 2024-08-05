@@ -263,7 +263,7 @@ module Day25 =
         let program = executeProgram instructions
 
         findClockCode program |> string |> output 1
-        "SANTA" |> output 2
+        "0" |> output 2
 
     let runMsil (input: byte array) (output: int -> string -> unit) =
         let instructions = input |> text |> splitLine |> Array.map parseLine
@@ -271,4 +271,4 @@ module Day25 =
         let program = compileProgram instructions
 
         findClockCode program |> string |> output 1
-        "SANTA" |> output 2
+        "0" |> output 2
