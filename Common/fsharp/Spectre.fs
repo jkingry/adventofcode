@@ -21,7 +21,7 @@ let parseRangeList (input: string) =
 let parseYearDays (days: Day list) (selected: (int * int) Set) (input: string) =
     (*
         <null> -> highest year & all days
-        23 -> highest year & day 23(
+        23 -> highest year & day 23
         2016 -> highest day of year 2016
         2016-2020 -> all days from 2016 to 2020
         2016,2016 -> all days from 2016 and 2017
@@ -148,4 +148,10 @@ let runCommandLine (days: Day list) =
         config.AddCommand<RunCommand>("run").WithData(days) |> ignore
         config.AddCommand<TestCommand>("test").WithData(days) |> ignore)
 
-    System.Environment.GetCommandLineArgs() |> Array.tail |> app.Run
+    try
+        System.Environment.GetCommandLineArgs() |> Array.tail |> app.Run
+    with
+    | InvalidSessionFileException message ->
+        fprintfn stderr "Please visit http://adventofcode.com and login to create a session cookie."
+        fprintfn stderr "Then save the cookie to a file named '%s' in this directory." message
+        1
