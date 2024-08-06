@@ -28,7 +28,9 @@ jobs:
       run: dotnet build --no-restore --configuration Release 
 
     - name: Create .adventofcode.session file
-      run: echo ${{ secrets.AOC_SESSION }} > .adventofcode.session
+      env:
+        AOC_SESSION: ${{ secrets.AOC_SESSION }}
+      run: echo "$AOC_SESSION" > .adventofcode.session
 
     - name: Cache Inputs
       uses: actions/cache@v3
