@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2015
 
-// Day 1: Not Quite Lisp
+// Day 1: Not Quite Lisp https://adventofcode.com/2015/day/1
 module Day01 =
     open AdventOfCode.FSharp.Util
 

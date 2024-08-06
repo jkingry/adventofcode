@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2023
 
-// Day 2: Cube Conundrum
+// Day 2: Cube Conundrum http://adventofcode.com/2023/day/2
 module Day02 =
     open AdventOfCode.FSharp.Util
 
