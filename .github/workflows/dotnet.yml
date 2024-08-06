@@ -33,7 +33,7 @@ jobs:
       run: echo "$AOC_SESSION" > .adventofcode.session
 
     - name: Cache Inputs
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: session-${{ hashFiles('.adventofcode.session') }}
         path: 
