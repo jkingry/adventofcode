@@ -20,7 +20,22 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+
     - name: Restore dependencies
       run: dotnet restore
+
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore --configuration Release 
+
+    - name: Create .adventofcode.session file
+      run: echo ${{ secrets.AOC_SESSION }} > .adventofcode.session
+
+    - name: Cache Inputs
+      uses: actions/cache@v3
+      with:
+        key: session-${{ hashFiles('.adventofcode.session') }}
+        path: 
+          '**/inputs/**'      
+    
+    - name: Run tests
+      run: dotnet run --configuration Release --no-build -- test *:*
