@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2015
 
-// Day 2: I Was Told There Would Be No Math
+// Day 2: I Was Told There Would Be No Math https://adventofcode.com/2015/day/2
 module Day02 =
     open AdventOfCode.FSharp.Util
 

@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2023
 
-// Day 6: Wait For It
+// Day 6: Wait For It http://adventofcode.com/2023/day/6
 module Day06 =
     open AdventOfCode.FSharp.Util
 

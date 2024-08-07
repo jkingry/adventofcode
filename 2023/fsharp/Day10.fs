@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2023
 
-// Day 10: Pipe Maze
+// Day 10: Pipe Maze http://adventofcode.com/2023/day/10
 module Day10 =
     open AdventOfCode.FSharp.Util
 

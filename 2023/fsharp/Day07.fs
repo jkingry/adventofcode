@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2023
 
-// Day 7: Camel Cards
+// Day 7: Camel Cards http://adventofcode.com/2023/day/7
 module Day07 =
     open AdventOfCode.FSharp.Util
 

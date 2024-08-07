@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2023
 
-// Day 1: Trebuchet?!
+// Day 1: Trebuchet?! http://adventofcode.com/2023/day/1
 module Day01 =
     open AdventOfCode.FSharp.Util
 
