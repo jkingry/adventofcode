@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2023
 
-// Day 11: Cosmic Expansion
+// Day 11: Cosmic Expansion http://adventofcode.com/2023/day/11
 module Day11 =
     open AdventOfCode.FSharp.Util
 

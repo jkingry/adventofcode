@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2023
 
-// Day 3: Gear Ratios
+// Day 3: Gear Ratios http://adventofcode.com/2023/day/3
 module Day03 =
     open AdventOfCode.FSharp.Util
 

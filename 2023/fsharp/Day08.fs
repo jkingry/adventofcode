@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2023
 
-// Day 8: Haunted Wasteland
+// Day 8: Haunted Wasteland http://adventofcode.com/2023/day/8
 module Day08 =
     open AdventOfCode.FSharp.Util
 

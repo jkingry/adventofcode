@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2015
 
-// Day 4: The Ideal Stocking Stuffer
+// Day 4: The Ideal Stocking Stuffer https://adventofcode.com/2015/day/4
 module Day04 =
     open AdventOfCode.FSharp.Util
     open System.Security.Cryptography
