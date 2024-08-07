@@ -78,12 +78,15 @@ type RunCommandSettings(year: int, day: int, inputType: InputType) =
     [<CommandOption("-i|--input-type")>]
     member _.InputType = inputType
 
-type TestCommandSettings(repeats: int, targets: string[]) =
+type TestCommandSettings(repeats: int, json: bool, targets: string[]) =
     inherit CommandSettings()
-    new() = TestCommandSettings(1, Array.empty)
+    new() = TestCommandSettings(1, false, Array.empty)
 
     [<CommandOption("-n|--repeats")>]
     member _.Repeats = repeats
+
+    [<CommandOption("--json")>]
+    member _.Json = json
 
     [<CommandArgument(0, "[year:days]")>]
     member _.Targets = targets
@@ -137,7 +140,12 @@ type TestCommand() =
             | 0 -> None
             | n -> Some n
 
-        Impl.executeTest repeatsArg selectedDays
+        let result = Impl.executeTest repeatsArg selectedDays (not settings.Json)
+
+        if settings.Json then
+            let jsonText = System.Text.Json.JsonSerializer.Serialize result
+            printfn "%s" jsonText
+
         0
 
 let runCommandLine (days: Day list) =

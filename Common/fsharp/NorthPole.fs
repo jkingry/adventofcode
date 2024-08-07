@@ -15,6 +15,19 @@ module NorthPole =
         | Test = 1
         | Alt = 2
 
+    type ResultType =
+        | Ok = 0
+        | Error = 1
+        | Missing = 2
+        | Unknown = 3
+
+    type TestResult =
+        { year: int
+          day: int
+          name: string
+          results: ResultType[]
+          elapsedMs: float }
+
     type OutputThunk = int -> string -> unit
 
     type RunDayThunk = byte[] -> OutputThunk -> unit
@@ -389,7 +402,7 @@ module NorthPole =
                     | Some _, _ -> printfn "%3d %8s %4d %s" r.day "" (p + 1) (resToStr pr)
                     | _ -> ()
 
-        let executeTest (repeats: int option) (days: Day list) =
+        let executeTest (repeats: int option) (days: Day list) (interactive: bool) =
             let silentOutput = true
             let repeats = repeats |> Option.defaultValue 1
             let mutable fastestTotalMs = 0.0
@@ -397,8 +410,11 @@ module NorthPole =
 
             let mutable dayTimes = Map.empty
 
-            printfn "By day:"
-            printfn "%4s %3s %9s %-3s" "Year" "Day" "Time" "[S]"
+            if interactive then
+                printfn "By day:"
+
+            if interactive then
+                printfn "%4s %3s %9s %-3s" "Year" "Day" "Time" "[S]"
 
             let resultsToState results =
                 results
@@ -419,29 +435,49 @@ module NorthPole =
                 else
                     sprintf "x%.2f" factor
 
+            let mutable results = []
 
             for day in days do
                 let mutable fastestMs = Double.PositiveInfinity
                 let mutable slowestMs = Double.NegativeInfinity
 
                 for r in runDay day InputType.Default repeats silentOutput do
-                    if fastestMs < Double.PositiveInfinity then
-                        printfn
-                            "%4d %3d %9.3f %-3s %s %s"
-                            r.year
-                            r.day
-                            (r.elapsedMs / (float repeats))
-                            (resultsToState r.results)
-                            r.name
-                            (multi fastestMs r.elapsedMs)
-                    else
-                        printfn
-                            "%4d %3d %9.3f %-3s %s"
-                            r.year
-                            r.day
-                            (r.elapsedMs / (float repeats))
-                            (resultsToState r.results)
-                            r.name
+                    if interactive then
+                        if fastestMs < Double.PositiveInfinity then
+                            printfn
+                                "%4d %3d %9.3f %-3s %s %s"
+                                r.year
+                                r.day
+                                (r.elapsedMs / (float repeats))
+                                (resultsToState r.results)
+                                r.name
+                                (multi fastestMs r.elapsedMs)
+                        else
+                            printfn
+                                "%4d %3d %9.3f %-3s %s"
+                                r.year
+                                r.day
+                                (r.elapsedMs / (float repeats))
+                                (resultsToState r.results)
+                                r.name
+
+                    let resultTypes =
+                        r.results
+                        |> Array.take 2
+                        |> Array.map (function
+                            | _, Some(Error _) -> ResultType.Error
+                            | _, Some(Ok _) -> ResultType.Ok
+                            | None, _ -> ResultType.Missing
+                            | _, _ -> ResultType.Unknown)
+
+                    let result: TestResult =
+                        { year = r.year
+                          day = r.day
+                          name = r.name
+                          results = resultTypes
+                          elapsedMs = r.elapsedMs }
+
+                    results <- result :: results
 
                     fastestMs <- min fastestMs r.elapsedMs
                     slowestMs <- max slowestMs r.elapsedMs
@@ -450,65 +486,69 @@ module NorthPole =
                 fastestTotalMs <- fastestTotalMs + fastestMs
                 slowestTotalMs <- slowestTotalMs + slowestMs
 
-            printfn "%5s %9.3f" "Total" (slowestTotalMs / (float repeats))
+            if interactive then
+                printfn "%5s %9.3f" "Total" (slowestTotalMs / (float repeats))
 
-            // printfn "%3s %4s %3s %9s" "Rnk" "Year" "Day" "Time"
+                // printfn "%3s %4s %3s %9s" "Rnk" "Year" "Day" "Time"
 
-            // for index, ((year, day), time) in dayTimes |> Map.toList |> List.sortBy snd |> List.indexed do
-            //     printfn "%3d %4d %3d %9.3f" (index + 1) year day (time / (float repeats))
+                // for index, ((year, day), time) in dayTimes |> Map.toList |> List.sortBy snd |> List.indexed do
+                //     printfn "%3d %4d %3d %9.3f" (index + 1) year day (time / (float repeats))
 
-            let totalAvgFastestMs = fastestTotalMs / (float repeats)
-            let expectedMs = 250.0 * (float dayTimes.Count)
+                let totalAvgFastestMs = fastestTotalMs / (float repeats)
+                let expectedMs = 250.0 * (float dayTimes.Count)
 
-            printfn "\nBy (fastest) time:"
+                printfn "\nBy (fastest) time:"
 
-            let minTime = dayTimes.Values |> Seq.min
-            let maxTime = dayTimes.Values |> Seq.max
+                let minTime = dayTimes.Values |> Seq.min
+                let maxTime = dayTimes.Values |> Seq.max
 
-            let timeToColor t =
-                let red = 255.0 * (t - minTime) / (maxTime - minTime)
-                let green = 255.0 - red
+                let timeToColor t =
+                    let red = 255.0 * (t - minTime) / (maxTime - minTime)
+                    let green = 255.0 - red
 
-                new Color((byte red), (byte green), 0uy)
+                    new Color((byte red), (byte green), 0uy)
 
-            dayTimes
-            |> Map.toList
-            |> List.sortBy snd
-            |> List.indexed
-            |> Seq.fold
-                (fun (bc: BarChart) (index, ((year, day), time)) ->
-                    bc.AddItem(
-                        $"[bold]%3d{(index + 1)}[/] [green]%d{year}[/] %2d{day}",
-                        time / (float repeats),
-                        (timeToColor time)
-                    ))
-                (BarChart())
-            |> AnsiConsole.Write
-
-            let years = dayTimes |> Map.keys |> Seq.toList |> List.groupBy fst
-
-            printfn
-                "%6s %9.1f or %s faster then slowest"
-                "Total"
-                totalAvgFastestMs
-                (multi slowestTotalMs fastestTotalMs)
-
-            printfn "%6s %9.1f a difference of %.1fms" "Expect" expectedMs (totalAvgFastestMs - expectedMs)
-
-            printfn "%6s %10.2f%%" "Grade" (100.0 * expectedMs / totalAvgFastestMs)
-
-            let randomColor () =
-                let color = Array.zeroCreate 3
-                System.Random.Shared.NextBytes color
-                Color(color[0], color[1], color[2])
-
-            if years.Length > 1 then
-                years
-                |> List.map (fun (year, items) -> year, (items |> List.sumBy (fun k -> dayTimes[k])))
-                |> List.fold
-                    (fun (bc: BreakdownChart) (year, totalTime) -> bc.AddItem($"{year}", totalTime, (randomColor ())))
-                    (BreakdownChart())
+                dayTimes
+                |> Map.toList
+                |> List.sortBy snd
+                |> List.indexed
+                |> Seq.fold
+                    (fun (bc: BarChart) (index, ((year, day), time)) ->
+                        bc.AddItem(
+                            $"[bold]%3d{(index + 1)}[/] [green]%d{year}[/] %2d{day}",
+                            time / (float repeats),
+                            (timeToColor time)
+                        ))
+                    (BarChart())
                 |> AnsiConsole.Write
+
+                let years = dayTimes |> Map.keys |> Seq.toList |> List.groupBy fst
+
+                printfn
+                    "%6s %9.1f or %s faster then slowest"
+                    "Total"
+                    totalAvgFastestMs
+                    (multi slowestTotalMs fastestTotalMs)
+
+                printfn "%6s %9.1f a difference of %.1fms" "Expect" expectedMs (totalAvgFastestMs - expectedMs)
+
+                printfn "%6s %10.2f%%" "Grade" (100.0 * expectedMs / totalAvgFastestMs)
+
+                let randomColor () =
+                    let color = Array.zeroCreate 3
+                    System.Random.Shared.NextBytes color
+                    Color(color[0], color[1], color[2])
+
+                if years.Length > 1 then
+                    years
+                    |> List.map (fun (year, items) -> year, (items |> List.sumBy (fun k -> dayTimes[k])))
+                    |> List.fold
+                        (fun (bc: BreakdownChart) (year, totalTime) ->
+                            bc.AddItem($"{year}", totalTime, (randomColor ())))
+                        (BreakdownChart())
+                    |> AnsiConsole.Write
+
+            results
 
     open FSharp.Quotations.Evaluator
     open FSharp.Quotations
