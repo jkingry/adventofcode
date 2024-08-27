@@ -337,20 +337,22 @@ module Day23 =
 
         let goal1 = ".......ABCDABCD" |> bs.fromString
 
-        let costs1, _ =
-            DijkstraMap.empty
-            |> DijkstraMap.add state1 0
-            |> DijkstraMap.run System.Int32.MaxValue generateMoves (fun s -> s = goal1)
-
-        costs1[goal1] |> string |> output 1
+        DijkstraMap.empty
+        |> DijkstraMap.add state1 0
+        |> DijkstraMap.run System.Int32.MaxValue generateMoves (fun s -> s = goal1)
+        |> fst
+        |> Map.find goal1
+        |> string
+        |> output 1
 
         let state2 = (state1 |> bs.toString).Insert(11, "DCBADBAC") |> bs.fromString
 
         let goal2 = ".......ABCDABCDABCDABCD" |> bs.fromString
 
-        let costs2, _ =
-            DijkstraMap.empty
-            |> DijkstraMap.add state2 0
-            |> DijkstraMap.run System.Int32.MaxValue generateMoves (fun s -> s = goal2)
-
-        costs2[goal2] |> string |> output 2
+        DijkstraMap.empty
+        |> DijkstraMap.add state2 0
+        |> DijkstraMap.run System.Int32.MaxValue generateMoves (fun s -> s = goal2)
+        |> fst
+        |> Map.find goal2
+        |> string
+        |> output 2
