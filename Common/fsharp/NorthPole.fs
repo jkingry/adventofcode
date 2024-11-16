@@ -58,7 +58,7 @@ module NorthPole =
         open Spectre.Console
         let NullOut = new StreamWriter(Stream.Null)
 
-        let RequestLimit = TimeSpan.FromSeconds 10
+        let RequestLimit = TimeSpan.FromSeconds 10.0
 
         let rec getDirectoryParents dir =
             seq {
