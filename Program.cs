@@ -1,4 +1,5 @@
-// using AdventOfCode.Cli;
+using AdventOfCode;
+using AdventOfCode.Cli;
 
 // Solution[] days =
 // [
@@ -8,6 +9,4 @@
 // 			Microsoft.FSharp.Core.FuncConvert.FromAction(output))),
 // ];
 
-// AdventOfCode.Calendar.WriteTypes();
-
-await AdventOfCode.Cli.App.RunAsync(AdventOfCode.Calendar.Days);
+await App.RunAsync(Calendar.Days);
