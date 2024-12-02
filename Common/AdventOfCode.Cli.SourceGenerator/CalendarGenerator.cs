@@ -1,9 +1,5 @@
-using System.Diagnostics;
-using System.Reflection;
-using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace AdventOfCode.Cli.SourceGenerator;
