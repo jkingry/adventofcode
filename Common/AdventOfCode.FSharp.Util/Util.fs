@@ -249,8 +249,8 @@ module Util =
         let inline decr (key: 'T) (counter: Map<'T, int64>) : Map<'T, int64> = add key -1 counter
 
     let cacheSequence (cacheName: string) (a: byte[] seq) =
-        let year, day = NorthPole.executingYearDay.Value
-        let inputPath = NorthPole.Impl.getInputFolder year day
+        let struct (year, day) = AdventOfCode.Cli.NorthPole.ExecutingYearDay.Value
+        let inputPath = AdventOfCode.Cli.NorthPole.Instance.GetFolder (year, day);
         let cacheFile = System.IO.Path.Combine [| inputPath; sprintf "%s.cache" cacheName |]
 
         seq {
@@ -650,7 +650,6 @@ module Util =
                 let noy_xs = xs |> List.map (List.except [ y ])
                 (fromChoices noy_xs) |> List.map (fun yy -> [ y ] @ yy))
             |> List.concat
-
 
     let mapIncr (key: 'Key) (m: Map<'Key, int>) =
         m |> Map.change key (fun v -> Some(1 + Option.defaultValue 0 v))
