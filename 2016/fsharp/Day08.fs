@@ -17,10 +17,10 @@ module Day08 =
 
         match parts[0] with
         | "rect" ->
-            let ab = parts[ 1 ].Split("x")
+            let ab = parts[1].Split("x")
             Rect(ab[0] |> int, ab[1] |> int)
         | "rotate" ->
-            let x = parts[ 2 ].Split("=")[1] |> int
+            let x = parts[2].Split("=")[1] |> int
             let y = parts[4] |> int
 
             match parts[1] with

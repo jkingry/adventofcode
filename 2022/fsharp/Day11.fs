@@ -21,7 +21,7 @@ module Day11 =
                 let line = block |> splitLine
                 let startingItems = line[1].Split(':').[1] |> ints
 
-                let optext = (line[ 2 ].Split('=')[1]).Split(' ')
+                let optext = (line[2].Split('=')[1]).Split(' ')
 
                 let op =
                     if optext[2] = "+" then
@@ -39,9 +39,9 @@ module Day11 =
                     else
                         failwithf "Unexpected op: %s" optext[1]
 
-                let test = line[ 3 ].Split(' ') |> Array.last |> int
-                let destTrue = line[ 4 ].Split(' ') |> Array.last |> int
-                let destFalse = line[ 5 ].Split(' ') |> Array.last |> int
+                let test = line[3].Split(' ') |> Array.last |> int
+                let destTrue = line[4].Split(' ') |> Array.last |> int
+                let destFalse = line[5].Split(' ') |> Array.last |> int
 
                 { items = startingItems |> List.ofArray
                   inspections = 0
@@ -121,7 +121,7 @@ module Day11 =
                 let line = block |> splitLine
                 let startingItems = line[1].Split(':').[1] |> ints
 
-                let optext = (line[ 2 ].Split('=')[1]).Split(' ')
+                let optext = (line[2].Split('=')[1]).Split(' ')
 
                 let op =
                     if optext[2] = "+" then
@@ -139,9 +139,9 @@ module Day11 =
                     else
                         failwithf "Unexpected op: %s" optext[1]
 
-                let test = line[ 3 ].Split(' ') |> Array.last |> int
-                let destTrue = line[ 4 ].Split(' ') |> Array.last |> int
-                let destFalse = line[ 5 ].Split(' ') |> Array.last |> int
+                let test = line[3].Split(' ') |> Array.last |> int
+                let destTrue = line[4].Split(' ') |> Array.last |> int
+                let destFalse = line[5].Split(' ') |> Array.last |> int
 
                 { count = startingItems.Length
                   items = startingItems

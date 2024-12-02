@@ -156,7 +156,6 @@ public class NorthPole
 
         if (answers.Length < part)
         {
-            AnsiConsole.MarkupLineInterpolated($"No answer for part {part}");
             return null;
         }
 
