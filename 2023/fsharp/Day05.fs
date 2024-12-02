@@ -7,7 +7,7 @@ module Day05 =
     let parse (input: byte[]) =
         let sections = input |> text |> splitDoubleLine
 
-        let seeds = sections[ 0 ].Split(' ') |> Array.tail |> Array.map int64
+        let seeds = sections[0].Split(' ') |> Array.tail |> Array.map int64
 
         let maps =
             sections

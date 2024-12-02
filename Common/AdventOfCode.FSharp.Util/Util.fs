@@ -250,7 +250,7 @@ module Util =
 
     let cacheSequence (cacheName: string) (a: byte[] seq) =
         let struct (year, day) = AdventOfCode.Cli.NorthPole.ExecutingYearDay.Value
-        let inputPath = AdventOfCode.Cli.NorthPole.Instance.GetFolder (year, day);
+        let inputPath = AdventOfCode.Cli.NorthPole.Instance.GetFolder(year, day)
         let cacheFile = System.IO.Path.Combine [| inputPath; sprintf "%s.cache" cacheName |]
 
         seq {

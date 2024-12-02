@@ -58,7 +58,10 @@ module Day10 =
                 |> Map.change bot (fun b ->
                     match b |> Option.defaultValue EmptyBot with
                     | { targets = _; values = [] } as x -> Some { x with values = [ value ] }
-                    | { targets = _; values = [ a ] } as x -> Some { x with values = [ (min a value); (max a value) ] }
+                    | { targets = _; values = [ a ] } as x ->
+                        Some
+                            { x with
+                                values = [ (min a value); (max a value) ] }
                     | _ -> failwith "Invalid instruction")
 
             let b = bots' |> Map.find bot
@@ -78,7 +81,10 @@ module Day10 =
                 bots
                 |> Map.change source (fun b ->
                     let temp = b |> Option.defaultValue EmptyBot
-                    Some { temp with targets = Some(loTarget, hiTarget) })
+
+                    Some
+                        { temp with
+                            targets = Some(loTarget, hiTarget) })
 
             let bot = bots' |> Map.find source
             (bots', outputs) |> tryActivate bot

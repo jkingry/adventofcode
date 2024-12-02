@@ -8,10 +8,10 @@ public class NorthPoleOptions
 
     public string[] InputFolderPatterns { get; set; } =
         [
+            "{0:0000}/inputs/{1:00}",
+            "y{0:0000}/inputs/day{1:00}",
             "inputs/{0:0000}/{1:00}",
             "inputs/Y{0:0000}/day{1:00}",
-            "{0:0000}/inputs/{1:00}",
-            "y{0:0000}/inputs/day{1:00}"
         ];
 
     public Dictionary<FileType, List<string>> FileNamePatterns { get; set; } =

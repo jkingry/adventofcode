@@ -30,7 +30,7 @@ internal class RunCommand : AsyncCommand<RunCommand.Settings>
 		};
 
 		AnsiConsole.MarkupLine(
-			"{0,4}:{1,3} {2,9} {3,4} {4,4} {5,6} {6}",
+			"{0,4}:{1,3} {2,9} {3,4} {4,8} {5,6} {6}",
 			"Year", "Day", "Method", "Time", "Part", "Status", "Value");
 
 		AnsiConsole.MarkupInterpolated(
@@ -40,13 +40,13 @@ internal class RunCommand : AsyncCommand<RunCommand.Settings>
 
 		var (result, actual) = output.PartOutputs[0];
 
-		AnsiConsole.MarkupLineInterpolated($" {output.ElapsedMs:0.000} {1,4} {result,6} {actual}");
+		AnsiConsole.MarkupLineInterpolated($" {output.ElapsedMs,8:0.000} {1,4} {result,6} {actual}");
 
 		for (var part = 1; part < output.PartOutputs.Length; ++part)
 		{
 			(result, actual) = output.PartOutputs[part];
 
-			AnsiConsole.MarkupLineInterpolated($"{string.Empty,24} {part + 1,4} {result,6} {actual}");
+			AnsiConsole.MarkupLineInterpolated($"{string.Empty,27} {part + 1,4} {result,6} {actual}");
 		}
 
 		return 0;

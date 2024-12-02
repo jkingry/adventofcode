@@ -23,7 +23,7 @@ class RequestRateLimitHandler(NorthPoleOptions options) : DelegatingHandler
 
 		p.Columns(columns);
 
-		async Task UpdateDelayProgress(ProgressContext ctx)
+		async Task StartDelayProgress(ProgressContext ctx)
 		{
 			var delayTask = ctx.AddTask($"Sleeping for {delay.TotalSeconds:0.00}s", maxValue: (delay - watch.Elapsed).TotalMilliseconds);
 
@@ -46,7 +46,7 @@ class RequestRateLimitHandler(NorthPoleOptions options) : DelegatingHandler
 			}
 		}
 
-		await p.Start(UpdateDelayProgress);
+		await p.StartAsync(StartDelayProgress);
 	}
 
 	protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

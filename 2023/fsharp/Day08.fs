@@ -17,7 +17,7 @@ module Day08 =
         let sections = input |> text |> splitDoubleLine
 
         let dirs =
-            sections[ 0 ].ToCharArray()
+            sections[0].ToCharArray()
             |> Array.map (function
                 | 'L' -> Left
                 | 'R' -> Right

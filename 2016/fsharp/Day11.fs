@@ -13,7 +13,7 @@ module Day11 =
         let mutable chpsMap = Map.empty
 
         for floor = 0 to (floors - 1) do
-            let words = lines[ floor ].Split(' ')
+            let words = lines[floor].Split(' ')
 
             let mutable i = 4
 
@@ -23,10 +23,10 @@ module Day11 =
                 | "a" -> i <- i + 1
                 | "and" -> i <- i + 1
                 | c when c.EndsWith("-compatible") ->
-                    let element = words[ i ].Split('-')[0]
+                    let element = words[i].Split('-')[0]
                     chpsMap <- chpsMap |> Map.add element floor
                     i <- i + 2
-                | c when words[ i + 1 ].StartsWith("generator") ->
+                | c when words[i + 1].StartsWith("generator") ->
                     let element = words[i]
                     rtgsMap <- rtgsMap |> Map.add element floor
                     i <- i + 2
