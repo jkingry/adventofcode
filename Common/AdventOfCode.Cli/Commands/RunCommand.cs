@@ -20,7 +20,7 @@ internal class RunCommand : AsyncCommand<RunCommand.Settings>
 				.Where(d => d.Year == year)
 				.Max(d => d.Day);
 
-		var solution = days.First(d => d.Year == year && d.Day == day);
+		var solutions = days.Where(d => d.Year == year && d.Day == day);
 
 		var northPole = NorthPoleBuilder.CreateNorthPole();
 
@@ -30,23 +30,26 @@ internal class RunCommand : AsyncCommand<RunCommand.Settings>
 		};
 
 		AnsiConsole.MarkupLine(
-			"{0,4}:{1,3} {2,9} {3,4} {4,8} {5,7} {6}",
+			"{0,4}:{1,3} {2,11} {3,8} {4,4} {5,7} {6}",
 			"Year", "Day", "Method", "Time", "Part", "Status", "Value");
 
-		AnsiConsole.MarkupInterpolated(
-			$"{solution.Year,4:0000}:{solution.Day,-3:00} {solution.Name,9}");
-
-		var output = await northPole.RunAsync(solution, options);
-
-		var (result, actual) = output.PartOutputs[0];
-
-		AnsiConsole.MarkupLineInterpolated($" {output.ElapsedMs,8:0.000} {1,4} {result,7} {actual}");
-
-		for (var part = 1; part < output.PartOutputs.Length; ++part)
+		foreach (var solution in solutions)
 		{
-			(result, actual) = output.PartOutputs[part];
+			AnsiConsole.MarkupInterpolated(
+				$"{solution.Year,4:0000}:{solution.Day,-3:00} {solution.Name,11}");
 
-			AnsiConsole.MarkupLineInterpolated($"{string.Empty,27} {part + 1,4} {result,7} {actual}");
+			var output = await northPole.RunAsync(solution, options);
+
+			var (result, actual) = output.PartOutputs[0];
+
+			AnsiConsole.MarkupLineInterpolated($" {output.ElapsedMs,8:0.000} {1,4} {result,7} {actual}");
+
+			for (var part = 1; part < output.PartOutputs.Length; ++part)
+			{
+				(result, actual) = output.PartOutputs[part];
+
+				AnsiConsole.MarkupLineInterpolated($"{string.Empty,29} {part + 1,4} {result,7} {actual}");
+			}
 		}
 
 		return 0;

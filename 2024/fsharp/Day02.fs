@@ -9,6 +9,7 @@ module Day02 =
             report 
             |> Seq.pairwise
             |> Seq.map (fun (a,b) -> a - b)
+            
         let firstDiffSign = levelDiffs |> Seq.head |> sign
 
         levelDiffs 
