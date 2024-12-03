@@ -205,12 +205,13 @@ public class NorthPole
         if (options.Repeats > 1)
         {
             solution.Run(inputBytes, (int _, string _) => { });
-
         }
 
+        var maxActualOutput = -1; 
         void HandleOutput(int part, string result)
         {
             actualOutputs[part - 1] = result;
+            maxActualOutput = Math.Max(part - 1, maxActualOutput);
         }
 
         var w = Stopwatch.StartNew();
@@ -236,7 +237,7 @@ public class NorthPole
             }
         }
 
-        var results = new PartOutput[actualOutputs.Length];
+        var results = new PartOutput[maxActualOutput + 1];
         for (var part = 0; part < results.Length; ++part)
         {
             var expectedType = (OutputType)(((FileType)options.InputType & ~FileType.Input) | FileType.Output);

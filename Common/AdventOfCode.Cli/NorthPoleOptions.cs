@@ -2,7 +2,7 @@ namespace AdventOfCode.Cli;
 
 public class NorthPoleOptions
 {
-    public int DefaultOutputs { get; set; } = 2;
+    public int DefaultOutputs { get; set; } = 5;
 
     public string SessionFileName { get; set; } = ".adventofcode.session";
 
