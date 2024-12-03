@@ -4,21 +4,41 @@ namespace AdventOfCode.FSharp.Y2024
 module Day02 =
     open AdventOfCode.FSharp.Util
 
-    let checkSafe (report: byte[]) =
+    let findUnsafeLevel (report: int[]) =
         let levelDiffs = 
             report 
-            |> parseInts
             |> Seq.pairwise
             |> Seq.map (fun (a,b) -> a - b)
         let firstDiffSign = levelDiffs |> Seq.head |> sign
 
         levelDiffs 
-        |> Seq.forall (fun d -> (sign d) = firstDiffSign && 1 <= (abs d) && (abs d) <= 3)
+        |> Seq.tryFindIndex (fun d -> (sign d) <> firstDiffSign || (abs d) = 0 || (abs d) > 3)    
+
+    let checkSafe (report: int[]) : bool =
+        report |> findUnsafeLevel |> Option.isNone
+        
+    let checkSafeWithSafetyDampener (report: int[]) : bool =
+        match (findUnsafeLevel report) with
+        | None -> true
+        | Some index -> 
+            (index > 0 && (report |> Array.removeAt (index - 1) |> checkSafe))
+            || (report |> Array.removeAt index |> checkSafe)
+            || (report |> Array.removeAt (index + 1) |> checkSafe)
 
     let run (input: byte[]) (output: int -> string -> unit) =
-        input
-        |> bsplit '\n'B
+        let reports = 
+            input
+            |> bsplit '\n'B
+            |> Array.map parseInts
+
+        reports 
         |> Seq.filter checkSafe
         |> Seq.length
         |> string
         |> output 1
+
+        reports 
+        |> Seq.filter checkSafeWithSafetyDampener
+        |> Seq.length
+        |> string
+        |> output 2
