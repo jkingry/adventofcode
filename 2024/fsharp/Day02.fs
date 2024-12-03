@@ -21,9 +21,8 @@ module Day02 =
         match (findUnsafeLevel report) with
         | None -> true
         | Some index -> 
-            (index > 0 && (report |> Array.removeAt (index - 1) |> checkSafe))
-            || (report |> Array.removeAt index |> checkSafe)
-            || (report |> Array.removeAt (index + 1) |> checkSafe)
+            [-1; 0; 1] |> List.exists (fun delta -> 
+                (index + delta) >= 0 && (report |> Array.removeAt (index + delta) |> checkSafe))
 
     let run (input: byte[]) (output: int -> string -> unit) =
         let reports = 
