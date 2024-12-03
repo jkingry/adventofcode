@@ -61,6 +61,6 @@ internal class RunCommand : AsyncCommand<RunCommand.Settings>
 		public int Day { get; set; }
 
 		[CommandOption("-i|--input-type")]
-		public InputType InputType { get; set; } = InputType.Input;
+		public InputType InputType { get; set; } = InputType.Official;
 	}
 }

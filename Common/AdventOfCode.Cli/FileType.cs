@@ -1,25 +1,34 @@
 namespace AdventOfCode.Cli;
 
+[Flags]
 public enum FileType
 {
     HtmlPage = 0,
     Input = 1,
-    Expected = 2,
-    Example = 4,
+    Output = 2,
+    Official = 4,
+    Example = 8,
+    Other = 16,
 
+    OfficialInput = Official | Input,
     ExampleInput = Example | Input,
-    ExpectedOutput = Expected,
-    ExampleExpectedOutput = Example | Expected,
+    OtherInput = Other | Input,
+
+    OfficialOutput = Official | Output,
+    ExampleOutput = Example | Output,
+    OtherOutput = Other | Output
 }
 
 public enum InputType
 {
-    Input = FileType.Input,
-    ExampleInput = FileType.ExampleInput,
+    Official = FileType.OfficialInput,
+    Example = FileType.ExampleInput,
+    Other = FileType.OtherInput,
 }
 
 public enum OutputType
 {
-    Expected = FileType.ExpectedOutput,
-    ExampleExpected = FileType.ExampleExpectedOutput,
+    Official = FileType.OfficialOutput,
+    Example = FileType.ExampleOutput,
+    Other = FileType.OtherOutput,
 }

@@ -140,6 +140,16 @@ public class NorthPole
             return File.ReadAllText(filePath);
         }
 
+        if (outputType != OutputType.Official)
+        {
+            if (!File.Exists(filePath)) 
+            {
+                File.Create(filePath).Close();
+            }
+            
+            return null;
+        }
+
         var html = await Client.GetDayHtmlPage(year, day);
         if (html == null)
         {
@@ -174,7 +184,7 @@ public class NorthPole
 
         if (input == null)
         {
-            throw new InvalidOperationException($"No {options.InputType} input exists for {solution.Year} day {solution.Day}");
+            input = string.Empty;
         }
 
         var inputBytes = Encoding.UTF8.GetBytes(input);
@@ -229,7 +239,7 @@ public class NorthPole
         var results = new PartOutput[actualOutputs.Length];
         for (var part = 0; part < results.Length; ++part)
         {
-            var expectedType = (OutputType)(((FileType)options.InputType & ~FileType.Input) | FileType.Expected);
+            var expectedType = (OutputType)(((FileType)options.InputType & ~FileType.Input) | FileType.Output);
             var expected = await GetExpected(expectedType, solution.Year, solution.Day, part + 1);
 
             var actual = actualOutputs[part];

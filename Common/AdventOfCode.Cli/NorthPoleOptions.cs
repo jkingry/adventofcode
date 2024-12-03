@@ -17,11 +17,13 @@ public class NorthPoleOptions
     public Dictionary<FileType, List<string>> FileNamePatterns { get; set; } =
         new()
         {
-            [FileType.Input] = ["input.txt"],
+            [FileType.OfficialInput] = ["input.txt"],
             [FileType.ExampleInput] = ["example.txt"],
+            [FileType.OtherInput] = ["other.txt"],
             [FileType.HtmlPage] = ["day.html"],
-            [FileType.ExpectedOutput] = ["input.s{2}.txt"],
-            [FileType.ExampleExpectedOutput] = ["example.s{2}.txt"],
+            [FileType.OfficialOutput] = ["input.s{2}.txt"],
+            [FileType.ExampleOutput] = ["example.s{2}.txt"],
+            [FileType.OtherOutput] = ["other.s{2}.txt"],
         };
 
     public string AdventOfCodeUrl { get; set; } = "https://adventofcode.com";
