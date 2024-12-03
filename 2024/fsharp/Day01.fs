@@ -25,9 +25,11 @@ module Day01 =
         |> string
         |> output 1
 
-        aGroup 
-        |> List.map (fun aEntryId -> 
-            let countInOtherList = bGroup |> List.filter (fun bEntryId -> bEntryId = aEntryId) |> List.length
+        aGroup
+        |> List.map (fun aEntryId ->
+            let countInOtherList =
+                bGroup |> List.filter (fun bEntryId -> bEntryId = aEntryId) |> List.length
+
             aEntryId * countInOtherList)
         |> List.sum
         |> string

@@ -9,7 +9,8 @@ module Day12 =
         let mutable cache = Map.empty
 
         let rec countMatchesCached (pattern: char list) (expected: int list) curDmg =
-            let cacheKey = (new System.String(pattern |> List.toArray)), (expected |> List.sum), curDmg
+            let cacheKey =
+                (new System.String(pattern |> List.toArray)), (expected |> List.sum), curDmg
 
             match cache |> Map.tryFind cacheKey with
             | Some n -> n
