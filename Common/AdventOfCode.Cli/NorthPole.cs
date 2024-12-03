@@ -142,11 +142,11 @@ public class NorthPole
 
         if (outputType != OutputType.Official)
         {
-            if (!File.Exists(filePath)) 
+            if (!File.Exists(filePath))
             {
                 File.Create(filePath).Close();
             }
-            
+
             return null;
         }
 
@@ -207,7 +207,7 @@ public class NorthPole
             solution.Run(inputBytes, (int _, string _) => { });
         }
 
-        var maxActualOutput = -1; 
+        var maxActualOutput = -1;
         void HandleOutput(int part, string result)
         {
             actualOutputs[part - 1] = result;

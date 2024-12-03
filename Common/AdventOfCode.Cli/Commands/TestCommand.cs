@@ -6,245 +6,245 @@ namespace AdventOfCode.Cli.Commands;
 
 internal class TestCommand : AsyncCommand<TestCommand.Settings>
 {
-	public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
-	{
-		var days = context.Data as IEnumerable<Solution>
-			?? throw new InvalidOperationException("No days available.");
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    {
+        var days = context.Data as IEnumerable<Solution>
+            ?? throw new InvalidOperationException("No days available.");
 
-		var selected = new HashSet<Solution>();
+        var selected = new HashSet<Solution>();
 
-		if (settings.Targets.Length == 0)
-		{
-			var maxYear = days.Max(d => d.Year);
-			selected.UnionWith(days.Where(d => d.Year == maxYear));
-		}
-		else
-		{
-			foreach (var target in settings.Targets)
-			{
-				var (negate, matchedDays) = ParseYearDays(days, target);
+        if (settings.Targets.Length == 0)
+        {
+            var maxYear = days.Max(d => d.Year);
+            selected.UnionWith(days.Where(d => d.Year == maxYear));
+        }
+        else
+        {
+            foreach (var target in settings.Targets)
+            {
+                var (negate, matchedDays) = ParseYearDays(days, target);
 
-				if (negate)
-				{
-					selected.ExceptWith(matchedDays);
-				}
-				else
-				{
-					selected.UnionWith(matchedDays);
-				}
-			}
-		}
+                if (negate)
+                {
+                    selected.ExceptWith(matchedDays);
+                }
+                else
+                {
+                    selected.UnionWith(matchedDays);
+                }
+            }
+        }
 
-		var northPole = NorthPoleBuilder.CreateNorthPole();
+        var northPole = NorthPoleBuilder.CreateNorthPole();
 
-		var options = new RunOptions
-		{
-			Repeats = settings.Repeats,
-			SilentOutput = true,
-		};
+        var options = new RunOptions
+        {
+            Repeats = settings.Repeats,
+            SilentOutput = true,
+        };
 
-		string PartOutputsToString(PartOutput[] outputs)
-		{
-			var result = new char[outputs.Length];
-			for (var i = 0; i < outputs.Length; i++)
-			{
-				result[i] = outputs[i].Result switch
-				{
-					ResultType.Ok => '✅',
-					ResultType.Error => '❌',
-					_ => '❔',
-				};
-			}
+        string PartOutputsToString(PartOutput[] outputs)
+        {
+            var result = new char[outputs.Length];
+            for (var i = 0; i < outputs.Length; i++)
+            {
+                result[i] = outputs[i].Result switch
+                {
+                    ResultType.Ok => '✅',
+                    ResultType.Error => '❌',
+                    _ => '❔',
+                };
+            }
 
-			return new string(result);
-		}
+            return new string(result);
+        }
 
-		string MultipleToString(double slowMs, double fastMs)
-		{
-			var factor = slowMs / fastMs;
+        string MultipleToString(double slowMs, double fastMs)
+        {
+            var factor = slowMs / fastMs;
 
-			if (factor < 2.0)
-			{
-				var percent = 100.0 * (factor - 1.0);
-				return $"{percent:0.00}%";
-			}
+            if (factor < 2.0)
+            {
+                var percent = 100.0 * (factor - 1.0);
+                return $"{percent:0.00}%";
+            }
 
-			return $"x{factor:0.00}";
-		}
+            return $"x{factor:0.00}";
+        }
 
-		var fastestTotalMs = 0.0;
-		var slowestTotalMs = 0.0;
-		var outputs = new List<SolutionOutputs>();
+        var fastestTotalMs = 0.0;
+        var slowestTotalMs = 0.0;
+        var outputs = new List<SolutionOutputs>();
 
-		AnsiConsole.WriteLine("By day:");
-		AnsiConsole.WriteLine("{0,4} {1,3} {2,9} {3,-3}", "Year", "Day", "Time", "[S]");
+        AnsiConsole.WriteLine("By day:");
+        AnsiConsole.WriteLine("{0,4} {1,3} {2,9} {3,-3}", "Year", "Day", "Time", "[S]");
 
-		foreach (var day in selected.GroupBy(s => (s.Year, s.Day)).OrderBy(g => g.Key))
-		{
-			var fastestMs = double.PositiveInfinity;
-			var slowestMs = double.NegativeInfinity;
+        foreach (var day in selected.GroupBy(s => (s.Year, s.Day)).OrderBy(g => g.Key))
+        {
+            var fastestMs = double.PositiveInfinity;
+            var slowestMs = double.NegativeInfinity;
 
-			foreach (var solution in day)
-			{
-				var output = await northPole.RunAsync(solution, options);
+            foreach (var solution in day)
+            {
+                var output = await northPole.RunAsync(solution, options);
 
-				outputs.Add(output);
+                outputs.Add(output);
 
-				var formatString = fastestMs < double.PositiveInfinity
-					? "{0,4} {1,3} {2,9:0.000} {3,-3} {4} {5}"
-					: "{0,4} {1,3} {2,9:0.000} {3,-3} {4}";
+                var formatString = fastestMs < double.PositiveInfinity
+                    ? "{0,4} {1,3} {2,9:0.000} {3,-3} {4} {5}"
+                    : "{0,4} {1,3} {2,9:0.000} {3,-3} {4}";
 
-				AnsiConsole.WriteLine(formatString,
-					output.Year,
-					output.Day,
-					output.ElapsedMs,
-					PartOutputsToString(output.PartOutputs),
-					output.Name,
-					MultipleToString(output.ElapsedMs, fastestMs));
+                AnsiConsole.WriteLine(formatString,
+                    output.Year,
+                    output.Day,
+                    output.ElapsedMs,
+                    PartOutputsToString(output.PartOutputs),
+                    output.Name,
+                    MultipleToString(output.ElapsedMs, fastestMs));
 
-				fastestMs = Math.Min(fastestMs, output.ElapsedMs);
-				slowestMs = Math.Max(slowestMs, output.ElapsedMs);
-			}
+                fastestMs = Math.Min(fastestMs, output.ElapsedMs);
+                slowestMs = Math.Max(slowestMs, output.ElapsedMs);
+            }
 
-			fastestTotalMs += fastestMs;
-			slowestTotalMs += slowestMs;
-		}
+            fastestTotalMs += fastestMs;
+            slowestTotalMs += slowestMs;
+        }
 
-		var byFastestTime = outputs
-			.GroupBy(o => (o.Year, o.Day))
-			.Select(o => o.MinBy(o => o.ElapsedMs) ?? throw new InvalidOperationException("No min found"))
-			.OrderBy(o => o.ElapsedMs)
-			.Index()
-			.ToList();
+        var byFastestTime = outputs
+            .GroupBy(o => (o.Year, o.Day))
+            .Select(o => o.MinBy(o => o.ElapsedMs) ?? throw new InvalidOperationException("No min found"))
+            .OrderBy(o => o.ElapsedMs)
+            .Index()
+            .ToList();
 
-		var chart = new BarChart();
-		var minTime = byFastestTime.Min(o => o.Item.ElapsedMs);
-		var maxTime = byFastestTime.Max(o => o.Item.ElapsedMs);
+        var chart = new BarChart();
+        var minTime = byFastestTime.Min(o => o.Item.ElapsedMs);
+        var maxTime = byFastestTime.Max(o => o.Item.ElapsedMs);
 
-		foreach (var (index, output) in byFastestTime)
-		{
-			var red = 255.0 * (output.ElapsedMs - minTime) / (maxTime - minTime);
-			var green = 255.0 - red;
-			var color = new Color((byte)red, (byte)green, 0);
+        foreach (var (index, output) in byFastestTime)
+        {
+            var red = 255.0 * (output.ElapsedMs - minTime) / (maxTime - minTime);
+            var green = 255.0 - red;
+            var color = new Color((byte)red, (byte)green, 0);
 
-			chart.AddItem(
-				$"[bold]{index + 1}[/] [green]{output.Year}[/] {output.Day,2}",
-				output.ElapsedMs,
-				color);
-		}
+            chart.AddItem(
+                $"[bold]{index + 1}[/] [green]{output.Year}[/] {output.Day,2}",
+                output.ElapsedMs,
+                color);
+        }
 
-		AnsiConsole.WriteLine();
-		AnsiConsole.WriteLine("By (fastest) time:");
-		AnsiConsole.Write(chart);
-		AnsiConsole.MarkupLineInterpolated($"{"Total",7} {fastestTotalMs,11:0.000} ms or {MultipleToString(slowestTotalMs, fastestTotalMs)} faster then slowest");
+        AnsiConsole.WriteLine();
+        AnsiConsole.WriteLine("By (fastest) time:");
+        AnsiConsole.Write(chart);
+        AnsiConsole.MarkupLineInterpolated($"{"Total",7} {fastestTotalMs,11:0.000} ms or {MultipleToString(slowestTotalMs, fastestTotalMs)} faster then slowest");
 
-		var expectedMs = 250.0 * byFastestTime.Count;
-		AnsiConsole.MarkupLineInterpolated($"{"Expect",7} {expectedMs,9:0.0} a difference of {fastestTotalMs - expectedMs:0.0}ms");
-		AnsiConsole.MarkupLineInterpolated($"{"Grade",7} {expectedMs / fastestTotalMs,11:0.00%}");
+        var expectedMs = 250.0 * byFastestTime.Count;
+        AnsiConsole.MarkupLineInterpolated($"{"Expect",7} {expectedMs,9:0.0} a difference of {fastestTotalMs - expectedMs:0.0}ms");
+        AnsiConsole.MarkupLineInterpolated($"{"Grade",7} {expectedMs / fastestTotalMs,11:0.00%}");
 
-		Color RandomColor()
-		{
-			var color = new byte[3];
-			Random.Shared.NextBytes(color);
-			return new Color(color[0], color[1], color[2]);
-		}
+        Color RandomColor()
+        {
+            var color = new byte[3];
+            Random.Shared.NextBytes(color);
+            return new Color(color[0], color[1], color[2]);
+        }
 
-		var years = byFastestTime.Select(o => o.Item)
-			.GroupBy(o => o.Year)
-			.OrderBy(g => g.Key)
-			.ToList();
+        var years = byFastestTime.Select(o => o.Item)
+            .GroupBy(o => o.Year)
+            .OrderBy(g => g.Key)
+            .ToList();
 
-		if (years.Count > 1)
-		{
-			var yearBreakdownChart = new BreakdownChart();
+        if (years.Count > 1)
+        {
+            var yearBreakdownChart = new BreakdownChart();
 
-			foreach (var yearGroup in years)
-			{
-				var totalTime = yearGroup.Sum(o => o.ElapsedMs) / yearGroup.Count();
-				yearBreakdownChart.AddItem($"{yearGroup.Key}", totalTime, RandomColor());
-			}
+            foreach (var yearGroup in years)
+            {
+                var totalTime = yearGroup.Sum(o => o.ElapsedMs) / yearGroup.Count();
+                yearBreakdownChart.AddItem($"{yearGroup.Key}", totalTime, RandomColor());
+            }
 
-			AnsiConsole.Write(yearBreakdownChart);
-		}
+            AnsiConsole.Write(yearBreakdownChart);
+        }
 
-		return 0;
-	}
+        return 0;
+    }
 
-	private static IEnumerable<int> ParseRangeList(string input)
-	{
-		return input.Split(',')
-			.SelectMany(term => term.Split('-') switch
-			{
-			["*"] => Enumerable.Range(1, 2050),
-			[var x] => new[] { int.Parse(x) },
-			[var a, var b] => Enumerable.Range(int.Parse(a), int.Parse(b) - int.Parse(a) + 1),
-				_ => throw new InvalidOperationException($"Failed to parse: {term}")
-			});
-	}
+    private static IEnumerable<int> ParseRangeList(string input)
+    {
+        return input.Split(',')
+            .SelectMany(term => term.Split('-') switch
+            {
+            ["*"] => Enumerable.Range(1, 2050),
+            [var x] => new[] { int.Parse(x) },
+            [var a, var b] => Enumerable.Range(int.Parse(a), int.Parse(b) - int.Parse(a) + 1),
+                _ => throw new InvalidOperationException($"Failed to parse: {term}")
+            });
+    }
 
-	private static (bool, IEnumerable<Solution>) ParseYearDays(IEnumerable<Solution> days, string input)
-	{
-		// <null> -> highest year & all days
-		// 23 -> highest year & day 23
-		// 2016 -> highest day of year 2016
-		// 2016-2020 -> all days from 2016 to 2020
-		// 2016,2016 -> all days from 2016 and 2017
-		// 2016:3,4 -> 2016 days 3 and 4
-		// 1-10 -> days 1 to 10 of current year
-		// 2016-2020:1-23 days 1 to 23 of year 2016 to 2020
+    private static (bool, IEnumerable<Solution>) ParseYearDays(IEnumerable<Solution> days, string input)
+    {
+        // <null> -> highest year & all days
+        // 23 -> highest year & day 23
+        // 2016 -> highest day of year 2016
+        // 2016-2020 -> all days from 2016 to 2020
+        // 2016,2016 -> all days from 2016 and 2017
+        // 2016:3,4 -> 2016 days 3 and 4
+        // 1-10 -> days 1 to 10 of current year
+        // 2016-2020:1-23 days 1 to 23 of year 2016 to 2020
 
-		var negate = false;
-		if (input.StartsWith("~"))
-		{
-			input = input.Substring(1);
-			negate = true;
-		}
+        var negate = false;
+        if (input.StartsWith("~"))
+        {
+            input = input.Substring(1);
+            negate = true;
+        }
 
-		var maxYear = days.Max(d => d.Year);
+        var maxYear = days.Max(d => d.Year);
 
-		var matcher = ParseMatchFunc(input, maxYear);
+        var matcher = ParseMatchFunc(input, maxYear);
 
-		return (negate, days.Where(matcher));
-	}
+        return (negate, days.Where(matcher));
+    }
 
-	private static Func<Solution, bool> ParseMatchFunc(string input, int maxYear)
-	{
-		var parts = input.Split(':');
+    private static Func<Solution, bool> ParseMatchFunc(string input, int maxYear)
+    {
+        var parts = input.Split(':');
 
-		switch (parts.Length)
-		{
-			case 1:
-				{
-					var values = ParseRangeList(parts[0]).ToList();
+        switch (parts.Length)
+        {
+            case 1:
+                {
+                    var values = ParseRangeList(parts[0]).ToList();
 
-					if (values.Max() <= 25)
-					{
-						return d => d.Year == maxYear && values.Contains(d.Day);
-					}
+                    if (values.Max() <= 25)
+                    {
+                        return d => d.Year == maxYear && values.Contains(d.Day);
+                    }
 
-					return d => values.Contains(d.Year);
-				}
-			case 2:
-				{
-					var yearValues = ParseRangeList(parts[0]).ToList();
-					var dayValues = ParseRangeList(parts[1]).ToList();
+                    return d => values.Contains(d.Year);
+                }
+            case 2:
+                {
+                    var yearValues = ParseRangeList(parts[0]).ToList();
+                    var dayValues = ParseRangeList(parts[1]).ToList();
 
-					return d => yearValues.Contains(d.Year) && dayValues.Contains(d.Day);
-				}
-			default:
-				throw new InvalidOperationException($"Too many parts: {input}");
-		}
-	}
+                    return d => yearValues.Contains(d.Year) && dayValues.Contains(d.Day);
+                }
+            default:
+                throw new InvalidOperationException($"Too many parts: {input}");
+        }
+    }
 
-	internal class Settings : CommandSettings
-	{
-		[CommandOption("-n|--repeats")]
-		public int Repeats { get; set; } = 1;
+    internal class Settings : CommandSettings
+    {
+        [CommandOption("-n|--repeats")]
+        public int Repeats { get; set; } = 1;
 
-		[CommandOption("--json")]
-		public bool Json { get; set; }
+        [CommandOption("--json")]
+        public bool Json { get; set; }
 
-		[CommandArgument(0, "[year:days]")]
-		public string[] Targets { get; set; } = [];
-	}
+        [CommandArgument(0, "[year:days]")]
+        public string[] Targets { get; set; } = [];
+    }
 }

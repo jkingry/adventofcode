@@ -2,7 +2,7 @@ namespace AdventOfCode.Cli;
 
 public class InvalidSessionFileException : Exception
 {
-	public InvalidSessionFileException(string message) : base(message) { }
+    public InvalidSessionFileException(string message) : base(message) { }
 }
 
 public delegate void OutputThunk(int part, string output);
