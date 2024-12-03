@@ -8,7 +8,7 @@ class ValidRequestFilter(NorthPole northPole) : DelegatingHandler
 	{
 		var (fileType, year, day) = CacheHandler.GetOptions(request);
 
-		if (fileType != FileType.HtmlPage && fileType != FileType.Input)
+		if (fileType != FileType.HtmlPage && fileType != FileType.OfficialInput)
 		{
 			return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
 			{
