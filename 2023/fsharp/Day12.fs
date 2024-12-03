@@ -2,13 +2,14 @@ namespace AdventOfCode.FSharp.Y2023
 
 // Day 12: Hot Springs http://adventofcode.com/2023/day/12
 module Day12 =
+    open Checked
     open AdventOfCode.FSharp.Util
 
     let countMatches (pattern: char list) (expected: int list) =
         let mutable cache = Map.empty
 
         let rec countMatchesCached (pattern: char list) (expected: int list) curDmg =
-            let cacheKey = pattern, expected, curDmg
+            let cacheKey = (new System.String(pattern |> List.toArray)), (expected |> List.sum), curDmg
 
             match cache |> Map.tryFind cacheKey with
             | Some n -> n
