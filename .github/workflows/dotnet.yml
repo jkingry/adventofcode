@@ -32,12 +32,29 @@ jobs:
         AOC_SESSION: ${{ secrets.AOC_SESSION }}
       run: echo "$AOC_SESSION" > .adventofcode.session
 
-    - name: Cache Inputs
+    - name: Read Cache Inputs
       uses: actions/cache@v4
       with:
         key: session-${{ hashFiles('.adventofcode.session') }}
         path: 
-          '**/inputs/**'      
+          '**/inputs/**'
+
+    - name: Hash inputs
+      id: input-hash
+      env:
+        INPUT_HASH: ${{ hashFiles('**/inputs/**') }}
+      run:
+        echo "INPUT_HASH=$INPUT_HASH" >> $GITHUB_OUTPUT
     
     - name: Run tests
       run: dotnet run --configuration Release --no-build -- test *:*
+
+    - name: Write Cache
+      uses: actions/cache/save@v4
+      if: always() && hashFiles('**/inputs/**') != steps.input-hash.outputs.INPUT_HASH
+      with:
+        key: session-${{ hashFiles('.adventofcode.session') }}
+        path: 
+          '**/inputs/**'
+
+
