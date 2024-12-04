@@ -147,7 +147,7 @@ public sealed class CalendarGenerator : IIncrementalGenerator
         var dayDefinition = $"new Solution(Year: {year}, Day: {day}, Name: \"{name}\", Run: {runMethodName}),";
 
         var runMethod = $$"""
-			private static void {{runMethodName}}(byte[] input, Action<int, string> output)
+			public static void {{runMethodName}}(byte[] input, Action<int, string> output)
 			{
 				var fsharpFuncOutput = Microsoft.FSharp.Core.FuncConvert.FromAction(output);
 

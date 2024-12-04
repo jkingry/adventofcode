@@ -14,6 +14,7 @@ public static class App
             config.PropagateExceptions();
             config.AddCommand<RunCommand>("run").WithData(days);
             config.AddCommand<TestCommand>("test").WithData(days);
+            config.AddCommand<BenchCommand>("bench");
         });
 
         try
