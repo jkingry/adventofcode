@@ -6,12 +6,8 @@ module Day04 =
 
     let XMAS = "XMAS"B
 
-    let dirs =
+    let directions =
         [| (1, 1); (0, 1); (-1, 1); (-1, 0); (-1, -1); (0, -1); (1, -1); (1, 0) |]
-
-    let diags = [| (1, 1); (-1, 1); (-1, -1); (1, -1) |]
-
-    let good = [ "SSMM"B; "MSSM"B; "SMMS"B; "MMSS"B ]
 
     let readPos (grid: byte[][]) pos =
         let (r, c) = pos
@@ -35,13 +31,17 @@ module Day04 =
 
         if found = 0 then 1 else 0
 
+    let diagonalDirections = [| (1, 1); (-1, 1); (-1, -1); (1, -1) |]
+
+    let validDiagonalValues = [ "SSMM"B; "MSSM"B; "SMMS"B; "MMSS"B ]
+
     let find2Mas (grid: byte[][]) (r, c) =
         let letters =
-            diags
+            diagonalDirections
             |> Array.map (fun (dr, dc) -> r + dr, c + dc)
             |> Array.choose (readPos grid)
 
-        if good |> List.contains letters then 1 else 0
+        if validDiagonalValues |> List.contains letters then 1 else 0
 
     let run (input: byte array) (output: int -> string -> unit) =
         let lines = input |> bsplit '\n'B
@@ -54,7 +54,7 @@ module Day04 =
                 let c = lines[row][col]
 
                 if c = 'X'B then
-                    found1 <- found1 + (dirs |> Array.map (findXmas lines (row, col)) |> Array.sum)
+                    found1 <- found1 + (directions |> Array.map (findXmas lines (row, col)) |> Array.sum)
 
                 if c = 'A'B then
                     found2 <- found2 + find2Mas lines (row, col)
