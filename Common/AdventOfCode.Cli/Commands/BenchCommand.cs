@@ -15,6 +15,6 @@ internal class BenchCommand : Command<BenchCommand.Settings>
 
     internal class Settings : CommandSettings
     {
-    
+
     }
 }

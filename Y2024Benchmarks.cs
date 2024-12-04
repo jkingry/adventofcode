@@ -11,7 +11,7 @@ namespace AdventOfCode;
 public class Y2024Benchmmarks
 {
     private readonly NorthPole _pole = NorthPoleBuilder.CreateNorthPole();
-    private byte[]? _input1, _input2, _input3;   
+    private byte[]? _input1, _input2, _input3;
     public volatile string[] DummyOutput = new string[10];
 
     [GlobalSetup]
@@ -33,7 +33,7 @@ public class Y2024Benchmmarks
     }
 
     [Benchmark]
-    public void Day01_run() => Calendar.Run2024_1_run(_input1, HandleOutput);    
+    public void Day01_run() => Calendar.Run2024_1_run(_input1, HandleOutput);
 
     [Benchmark]
     public void Day02_run() => Calendar.Run2024_2_run(_input2, HandleOutput);
