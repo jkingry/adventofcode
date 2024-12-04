@@ -6,7 +6,7 @@ public static class Day06
     {
         var Input = Encoding.UTF8
             .GetString(input)
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            .Split('\n');
 
         int Part1()
         {
