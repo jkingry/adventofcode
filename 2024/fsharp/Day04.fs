@@ -4,18 +4,14 @@ namespace AdventOfCode.FSharp.Y2024
 module Day04 =
     open AdventOfCode.FSharp.Util
 
-    let XMAS = [| 'X'B; 'M'B; 'A'B; 'S'B |]
+    let XMAS = "XMAS"B
 
     let dirs =
         [| (1, 1); (0, 1); (-1, 1); (-1, 0); (-1, -1); (0, -1); (1, -1); (1, 0) |]
 
     let diags = [| (1, 1); (-1, 1); (-1, -1); (1, -1) |]
 
-    let good =
-        [ [| 'S'B; 'S'B; 'M'B; 'M'B |]
-          [| 'M'B; 'S'B; 'S'B; 'M'B |]
-          [| 'M'B; 'M'B; 'S'B; 'S'B |]
-          [| 'S'B; 'M'B; 'M'B; 'S'B |] ]
+    let good = [ "SSMM"B; "MSSM"B; "SMMS"B; "MMSS"B ]
 
     let readPos (grid: byte[][]) (r, c) =
         if r >= 0 && c >= 0 && r < grid.Length && c < grid[r].Length then
