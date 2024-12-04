@@ -2,7 +2,6 @@ namespace AdventOfCode.FSharp.Y2015
 
 // Day 3: Perfectly Spherical Houses in a Vacuum https://adventofcode.com/2015/day/3
 module Day03 =
-    open AdventOfCode.FSharp.Util
 
     let run (input: byte array) (output: int -> string -> unit) =
         let mutable posYear1 = (0, 0)
