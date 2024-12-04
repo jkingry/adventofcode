@@ -11,8 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="2*\**\*.cs" />
-    <Compile Remove="Common\**\*.cs" />
+    <Compile Include="Program.cs" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -20,6 +19,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <EnableDefaultItems>false</EnableDefaultItems>
     <!-- <PublishAot>true</PublishAot> -->
     <!-- 
     <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
