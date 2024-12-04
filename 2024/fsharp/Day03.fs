@@ -14,12 +14,14 @@ module Day03 =
     let run (input: byte[]) (output: int -> string -> unit) =
         let inputText = input |> text
 
-        inputText
-        |> MulInstructioRegex.Matches
-        |> Seq.map (fun found ->
+        let executeMul (found: Match) =
             let a = found.Groups[1].Value |> int
             let b = found.Groups[2].Value |> int
-            a * b)
+            a * b
+
+        inputText
+        |> MulInstructioRegex.Matches
+        |> Seq.map executeMul
         |> Seq.sum
         |> string
         |> output 1
@@ -32,10 +34,7 @@ module Day03 =
                 | 'd', _ when found.Length = 4 -> total, true
                 | 'd', _ -> total, false
                 | _, false -> total, doState
-                | _, _ ->
-                    let a = found.Groups[1].Value |> int
-                    let b = found.Groups[2].Value |> int
-                    total + (a * b), doState)
+                | _ -> total + (executeMul found), doState)
             (0, true)
         |> fst
         |> string
