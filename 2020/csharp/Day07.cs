@@ -3,10 +3,8 @@ using System.Collections.Immutable;
 namespace AdventOfCode.CSharp.Y2020;
 
 
-class Day07 :RobotElf
+public static class Day07
 {
-    public Day07() : base(7) {}
-
     record Rule
     {
         public string? Name;
@@ -20,58 +18,68 @@ class Day07 :RobotElf
         }
     }
 
-    public override object Part1()
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        var rules = Input.Select(Parse).ToDictionary(x => x.Name ?? "");
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-        ImmutableHashSet<string> getBags(string target)
+        int Part1()
         {
-            ImmutableHashSet<string> possible = ImmutableHashSet<string>.Empty;
+            var rules = Input.Select(Parse).ToDictionary(x => x.Name ?? "");
 
-            foreach (var rule in rules.Values)
-            {                
-                if (!possible.Contains(rule.Name ?? "") && rule.Contents.ContainsKey(target))
+            ImmutableHashSet<string> getBags(string target)
+            {
+                ImmutableHashSet<string> possible = ImmutableHashSet<string>.Empty;
+
+                foreach (var rule in rules.Values)
                 {
-                    Console.WriteLine($"{rule.Name}, which can hold {target}");
+                    if (!possible.Contains(rule.Name ?? "") && rule.Contents.ContainsKey(target))
+                    {
+                        Console.WriteLine($"{rule.Name}, which can hold {target}");
 
-                    possible = possible.Add(rule.Name ?? "").Union(getBags(rule.Name ?? ""));
-                }                    
+                        possible = possible.Add(rule.Name ?? "").Union(getBags(rule.Name ?? ""));
+                    }
+                }
+
+                return possible;
             }
 
-            return possible;
+            return getBags("shiny gold").Count();
         }
 
-        return getBags("shiny gold").Count();
-    }
-
-    public override object Part2()
-    {
-        var rules = Input.Select(Parse).ToDictionary(x => x.Name ?? "");
-
-
-        int getBags(string target)
+        int Part2()
         {
-            var count = 0;
-            var rule = rules[target];
-            foreach(var c in rule.Contents)
-            {
-                var x = getBags(c.Key);
-                count += c.Value * (x + 1);
-          }
+            var rules = Input.Select(Parse).ToDictionary(x => x.Name ?? "");
 
-            return count;
+
+            int getBags(string target)
+            {
+                var count = 0;
+                var rule = rules[target];
+                foreach (var c in rule.Contents)
+                {
+                    var x = getBags(c.Key);
+                    count += c.Value * (x + 1);
+                }
+
+                return count;
+            }
+
+            return getBags("shiny gold");
         }
 
-        return getBags("shiny gold");
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 
-    Rule Parse(string line) 
+    static Rule Parse(string line)
     {
         var m = Regex.Match(line, @"^([a-z]+ [a-z]+) bags contain (.+)\.$");
 
         var rule = new Rule { Name = m.Groups[1].Value };
 
-        foreach(Match cm in Regex.Matches(m.Groups[2].Value, "([0-9]+) ([a-z]+ [a-z]+) bags?")) 
+        foreach (Match cm in Regex.Matches(m.Groups[2].Value, "([0-9]+) ([a-z]+ [a-z]+) bags?"))
         {
             rule.Contents.Add(cm.Groups[2].Value, int.Parse(cm.Groups[1].Value));
         }

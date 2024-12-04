@@ -1,1 +1,0 @@
-AdventOfCode.CSharp.NorthPole.Run();

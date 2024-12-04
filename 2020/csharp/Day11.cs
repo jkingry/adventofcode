@@ -1,56 +1,63 @@
 namespace AdventOfCode.CSharp.Y2020;
 
-class Day11 : RobotElf
+public static class Day11
 {
-    public Day11() : base(11) {}
-
-    string? state;
-
-    public override object Part1()
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        state = string.Join("|", Input); 
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-        while (true)
+        string? state;
+
+        int Part1()
         {
-            var oldstate = state;
-            state = run(state, 1, 4);
+            state = string.Join("|", Input);
 
-            Console.WriteLine();
-            Console.WriteLine(state.Replace("|", "\n"));
-
-            if (oldstate == state)
+            while (true)
             {
-                break;
+                var oldstate = state;
+                state = run(state, 1, 4);
+
+                Console.WriteLine();
+                Console.WriteLine(state.Replace("|", "\n"));
+
+                if (oldstate == state)
+                {
+                    break;
+                }
             }
+
+            return state.Where(x => x == '#').Count();
         }
 
-        return state.Where(x => x == '#').Count();
-    }
 
 
-
-    public override object Part2()
-    {
-        state = string.Join("|", Input);
-
-        while (true)
+        int Part2()
         {
-            var oldstate = state;
-            state = run(state, int.MaxValue, 5);
+            state = string.Join("|", Input);
 
-            Console.WriteLine();
-            Console.WriteLine(state.Replace("|", "\n"));
-
-            if (oldstate == state)
+            while (true)
             {
-                break;
-            }
-        }
+                var oldstate = state;
+                state = run(state, int.MaxValue, 5);
 
-        return state.Where(x => x == '#').Count();
+                Console.WriteLine();
+                Console.WriteLine(state.Replace("|", "\n"));
+
+                if (oldstate == state)
+                {
+                    break;
+                }
+            }
+
+            return state.Where(x => x == '#').Count();
+        }
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 
-    IEnumerable<char> getAdj(string[] g, int row, int col, int depth)
+    static IEnumerable<char> getAdj(string[] g, int row, int col, int depth)
     {
         var dir = new[] {
                 (1, 1),
@@ -73,14 +80,14 @@ class Day11 : RobotElf
                 if (ar >= 0 && ar < g.Length
                     && ac >= 0 && ac < g[row].Length
                     && (ar != row || ac != col))
-                {                    
+                {
                     if (g[ar][ac] != '.')
                     {
                         yield return g[ar][ac];
                         break;
                     }
                 }
-                else 
+                else
                 {
                     break;
                 }
@@ -88,7 +95,7 @@ class Day11 : RobotElf
         }
     }
 
-    string run(string input, int depth, int occupyMax)
+    static string run(string input, int depth, int occupyMax)
     {
         var g = input.Split('|');
         var ng = input.Split('|').Select(s => new StringBuilder(s)).ToArray();

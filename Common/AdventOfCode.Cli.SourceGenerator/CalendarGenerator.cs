@@ -7,39 +7,49 @@ namespace AdventOfCode.Cli.SourceGenerator;
 [Generator]
 public sealed class CalendarGenerator : IIncrementalGenerator
 {
+    private static readonly Regex AssemblyPattern = new(@"(?:^|\.)Y([0-9]{4})(?:$|\.)");
+    private static readonly Regex DayPattern = new(@"(?:^|\.)(?:d|D)ay([0123]?[0-9])$");
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var compilationAndOptionsProvider = context
-            .CompilationProvider
-            .Combine(context.AnalyzerConfigOptionsProvider)
-            .Select((s, _) => s);
+        var rootNamespace = context.AnalyzerConfigOptionsProvider
+            .Select(static (options, _) => GetRootNamespace(options));
 
-        context.RegisterSourceOutput(compilationAndOptionsProvider, static (productionContext, options) =>
+        var pipeline =
+            context.MetadataReferencesProvider
+            .Where(static (m) => AssemblyPattern.IsMatch(m.Display))
+            .Combine(context.CompilationProvider)
+            .SelectMany(static (m, c) =>
+            {
+                return GetSolutions(m.Right, m.Left);
+            })
+            .Collect()
+            .Combine(rootNamespace);
+
+        context.RegisterSourceOutput(pipeline, static (productionContext, options) =>
         {
-            var compiler = options.Left;
-            var analyzer = options.Right;
-
-            var rootNamespace = GetRootNamespace(analyzer);
-            var solutions =
-                from assembly in GetAssemblies(compiler)
-                from solution in GetSolutions(compiler, assembly)
-                select solution;
+            var solutions = options.Left;
+            var rootNamespace = options.Right;
 
             productionContext.AddSource("AdventOfCode.Cli.Calendar.g", GenerateCalendarClass(rootNamespace, solutions));
         });
     }
 
-    private static readonly Regex AssemblyPattern = new(@"(?:^|\.)Y([0-9]{4})(?:$|\.)");
-    private static readonly Regex DayPattern = new(@"(?:^|\.)(?:d|D)ay([0123]?[0-9])$");
+    private record SolutionInfo(
+        int Year,
+        int Day,
+        string FullyQualifiedTypeName,
+        string MethodName,
+        CallbackType CallbackType);
 
-    private class SolutionInfo
+    enum CallbackType
     {
-        public INamedTypeSymbol? Type { get; set; }
-        public IMethodSymbol? Method { get; set; }
+        None,
+        Action,
+        FsharpFunc
     }
 
-
-    private static IEnumerable<IMethodSymbol> GetMethods(INamedTypeSymbol type)
+    private static IEnumerable<(IMethodSymbol method, CallbackType callbackType)> GetMethods(INamedTypeSymbol type)
     {
         bool IsByteArrayParameter(IParameterSymbol parameter)
         {
@@ -48,7 +58,7 @@ public sealed class CalendarGenerator : IIncrementalGenerator
                 && arrayType.ElementType.SpecialType == SpecialType.System_Byte;
         }
 
-        bool IsFuncParameter(IParameterSymbol parameter)
+        bool IsFsharpFuncParameter(IParameterSymbol parameter)
         {
             return parameter.Type.TypeKind == TypeKind.Class
                 && parameter.Type is INamedTypeSymbol namedType
@@ -65,6 +75,17 @@ public sealed class CalendarGenerator : IIncrementalGenerator
                 && funcType.TypeArguments[1].Name == "Unit";
         }
 
+        bool IsActionParameter(IParameterSymbol parameter)
+        {
+            return parameter.Type.TypeKind == TypeKind.Delegate
+                && parameter.Type is INamedTypeSymbol namedType
+                && namedType.IsGenericType
+                && namedType.Name == "Action"
+                && namedType.TypeArguments.Length == 2
+                && namedType.TypeArguments[0].SpecialType == SpecialType.System_Int32
+                && namedType.TypeArguments[1].SpecialType == SpecialType.System_String;
+        }
+
         return
             from member in type.GetMembers()
             let method = member as IMethodSymbol
@@ -72,8 +93,13 @@ public sealed class CalendarGenerator : IIncrementalGenerator
                 && method.Name.StartsWith("run", StringComparison.OrdinalIgnoreCase)
                 && method.Parameters.Length == 2
                 && IsByteArrayParameter(method.Parameters[0])
-                && IsFuncParameter(method.Parameters[1])
-            select method;
+            let callbackType = IsFsharpFuncParameter(method.Parameters[1])
+                ? CallbackType.FsharpFunc
+                : IsActionParameter(method.Parameters[1])
+                ? CallbackType.Action
+                : CallbackType.None
+            where callbackType != CallbackType.None
+            select (method, callbackType);
     }
 
     private static IEnumerable<SolutionInfo> GetSolutions(Compilation compilation, MetadataReference reference)
@@ -95,9 +121,9 @@ public sealed class CalendarGenerator : IIncrementalGenerator
         {
             if (DayPattern.IsMatch(type.Name))
             {
-                foreach (var method in GetMethods(type))
+                foreach (var (method, callbackType) in GetMethods(type))
                 {
-                    yield return new SolutionInfo { Type = type, Method = method };
+                    yield return GetSolution(type, method, callbackType);
                 }
             }
         }
@@ -111,13 +137,12 @@ public sealed class CalendarGenerator : IIncrementalGenerator
         }
     }
 
-    private static IEnumerable<MetadataReference> GetAssemblies(Compilation compilation)
+    private static SolutionInfo GetSolution(ITypeSymbol type, IMethodSymbol method, CallbackType callbackType)
     {
-        foreach (var reference in compilation.References)
-        {
-            if (AssemblyPattern.IsMatch(reference.Display))
-                yield return reference;
-        }
+        var year = int.Parse(AssemblyPattern.Match(type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)).Groups[1].Value);
+        var day = int.Parse(DayPattern.Match(type.Name).Groups[1].Value);
+
+        return new SolutionInfo(year, day, type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), method.Name, callbackType);
     }
 
     private static string GetRootNamespace(AnalyzerConfigOptionsProvider analyzer)
@@ -133,27 +158,35 @@ public sealed class CalendarGenerator : IIncrementalGenerator
 
     private static (string dayDefinition, string runMethod) GenerateDayDefinition(SolutionInfo solution)
     {
-        if (solution.Type == null || solution.Method == null)
-            return (string.Empty, string.Empty);
+        var year = solution.Year;
+        var day = solution.Day;
+        var name = solution.MethodName;
+        var fullTypeName = solution.FullyQualifiedTypeName;
 
-        var fullTypeName = solution.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        string runMethodName;
+        string runMethod = "";
 
-        var year = int.Parse(AssemblyPattern.Match(fullTypeName).Groups[1].Value);
-        var day = int.Parse(DayPattern.Match(fullTypeName).Groups[1].Value);
-        var name = solution.Method.Name;
+        switch (solution.CallbackType)
+        {
+            case CallbackType.Action:
+                runMethodName = $"{fullTypeName}.{name}";
+                break;
+            case CallbackType.FsharpFunc:
+                runMethodName = $"Run{year}_{day}_{name}";
+                runMethod = $$"""
+                    public static void {{runMethodName}}(byte[] input, Action<int, string> output)
+                    {
+                        var fsharpFuncOutput = Microsoft.FSharp.Core.FuncConvert.FromAction(output);
 
-        var runMethodName = $"Run{year}_{day}_{name}";
+                        {{fullTypeName}}.{{name}}(input, fsharpFuncOutput);
+                    }
+                """;
+                break;
+            default:
+                throw new NotSupportedException();
+        }
 
         var dayDefinition = $"new Solution(Year: {year}, Day: {day}, Name: \"{name}\", Run: {runMethodName}),";
-
-        var runMethod = $$"""
-			public static void {{runMethodName}}(byte[] input, Action<int, string> output)
-			{
-				var fsharpFuncOutput = Microsoft.FSharp.Core.FuncConvert.FromAction(output);
-
-				{{fullTypeName}}.{{name}}(input, fsharpFuncOutput);
-			}
-			""";
 
         return (dayDefinition, runMethod);
     }

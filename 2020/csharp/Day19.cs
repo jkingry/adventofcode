@@ -1,9 +1,7 @@
 namespace AdventOfCode.CSharp.Y2020;
 
-class Day19 : RobotElf
+public static class Day19
 {
-    public Day19() : base(19) { }
-
     enum RuleType
     {
         L, A, O
@@ -11,14 +9,16 @@ class Day19 : RobotElf
 
     record Rule(RuleType Type, int[]? First = null, int[]? Second = null, char Literal = ' ');
 
-    Dictionary<int, Rule> Parse(IEnumerator<string> input) 
+    static Dictionary<int, Rule> Parse(IEnumerator<string> input)
     {
         var rules = new Dictionary<int, Rule>();
 
-        while(input.MoveNext()) {
+        while (input.MoveNext())
+        {
             var line = input.Current ?? "";
 
-            if (string.IsNullOrEmpty(line)) {
+            if (string.IsNullOrEmpty(line))
+            {
                 break;
             }
 
@@ -50,19 +50,19 @@ class Day19 : RobotElf
         return rules;
     }
 
-    int? Validate(Dictionary<int, Rule> rules, int ri, int mi, string message, int depth = 0) 
-    {   
+    static int? Validate(Dictionary<int, Rule> rules, int ri, int mi, string message, int depth = 0)
+    {
         var rule = rules[ri];
 
         int? ret = null;
 
-        if (mi >= message.Length) return  null;
+        if (mi >= message.Length) return null;
 
         //Console.WriteLine(new string(' ', depth * 2) + "[ " + (ri, mi));
-        switch(rule.Type) 
+        switch (rule.Type)
         {
             case RuleType.L:
-                ret =  message[mi] == rule.Literal
+                ret = message[mi] == rule.Literal
                     ? mi + 1
                     : null;
 
@@ -70,9 +70,9 @@ class Day19 : RobotElf
             case RuleType.A:
                 ret = rule
                     .First
-                    .Aggregate(
+                    ?.Aggregate(
                         (int?)mi,
-                        (res, nri) => 
+                        (res, nri) =>
                             res.HasValue
                                 ? Validate(rules, nri, res.Value, message, depth + 1)
                                 : null);
@@ -81,7 +81,7 @@ class Day19 : RobotElf
                 ret =
                    rule
                     .First
-                    .Aggregate(
+                    ?.Aggregate(
                         (int?)mi,
                         (res, nri) =>
                             res.HasValue
@@ -90,7 +90,7 @@ class Day19 : RobotElf
                     ??
                     rule
                     .Second
-                    .Aggregate(
+                    ?.Aggregate(
                         (int?)mi,
                         (res, nri) =>
                             res.HasValue
@@ -105,28 +105,34 @@ class Day19 : RobotElf
 
         return ret;
     }
-
-    public override object Part1()
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        var e = Input.GetEnumerator();
-        var rules = Parse(e);
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n')
+            .ToList();
 
-        int valid = 0;
-        while (e.MoveNext()) {
-            var msg = e.Current;
+        int Part1()
+        {
+            var e = Input.GetEnumerator();
+            var rules = Parse(e);
 
-            Console.WriteLine(msg);
-            if ((Validate(rules, 0, 0, msg) ?? -1) == msg.Length) {
-                Console.WriteLine(" !VALID!");
-                valid += 1;
+            int valid = 0;
+            while (e.MoveNext())
+            {
+                var msg = e.Current;
+
+                Console.WriteLine(msg);
+                if ((Validate(rules, 0, 0, msg) ?? -1) == msg.Length)
+                {
+                    Console.WriteLine(" !VALID!");
+                    valid += 1;
+                }
             }
+
+            return valid;
         }
 
-        return valid;
-    }
-
-    public override object Part2() 
-    {
-        return -1;
+        output(1, Part1().ToString());
     }
 }

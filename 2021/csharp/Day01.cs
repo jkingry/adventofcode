@@ -1,27 +1,49 @@
 namespace AdventOfCode.CSharp.Y2021;
-class Day01 : AdventOfCode.CSharp.RobotElf
+
+public static class ArrayExtension
 {
-    public Day01() : base(1) {}
-
-    public override object Part1()
+    public static IEnumerable<ArraySegment<T>> Window<T>(this T[] input, int window)
     {
-        var numbers = Input.Select(int.Parse);
+        ArraySegment<T> root = input;
+        for (var i = 0; i < input.Length; ++i)
+        {
+            if (i + window <= input.Length)
+                yield return root.Slice(i, window);
+        }
+    }
+}
 
-        return Increasing(numbers);
+public static class Day01
+{
+    public static void Run(byte[] input, Action<int, string> output)
+    {
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        int Part1()
+        {
+            var numbers = Input.Select(int.Parse);
+
+            return Increasing(numbers);
+        }
+
+        int Part2()
+        {
+            var windows = Input
+                .Select(int.Parse)
+                .ToArray()
+                .Window(3)
+                .Select(s => s.Sum());
+
+            return Increasing(windows);
+        }
+
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 
-    public override object Part2() 
-    {
-        var windows = Input
-            .Select(int.Parse)
-            .ToArray()
-            .Window(3)
-            .Select(s => s.Sum());
-
-        return Increasing(windows);
-    }
-
-    int Increasing(IEnumerable<int> numbers)
+    static int Increasing(IEnumerable<int> numbers)
     {
         var last = int.MaxValue;
         var total = 0;

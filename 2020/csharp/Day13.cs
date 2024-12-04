@@ -1,71 +1,82 @@
+using static System.Math;
+
 namespace AdventOfCode.CSharp.Y2020;
 
-class Day13 : RobotElf
+public static class Day13
 {
-    public Day13() : base(13) { }
 
-    public override object Part1()
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        var target = int.Parse(Input.First());
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-        var bs = from p in Input.Skip(1).First().Split(',')
-                 where int.TryParse(p, out _)
-                 select int.Parse(p);
-
-        int minb = -1;
-        int mindepart = int.MaxValue;
-        foreach(var b in bs) 
+        long Part1()
         {
-            var depart = b * (int)Ceiling(1.0 * target / b);
+            var target = int.Parse(Input.First());
 
-            if (depart < mindepart)
+            var bs = from p in Input.Skip(1).First().Split(',')
+                     where int.TryParse(p, out _)
+                     select int.Parse(p);
+
+            int minb = -1;
+            int mindepart = int.MaxValue;
+            foreach (var b in bs)
             {
-                mindepart = depart;
-                minb = b;
+                var depart = b * (int)Ceiling(1.0 * target / b);
+
+                if (depart < mindepart)
+                {
+                    mindepart = depart;
+                    minb = b;
+                }
             }
+
+            Console.WriteLine(minb);
+            Console.WriteLine(mindepart);
+
+            return minb * (mindepart - target);
         }
 
-        Console.WriteLine(minb);
-        Console.WriteLine(mindepart);
-
-        return minb * (mindepart - target);
-    }
-
-    public override object Part2()
-    {
-        var busses = Input.Skip(1).First().Split(',');
-
-        long N = busses
-            .Where(b => int.TryParse(b, out _))
-            .Select(long.Parse)
-            .Aggregate((long x, long y) => x * y);
-
-        long absmod(long v, long cur) => ((v % cur) + cur) % cur;
-
-        System.Numerics.BigInteger sum = 0;
-
-        for (var i=0; i < busses.Length; ++i)
+        long Part2()
         {
-            if (busses[i] == "x") continue;
-            var bn = int.Parse(busses[i]);
+            var busses = Input.Skip(1).First().Split(',');
 
-            Console.WriteLine(bn);
-            long abn = absmod(bn - i, bn);
-            Console.WriteLine(" abn=" + abn);
+            long N = busses
+                .Where(b => int.TryParse(b, out _))
+                .Select(long.Parse)
+                .Aggregate((long x, long y) => x * y);
 
-            long Ni = N / bn;
-            long inverse = GetInverse(Ni, bn);
-            Console.WriteLine(" inverse=" + inverse);
-            Console.WriteLine(" Ni=" + inverse);
-            Console.WriteLine(" i=" + i);
-            Console.WriteLine(" bn * Ni * inverse=" + (((bn - i)%bn) * Ni * inverse));
+            long absmod(long v, long cur) => ((v % cur) + cur) % cur;
 
-            sum += ((bn - i)%bn) * Ni * inverse;
+            System.Numerics.BigInteger sum = 0;
 
-            Console.WriteLine(sum);
+            for (var i = 0; i < busses.Length; ++i)
+            {
+                if (busses[i] == "x") continue;
+                var bn = int.Parse(busses[i]);
+
+                Console.WriteLine(bn);
+                long abn = absmod(bn - i, bn);
+                Console.WriteLine(" abn=" + abn);
+
+                long Ni = N / bn;
+                long inverse = GetInverse(Ni, bn);
+                Console.WriteLine(" inverse=" + inverse);
+                Console.WriteLine(" Ni=" + inverse);
+                Console.WriteLine(" i=" + i);
+                Console.WriteLine(" bn * Ni * inverse=" + (((bn - i) % bn) * Ni * inverse));
+
+                sum += ((bn - i) % bn) * Ni * inverse;
+
+                Console.WriteLine(sum);
+            }
+
+            return (long)(sum % N);
         }
 
-        return (long)(sum % N);
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 
     private static long GetInverse(long nU, int cur)

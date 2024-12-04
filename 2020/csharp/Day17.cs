@@ -1,38 +1,42 @@
 namespace AdventOfCode.CSharp.Y2020;
 
-class Day17 : RobotElf
+public static class Day17
 {
-    public Day17() : base(17) { }
-
     class XY
     {
         public readonly int[] d;
 
-        public XY(XY other) {
+        public XY(XY other)
+        {
             this.d = other.d.ToArray();
         }
-        public XY(int[] d) {
+        public XY(int[] d)
+        {
             this.d = d;
         }
 
-        public XY Min(XY other) 
+        public XY Min(XY other)
             => new XY(d.Zip(other.d, Math.Min).ToArray());
         public XY Max(XY other)
             => new XY(d.Zip(other.d, Math.Max).ToArray());
 
-        public IEnumerable<XY> Adj() {            
-            IEnumerable<int[]> delta(int idx, int[] partial) {
-                if (idx >= d.Length) 
+        public IEnumerable<XY> Adj()
+        {
+            IEnumerable<int[]> delta(int idx, int[] partial)
+            {
+                if (idx >= d.Length)
                 {
                     yield return partial.ToArray();
                     yield break;
                 }
 
-                for (var x = -1; x <= 1; ++x) {
+                for (var x = -1; x <= 1; ++x)
+                {
                     var npartial = partial.ToArray();
                     npartial[idx] = x;
 
-                    foreach(var b in delta(idx + 1, npartial)) {
+                    foreach (var b in delta(idx + 1, npartial))
+                    {
                         if (b.All(q => q == 0)) continue;
 
                         yield return b;
@@ -40,7 +44,8 @@ class Day17 : RobotElf
                 }
             }
 
-            foreach(var u in delta(0, new int[d.Length])) {
+            foreach (var u in delta(0, new int[d.Length]))
+            {
                 var x = new XY(u.Zip(d, (xx, yy) => xx + yy).ToArray());
                 yield return x;
             }
@@ -54,7 +59,7 @@ class Day17 : RobotElf
                 {
                     yield return new XY(partial.ToArray());
                     yield break;
-                }   
+                }
 
                 for (var x = Math.Min(d[idx], other.d[idx]) - sz; x <= Math.Max(d[idx], other.d[idx]) + sz; ++x)
                 {
@@ -77,7 +82,7 @@ class Day17 : RobotElf
         public override int GetHashCode()
         {
             var h = new HashCode();
-            foreach(var x in d)
+            foreach (var x in d)
             {
                 h.Add(x);
             }
@@ -99,22 +104,24 @@ class Day17 : RobotElf
 
     class Pocket
     {
-        public Pocket(int sz) {
+        public Pocket(int sz)
+        {
             tl = new XY(new int[sz]);
             br = new XY(new int[sz]);
         }
 
-        public Pocket(Pocket p) {
-            map = new Dictionary<XY, char>(p.map);   
+        public Pocket(Pocket p)
+        {
+            map = new Dictionary<XY, char>(p.map);
             tl = new XY(p.tl);
-            br = new XY(p.br);   
+            br = new XY(p.br);
         }
 
         XY tl, br;
 
         Dictionary<XY, char> map = new Dictionary<XY, char>();
 
-        public void Set(XY pt, char v) 
+        public void Set(XY pt, char v)
         {
             map[pt] = v;
             if (v == '#')
@@ -124,11 +131,12 @@ class Day17 : RobotElf
             }
         }
 
-        public int Adj(XY pt) 
+        public int Adj(XY pt)
         {
             var c = 0;
 
-            foreach(var a in pt.Adj()) {
+            foreach (var a in pt.Adj())
+            {
                 if (map.TryGetValue(a, out var v) && v == '#')
                 {
                     c += 1;
@@ -153,13 +161,15 @@ class Day17 : RobotElf
             }
         }
 
-        public void Print() {
+        public void Print()
+        {
             foreach (var g in GetAll().GroupBy(x => (x.Item1.d[2], x.Item1.d.Length > 3 ? x.Item1.d[3] : 0)).OrderBy(x => x.Key))
             {
                 Console.WriteLine($"z={g.Key.Item1},w={g.Key.Item2}");
-                foreach(var gg in g.GroupBy(x => x.Item1.d[0]).OrderBy(x => x.Key))
+                foreach (var gg in g.GroupBy(x => x.Item1.d[0]).OrderBy(x => x.Key))
                 {
-                    foreach(var y in gg.OrderBy(x => x.Item1.d[1])) {
+                    foreach (var y in gg.OrderBy(x => x.Item1.d[1]))
+                    {
                         Console.Write(y.Item2);
                     }
                     Console.WriteLine();
@@ -168,9 +178,11 @@ class Day17 : RobotElf
         }
     }
 
-    Pocket Cycle(int cycleCount, Pocket p) {
+    static Pocket Cycle(int cycleCount, Pocket p)
+    {
 
-        for(var c =0; c < cycleCount; ++c) {
+        for (var c = 0; c < cycleCount; ++c)
+        {
             var np = new Pocket(p);
 
             foreach (var (pt, v) in p.GetAll(1))
@@ -196,43 +208,57 @@ class Day17 : RobotElf
 
         return p;
     }
-    public override object Part1() {
-        var p = new Pocket(3);
 
-        var x = 0;
-        foreach(var line in Input) {
-            var y = 0;
-            foreach(var c in line) {
-                p.Set(new XY(new[] { x, y, 0 }), c);
-                y += 1;
-            }
-            x += 1;
-        }
-        //p.Print();
-
-
-        var np = Cycle(6, p);
-
-        return np.GetAll(1).Where(x => x.Item2 == '#').Count();
-    }
-
-    public override object Part2() 
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        var p = new Pocket(4);
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-        var x = 0;
-        foreach (var line in Input)
+        int Part1()
         {
-            var y = 0;
-            foreach (var c in line)
+            var p = new Pocket(3);
+
+            var x = 0;
+            foreach (var line in Input)
             {
-                p.Set(new XY(new[] { x, y, 0, 0 }), c);
-                y += 1;
+                var y = 0;
+                foreach (var c in line)
+                {
+                    p.Set(new XY(new[] { x, y, 0 }), c);
+                    y += 1;
+                }
+                x += 1;
             }
-            x += 1;
+            //p.Print();
+
+
+            var np = Cycle(6, p);
+
+            return np.GetAll(1).Where(x => x.Item2 == '#').Count();
         }
 
-        var np = Cycle(6, p);
-        return np.GetAll().Where(x => x.Item2 == '#').Count();
+        int Part2()
+        {
+            var p = new Pocket(4);
+
+            var x = 0;
+            foreach (var line in Input)
+            {
+                var y = 0;
+                foreach (var c in line)
+                {
+                    p.Set(new XY(new[] { x, y, 0, 0 }), c);
+                    y += 1;
+                }
+                x += 1;
+            }
+
+            var np = Cycle(6, p);
+            return np.GetAll().Where(x => x.Item2 == '#').Count();
+        }
+
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 }

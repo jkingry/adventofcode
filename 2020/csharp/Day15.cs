@@ -1,20 +1,18 @@
 namespace AdventOfCode.CSharp.Y2020;
 
-class Day15 : RobotElf
+public static class Day15
 {
-    public Day15() : base(15) { }
-
-    public override object Part1()
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        return Solve(2020);
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        output(1, Solve(Input, 2020).ToString());
+        output(2, Solve(Input, 30000000).ToString());
     }
 
-    public override object Part2()
-    {
-        return Solve(30000000);
-    }
-
-    int  Solve(int target)
+    static int Solve(string[] Input, int target)
     {
         var start = Input.First().Split(',').Select(int.Parse).ToArray();
 
@@ -37,6 +35,6 @@ class Day15 : RobotElf
             turn += 1;
         }
 
-        return last;        
+        return last;
     }
 }

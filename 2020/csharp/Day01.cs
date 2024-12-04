@@ -1,42 +1,50 @@
 namespace AdventOfCode.CSharp.Y2020;
 
-
-class Day01 : RobotElf
+public static class Day01
 {
-    public Day01() : base(1) {}
-
-    public override object Part1()
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        var numbers = from line in Input
-                      select int.Parse(line);
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-        var na = numbers.ToArray();
+        int Part1()
+        {
+            var numbers = from line in Input
+                          where !string.IsNullOrWhiteSpace(line)
+                          select int.Parse(line);
 
-        var find = 
-            from x in na
-            from y in na
-            where x != y && (x + y) == 2020
-            select x * y;
+            var na = numbers.ToArray();
+
+            var find =
+                from x in na
+                from y in na
+                where x != y && (x + y) == 2020
+                select x * y;
 
 
-        return find.First();
-    }
+            return find.First();
+        }
 
-    public override object Part2() 
-    {
-        var numbers = from line in Input
-                      select int.Parse(line);
+        int Part2()
+        {
+            var numbers = from line in Input
+                          where !string.IsNullOrWhiteSpace(line)
+                          select int.Parse(line);
 
-        var na = numbers.ToArray();
+            var na = numbers.ToArray();
 
-        var find =
-            from x in na
-            from y in na
-            from z in na
-            where x != y && y != z && (x + y + z) == 2020
-            select x * y * z;
+            var find =
+                from x in na
+                from y in na
+                from z in na
+                where x != y && y != z && (x + y + z) == 2020
+                select x * y * z;
 
-        return find.First();
+            return find.First();
+        }
 
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 }

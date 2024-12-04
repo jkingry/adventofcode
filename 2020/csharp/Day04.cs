@@ -2,22 +2,20 @@ namespace AdventOfCode.CSharp.Y2020;
 
 using System.Text.Json;
 
-class Day04 : RobotElf
+public static class Day04
 {
-    public Day04() : base(4) {}
-    
     enum EyeColor
     {
         amb, blu, brn, gry, grn, hzl, oth
     }
 
-    readonly static Dictionary<string, Func<string, bool>> rules = 
+    readonly static Dictionary<string, Func<string, bool>> rules =
         new Dictionary<string, Func<string, bool>>
         {
             { "byr", s => int.TryParse(s, out var y) && y >= 1920 && y <= 2002 },
             { "iyr", s => int.TryParse(s, out var y) && y >= 2010 && y <= 2020 },
             { "eyr", s => int.TryParse(s, out var y) && y >= 2020 && y <= 2030 },
-            { "hgt", s => { 
+            { "hgt", s => {
                     var m = Regex.Match(s, "^([0-9]+)(cm|in)$");
                     if (!m.Success || !int.TryParse(m.Groups[1].Value, out var h)) return false;
 
@@ -25,7 +23,7 @@ class Day04 : RobotElf
                     {
                         case "cm": return h >= 150 && h <= 193;
                         case "in": return h >= 59 && h <= 76;
-                    }    
+                    }
 
                     return false;
                 }
@@ -35,81 +33,92 @@ class Day04 : RobotElf
             { "pid", s => Regex.IsMatch(s, "^[0-9]{9}$") },
         };
 
-    public override object Part1()
-    {   
-        bool valid(Dictionary<string, string> passport)         
+    public static void Run(byte[] input, Action<int, string> output)
+    {
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        int Part1()
         {
-            Console.WriteLine(JsonSerializer.Serialize(passport));
-
-            var validCount = 0;
-            foreach(var kv in passport)
+            bool valid(Dictionary<string, string> passport)
             {
-                if (!rules.TryGetValue(kv.Key, out var validator))
+                Console.WriteLine(JsonSerializer.Serialize(passport));
+
+                var validCount = 0;
+                foreach (var kv in passport)
                 {
-                    Console.WriteLine($"{kv.Key} not found, skipping");
-                    continue;
+                    if (!rules.TryGetValue(kv.Key, out var validator))
+                    {
+                        Console.WriteLine($"{kv.Key} not found, skipping");
+                        continue;
+                    }
+
+                    if (!validator(kv.Value))
+                    {
+                        Console.WriteLine($"{kv.Key}={kv.Value} invalid");
+                        continue;
+                    }
+
+                    validCount += 1;
                 }
 
-                if (!validator(kv.Value))
-                {
-                    Console.WriteLine($"{kv.Key}={kv.Value} invalid");
-                    continue;
-                }
+                var result = validCount == rules.Count;
 
-                validCount += 1;
+                Console.WriteLine("Valid=" + result);
+
+                return result;
             }
 
-            var result = validCount == rules.Count;
+            var validPassports =
+                from passport in Parse(Input)
+                where valid(passport)
+                select passport;
 
-            Console.WriteLine("Valid=" + result);
-
-            return result;
+            return validPassports.Count();
         }
 
-        var validPassports =
-            from passport in Parse(Input)
-            where valid(passport)
-            select passport;
-
-        return validPassports.Count();
-    }
-
-    public override object Part2()
-    {
-        bool valid(Dictionary<string, string> passport)
+        int Part2()
         {
-            Console.WriteLine(JsonSerializer.Serialize(passport));
+            bool valid(Dictionary<string, string> passport)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(passport));
 
-            var result = passport.Where(kv => 
-                rules.TryGetValue(kv.Key, out var validator)
-                && validator(kv.Value)).Count() == rules.Count;
+                var result = passport.Where(kv =>
+                    rules.TryGetValue(kv.Key, out var validator)
+                    && validator(kv.Value)).Count() == rules.Count;
 
-            Console.WriteLine("Valid=" + result);
+                Console.WriteLine("Valid=" + result);
 
-            return result;
+                return result;
+            }
+
+            var validPassports =
+                from passport in Parse(Input)
+                where valid(passport)
+                select passport;
+
+            return validPassports.Count();
         }
 
-        var validPassports =
-            from passport in Parse(Input)
-            where valid(passport)
-            select passport;
-
-        return validPassports.Count();
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 
-    private IEnumerable<Dictionary<string, string>> Parse(IEnumerable<string> input) 
+    private static IEnumerable<Dictionary<string, string>> Parse(IEnumerable<string> input)
     {
         var current = new Dictionary<string, string>();
 
-        foreach(var line in input) 
+        foreach (var line in input)
         {
-            if (string.IsNullOrWhiteSpace(line)) {
+            if (string.IsNullOrWhiteSpace(line))
+            {
                 yield return current;
                 current = new Dictionary<string, string>();
                 continue;
             }
 
-            foreach(var entry in line.Split(' '))
+            foreach (var entry in line.Split(' '))
             {
                 var parts = entry.Split(':');
                 var key = parts[0];

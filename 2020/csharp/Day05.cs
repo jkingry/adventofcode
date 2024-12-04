@@ -1,46 +1,56 @@
 namespace AdventOfCode.CSharp.Y2020;
 
-class Day05 : RobotElf
+public static class Day05
 {
     const int ROWS = 128;
     const int COLUMNS = 8;
 
-    int SeatId(int row, int col) => (row * COLUMNS) + col;
+    static int SeatId(int row, int col) => (row * COLUMNS) + col;
 
-    public Day05() : base(5) {}
-
-    public override object Part1()
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        return Input.Select(Parse).Max();
-    }
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-    public override object Part2()
-    {
-        var p = -1;
-        foreach(var s in Input.Select(Parse).OrderBy(s => s)) 
+        int Part1()
         {
-            Console.WriteLine(s);
-
-            if (p < 0) {
-                p = s;
-                continue;
-            }
-
-            if (p != (s - 1)) {
-                return s - 1;
-            }
-
-            p = s;
+            return Input.Select(Parse).Max();
         }
 
-        return -1;
+        int Part2()
+        {
+            var p = -1;
+            foreach (var s in Input.Select(Parse).OrderBy(s => s))
+            {
+                Console.WriteLine(s);
+
+                if (p < 0)
+                {
+                    p = s;
+                    continue;
+                }
+
+                if (p != (s - 1))
+                {
+                    return s - 1;
+                }
+
+                p = s;
+            }
+
+            return -1;
+        }
+
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 
-    int Parse(string line) 
+    static int Parse(string line)
     {
         var row = 0;
-        for(var i=0; i<7; ++i) 
-        {   
+        for (var i = 0; i < 7; ++i)
+        {
             if (line[i] == 'B')
             {
                 row |= (1 << (6 - i));
@@ -54,7 +64,7 @@ class Day05 : RobotElf
             {
                 col |= (1 << (2 - i));
             }
-        }        
+        }
 
         var id = SeatId(row, col);
         Console.WriteLine($"{line}: row {row}, column {col}, seat ID {id}");

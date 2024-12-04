@@ -1,56 +1,66 @@
+using System.Text.RegularExpressions;
+
 namespace AdventOfCode.CSharp.Y2020;
 
-class Day08 : RobotElf
+public static class Day08
 {
-    public Day08() : base(8) { }
-
-    public override object Part1()
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        var p = Input.Select(Parse).ToArray();
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-        Run(p, 1, out var accumlator);
-
-        return accumlator;
-    }
-
-    public override object Part2()
-    {
-        int result;
-
-        var p = Input.Select(Parse).ToArray();
-        
-        var changedLine = -1;
-
-        void swap(int lineNumber) 
+        int Part1()
         {
-            if (lineNumber < 0) return;
+            var p = Input.Select(Parse).ToArray();
 
-            var (op, x) = p[lineNumber];
+            Run(p, 1, out var accumlator);
 
-            p[lineNumber] =
-                (op == Op.jmp ? Op.nop : Op.jmp, x);
+            return accumlator;
         }
 
-        while (!Run(p, 10, out result)) 
+        int Part2()
         {
-            swap(changedLine);
+            int result;
 
-            for(var i=changedLine + 1; i < p.Length; ++i) {
-                if (p[i].Item1 != Op.acc) 
-                {
-                    changedLine = i;
-                    break;
-                }
+            var p = Input.Select(Parse).ToArray();
+
+            var changedLine = -1;
+
+            void swap(int lineNumber)
+            {
+                if (lineNumber < 0) return;
+
+                var (op, x) = p[lineNumber];
+
+                p[lineNumber] =
+                    (op == Op.jmp ? Op.nop : Op.jmp, x);
             }
-            
-            Console.WriteLine($"Swapping line {changedLine}");
-            swap(changedLine);
-        }
 
-        return result;
+            while (!Run(p, 10, out result))
+            {
+                swap(changedLine);
+
+                for (var i = changedLine + 1; i < p.Length; ++i)
+                {
+                    if (p[i].Item1 != Op.acc)
+                    {
+                        changedLine = i;
+                        break;
+                    }
+                }
+
+                Console.WriteLine($"Swapping line {changedLine}");
+                swap(changedLine);
+            }
+
+            return result;
+        }
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 
-    bool Run((Op, int)[] p, int maxLoop, out int accumlator)
+    static bool Run((Op, int)[] p, int maxLoop, out int accumlator)
     {
         var c = new int[p.Length];
 
@@ -93,7 +103,7 @@ class Day08 : RobotElf
         jmp
     }
 
-    (Op, int) Parse(string line)
+    static (Op, int) Parse(string line)
     {
         var m = Regex.Match(line, @"(nop|acc|jmp) ((\+|\-)[0-9]+)");
 

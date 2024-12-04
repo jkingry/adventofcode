@@ -1,63 +1,71 @@
 namespace AdventOfCode.CSharp.Y2020;
 
-class Day09 : RobotElf
+public static class Day09
 {
-    public Day09() : base(9) { }
-
-    public override object Part1()
+    public static void Run(byte[] input, Action<int, string> output)
     {
-        var c = new Checker(25);
+        var Input = Encoding.UTF8
+            .GetString(input)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var line in Input)
+        int Part1()
         {
-            var v = int.Parse(line);
+            var c = new Checker(25);
 
-            if (!c.Read(v))
+            foreach (var line in Input)
             {
-                return v;
+                var v = int.Parse(line);
+
+                if (!c.Read(v))
+                {
+                    return v;
+                }
             }
+
+            return -1;
         }
 
-        return -1;
-    }
+        int Part2()
+        {
+            var target = (long)Part1();
 
-    public override object Part2()
-    {
-        var target = (long)Part1();
+            var window = new List<int>();
 
-        var window = new List<int>();     
-
-        foreach (var line in Input)
-        {            
-            var v = int.Parse(line);
-            
-            if (v >= target)
+            foreach (var line in Input)
             {
-                window.Clear();
-                continue;
-            }
+                var v = int.Parse(line);
 
-            window.Add(v);
-
-            while (true) 
-            {
-                var s = window.Sum();
-                if (s > target)
+                if (v >= target)
                 {
-                    window.RemoveAt(0);
+                    window.Clear();
                     continue;
                 }
 
-                if (s == target)
+                window.Add(v);
+
+                while (true)
                 {
-                    return window.Max() + window.Min();
+                    var s = window.Sum();
+                    if (s > target)
+                    {
+                        window.RemoveAt(0);
+                        continue;
+                    }
+
+                    if (s == target)
+                    {
+                        return window.Max() + window.Min();
+                    }
+
+                    break;
                 }
-
-                break;
             }
-        }      
 
-        return -1;
+            return -1;
+        }
+
+        output(1, Part1().ToString());
+        output(2, Part2().ToString());
     }
 
     class Checker
