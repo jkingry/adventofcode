@@ -19,10 +19,7 @@ class ValidRequestFilter(NorthPole northPole) : DelegatingHandler
         var releaseTime = northPole.GetReleaseTime(year, day);
         if (DateTime.UtcNow < releaseTime)
         {
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
-            {
-                Content = new StringContent($"Day {day} of {year} has not been released yet.")
-            });
+            throw new InvalidOperationException($"Day {day} of {year} has not been released yet.");
         }
 
         return base.SendAsync(request, cancellationToken);
