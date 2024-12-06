@@ -37,16 +37,52 @@ module Day05 =
                                 valid <- false
                     printed <- u::printed
             valid
-        let validUpdates = updates |> Array.filter updateOrderCorrect
+        let validUpdates, invalidUpdates = updates |> Array.partition updateOrderCorrect
 
-        validUpdates 
-        |> Array.fold (fun a update -> 
-            let midIndex = (update.Length / 2) 
-            let mid = update[midIndex]
-            printfn "%A %d" update mid
-            a + mid) 0
+
+
+
+        let midSum (orderings: int[][]) =
+            orderings 
+            |> Array.fold (fun a update -> 
+                let midIndex = (update.Length / 2) 
+                let mid = update[midIndex]
+                a + mid) 0
+
+        midSum validUpdates
         |> string
         |> output 1
+
+
+
+        let orderUpdate (update: int[]) =
+            let urules = orderRules |> Array.filter (fun (b,a) -> 
+                (update |> Array.contains a) && (update |> Array.contains b))
+
+            let nextpage = urules |> Array.fold (fun d (b,a) -> 
+                d |> Map.change b (function 
+                    | None -> [a] |> Some
+                    | Some xs -> a::xs |> Some)) Map.empty
+
+            let mutable remain = update |> Array.toList
+            let mutable order = []
+
+            while remain.Length > 0 do
+                let next = remain |> List.find (fun p ->
+                    remain |> List.forall (fun op ->
+                        match nextpage |> Map.tryFind op with
+                        | Some x when x |> List.contains p -> false
+                        | _ -> true))
+                remain <- remain |> List.filter (fun p -> p <> next)
+                order <- next::order
+            printfn "%A" (order |> List.rev)
+            order |> List.rev |> List.toArray
+              
+        invalidUpdates 
+        |> Array.map orderUpdate
+        |> midSum
+        |> string
+        |> output 2
 
         ()
 
