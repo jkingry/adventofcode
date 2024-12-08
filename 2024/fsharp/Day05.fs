@@ -2,7 +2,6 @@ namespace AdventOfCode.FSharp.Y2024
 
 // Day 5
 module Day05 =
-    open Checked
     open AdventOfCode.FSharp.Util
 
     let run (input: byte array) (output: int -> string -> unit) =
@@ -39,9 +38,6 @@ module Day05 =
             valid
         let validUpdates, invalidUpdates = updates |> Array.partition updateOrderCorrect
 
-
-
-
         let midSum (orderings: int[][]) =
             orderings 
             |> Array.fold (fun a update -> 
@@ -75,7 +71,6 @@ module Day05 =
                         | _ -> true))
                 remain <- remain |> List.filter (fun p -> p <> next)
                 order <- next::order
-            printfn "%A" (order |> List.rev)
             order |> List.rev |> List.toArray
               
         invalidUpdates 
@@ -83,6 +78,4 @@ module Day05 =
         |> midSum
         |> string
         |> output 2
-
-        ()
 
