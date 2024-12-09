@@ -73,22 +73,18 @@ module Day05 =
         lines |> Seq.filter IsNiceString2 |> Seq.length |> string |> output 2
 
 
-    let combineFolder3 (fa, fb, fc) (a, b, c) x =
-        (fa a x), (fb b x), (fc c x)
+    let combineFolder3 (fa, fb, fc) (a, b, c) x = (fa a x), (fb b x), (fc c x)
 
     let VOWELS = "aeiou"B
 
-    let BAD_STRINGS = [|
-        "ab"B
-        "cd"B
-        "pq"B
-        "xy"B
-    |]
+    let BAD_STRINGS = [| "ab"B; "cd"B; "pq"B; "xy"B |]
 
     let IsNiceString3 (input: byte array) =
         let vowelCountScan vowelCount a =
-            if VOWELS |> Array.contains a then vowelCount + 1
-            else vowelCount
+            if VOWELS |> Array.contains a then
+                vowelCount + 1
+            else
+                vowelCount
 
         let hasDoubleScan (found, prevChar) a =
             let found = found || prevChar = a
@@ -96,45 +92,51 @@ module Day05 =
 
         let hasBad (found, prevChar) a =
             let pair = [| prevChar; a |]
-            let found = 
+
+            let found =
                 if found > 0 then found + 1
                 elif BAD_STRINGS |> Array.contains pair then 1
                 else 0
+
             found, a
 
         let folder = combineFolder3 (vowelCountScan, hasDoubleScan, hasBad)
- 
+
         let (vowelCount, hasDouble, hasBad) =
             input
-            |> Seq.scan folder
-                (0, (false, INVALID), (0, INVALID))
+            |> Seq.scan folder (0, (false, INVALID), (0, INVALID))
             |> Seq.takeWhile (fun (_, _, (x, _)) -> x < 2)
             |> Seq.last
 
-        if (fst hasBad) = 0 && (fst hasDouble) && vowelCount >= 3 then 1 else 0
+        if (fst hasBad) = 0 && (fst hasDouble) && vowelCount >= 3 then
+            1
+        else
+            0
 
-    let combineFolder2 (fa, fb) (a, b) x =
-        (fa a x), (fb b x)
+    let combineFolder2 (fa, fb) (a, b) x = (fa a x), (fb b x)
 
     let IsNiceString4 (input: byte array) =
         let hasPair (found, p) (index, c) =
             let found =
-                found || (index >= 3 && input |> Array.take (index - 1) |> Seq.pairwise |> Seq.contains (p, c))
+                found
+                || (index >= 3
+                    && input |> Array.take (index - 1) |> Seq.pairwise |> Seq.contains (p, c))
+
             found, c
-        
+
         let hasSep (found, p0, p1) (_, c) =
             let found = found || p0 = c
             found, p1, c
 
         let folder = combineFolder2 (hasPair, hasSep)
 
-        let nice = 
+        let nice =
             input
             |> Seq.indexed
             |> Seq.scan folder ((false, INVALID), (false, INVALID, INVALID))
-            |> Seq.exists (fun ((foundPair, _),(foundSep, _, _)) -> foundPair && foundSep)
-        
-        if nice then 1 else 0 
+            |> Seq.exists (fun ((foundPair, _), (foundSep, _, _)) -> foundPair && foundSep)
+
+        if nice then 1 else 0
 
     let runNoLoops (input: byte array) (output: int -> string -> unit) =
         let lines = input |> bsplit '\n'B

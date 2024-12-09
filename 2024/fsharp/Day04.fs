@@ -41,7 +41,10 @@ module Day04 =
             |> Array.map (fun (dr, dc) -> r + dr, c + dc)
             |> Array.choose (readPos grid)
 
-        if validDiagonalValues |> List.contains letters then 1 else 0
+        if validDiagonalValues |> List.contains letters then
+            1
+        else
+            0
 
     let run (input: byte array) (output: int -> string -> unit) =
         let lines = input |> bsplit '\n'B

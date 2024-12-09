@@ -6,47 +6,49 @@ module Day06 =
 
     let mask = 1000 * 1000 |> bits
 
-    let turnOff (lights: bits) (top, left: int) (bottom, right: int) =        
-        let row : bits = bits (1 + (right - left), true)
+    let turnOff (lights: bits) (top, left: int) (bottom, right: int) =
+        let row: bits = bits (1 + (right - left), true)
         row.Length <- 1000 * 1000
         left + (top * 1000) |> row.LeftShift |> ignore
 
-        for _ = 0 to bottom - top do         
+        for _ = 0 to bottom - top do
             row.Not() |> ignore
-            lights.And(row) |> ignore   
+            lights.And(row) |> ignore
             row.Not() |> ignore
             row.LeftShift(1000) |> ignore
 
-    let turnOn (lights: bits) (top, left: int) (bottom, right: int) =        
-        let row : bits = bits (1 + (right - left), true)
+    let turnOn (lights: bits) (top, left: int) (bottom, right: int) =
+        let row: bits = bits (1 + (right - left), true)
         row.Length <- 1000 * 1000
         left + (top * 1000) |> row.LeftShift |> ignore
 
-        for _ = 0 to bottom - top do         
-            lights.Or(row) |> ignore   
+        for _ = 0 to bottom - top do
+            lights.Or(row) |> ignore
             row.LeftShift(1000) |> ignore
 
-    let toggle (lights: bits) (top, left: int) (bottom, right: int) =        
-        let row : bits = bits (1 + (right - left), true)
+    let toggle (lights: bits) (top, left: int) (bottom, right: int) =
+        let row: bits = bits (1 + (right - left), true)
         row.Length <- 1000 * 1000
         left + (top * 1000) |> row.LeftShift |> ignore
 
-        for _ = 0 to bottom - top do         
-            lights.Xor(row) |> ignore   
-            row.LeftShift(1000) |> ignore            
+        for _ = 0 to bottom - top do
+            lights.Xor(row) |> ignore
+            row.LeftShift(1000) |> ignore
 
     type Pos = int * int
+
     type Instr =
-        | TurnOff of (Pos*Pos)
-        | TurnOn of (Pos*Pos)
-        | Toggle of (Pos*Pos)
+        | TurnOff of (Pos * Pos)
+        | TurnOn of (Pos * Pos)
+        | Toggle of (Pos * Pos)
 
     let parseLine (line: string) =
         match line with
-        | Regex "(turn off|turn on|toggle) (\d+),(\d+) through (\d+),(\d+)" [txt;a;b;c;d] ->
-            let topLeft = (int a),(int b)
-            let bottomRight = (int c),(int d)
-            let coords = topLeft,bottomRight
+        | Regex "(turn off|turn on|toggle) (\d+),(\d+) through (\d+),(\d+)" [ txt; a; b; c; d ] ->
+            let topLeft = (int a), (int b)
+            let bottomRight = (int c), (int d)
+            let coords = topLeft, bottomRight
+
             match txt with
             | "turn off" -> TurnOff coords
             | "turn on" -> TurnOn coords
@@ -61,9 +63,9 @@ module Day06 =
         |> text
         |> splitLine
         |> Array.map parseLine
-        |> Array.iter (function 
-            | TurnOff (topLeft, bottomRight) -> turnOff lights topLeft bottomRight
-            | TurnOn (topLeft, bottomRight) -> turnOn lights topLeft bottomRight
-            | Toggle (topLeft, bottomRight) -> toggle lights topLeft bottomRight)
+        |> Array.iter (function
+            | TurnOff(topLeft, bottomRight) -> turnOff lights topLeft bottomRight
+            | TurnOn(topLeft, bottomRight) -> turnOn lights topLeft bottomRight
+            | Toggle(topLeft, bottomRight) -> toggle lights topLeft bottomRight)
 
         lights |> Bits.popCount |> string |> output 1
