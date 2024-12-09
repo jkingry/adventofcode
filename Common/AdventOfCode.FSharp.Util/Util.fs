@@ -735,6 +735,25 @@ module Util =
 
         (pos', sign * res)
 
+    let inline parseInt64ToDelim (s: byte[]) (pos: int) (delimChar: byte) =
+        let mutable res = 0L
+        let mutable sign = 1L
+        let mutable pos' = pos
+        let mutable foundDelim = false
+
+        while (not foundDelim) && pos' < (s.Length - 1) do
+            let c = s[pos']
+
+            match c with
+            | c when c = delimChar -> foundDelim <- true
+            | '-'B -> sign <- -1L
+            | c when '0'B <= c && c <= '9'B -> res <- res * 10L + int64 (c - '0'B)
+            | _ -> failwithf "Bad Format at '%c'" (char c)
+
+            pos' <- pos' + 1
+
+        (pos', sign * res)
+
     let inline gcd (a: ^a) (b: ^a) =
         let mutable a = a
         let mutable b = b
