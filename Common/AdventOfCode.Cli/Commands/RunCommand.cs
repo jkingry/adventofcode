@@ -14,11 +14,20 @@ internal class RunCommand : AsyncCommand<RunCommand.Settings>
             ? settings.Year
             : days.Max(d => d.Year);
 
-        var day = settings.Day > 0
-            ? settings.Day
-            : days
-                .Where(d => d.Year == year)
-                .Max(d => d.Day);
+        var day = 0;
+        if (year < 32)
+        {
+            day = year;
+            year = days.Max(d => d.Year);
+        }
+        else
+        {
+            day = settings.Day > 0
+                ? settings.Day
+                : days
+                    .Where(d => d.Year == year)
+                    .Max(d => d.Day);
+        }
 
         var solutions = days.Where(d => d.Year == year && d.Day == day);
 
