@@ -2,7 +2,6 @@ namespace AdventOfCode.FSharp.Y2024
 
 // Day 7
 module Day07 =
-    open Checked
     open AdventOfCode.FSharp.Util
 
     let parseLine input =
@@ -19,55 +18,90 @@ module Day07 =
 
         res, (values |> List.rev)
 
-    let rec canSolve rem v values =
+    let rec canSolve ops rem v values =
         if v > rem then
             false
         else
             match values with
-            | x :: xs -> (canSolve rem (v + x) xs) || (canSolve rem (v * x) xs)
+            | x :: xs -> 
+                ops |> Array.exists (fun op -> canSolve ops rem (op v  x) xs)
             | [] -> rem = v
 
     let concat a b =
-        // let mag = b |> double |> log10 |> ceil
-        // let factor = (10.0 ** mag) |> int64
-        // (factor * a) + b
-        sprintf "%i%i" a b |> int64
+        let mag = b |> double |> log10 |> floor |> int
+        let factor = pown 10L (mag + 1)
+        (factor * a) + b
 
-    let rec canSolve2 rem v values =
-        if v > rem then
-            false
-        else
-            match values with
-            | x :: xs ->
-                (canSolve2 rem (v + x) xs)
-                || (canSolve2 rem (v * x) xs)
-                || (canSolve2 rem (concat v x) xs)
-            | [] -> rem = v
-
-    let solve2 (rem, values) =
+    let solve ops (rem, values) =
         match values with
-        | x :: xs -> canSolve2 rem x xs
-        | _ -> false
-
-    let solve (rem, values) =
-        match values with
-        | x :: xs -> canSolve rem x xs
+        | x :: xs -> canSolve ops rem x xs
         | _ -> false
 
     let run (input: byte[]) (output: int -> string -> unit) =
         let equations = input |> bsplit '\n'B |> Array.map parseLine
 
+        let part1Operations = [|
+            (+)
+            (*)
+        |]
+
         equations
-        |> Array.filter solve
+        |> Array.filter (solve part1Operations)
+        |> Array.map fst
+        |> Array.sum
+        |> string
+        |> output 1
+
+        let part2Operations = [|
+            (+)
+            (*)
+            concat
+        |]
+
+        equations
+        |> Array.filter (solve part2Operations)
+        |> Array.map fst
+        |> Array.sum
+        |> string
+        |> output 2
+
+
+    let rec canSolvePart1 rem v values =
+        if v > rem then
+            false
+        else
+            match values with
+            | x :: xs -> 
+                (canSolvePart1 rem (v + x) xs) || (canSolvePart1 rem (v * x) xs)
+            | [] -> rem = v
+
+    let rec canSolvePart2 rem v values =
+        if v > rem then
+            false
+        else
+            match values with
+            | x :: xs -> 
+                (canSolvePart2 rem (v + x) xs) || (canSolvePart2 rem (v * x) xs) || (canSolvePart2 rem (concat v x) xs)
+            | [] -> rem = v
+
+    let solveStaticOps f (rem, values) =
+        match values with
+        | x :: xs -> f rem x xs
+        | _ -> false
+
+    let runStaticOps (input: byte[]) (output: int -> string -> unit) =
+        let equations = input |> bsplit '\n'B |> Array.map parseLine
+
+        equations
+        |> Array.filter (solveStaticOps canSolvePart1)
         |> Array.map fst
         |> Array.sum
         |> string
         |> output 1
 
         equations
-        |> Array.filter solve2
+        |> Array.filter (solveStaticOps canSolvePart2)
         |> Array.map fst
-        |> Array.map bigint
         |> Array.sum
         |> string
         |> output 2
