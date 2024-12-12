@@ -49,8 +49,6 @@ module Day05 =
 
         midSum validUpdates |> string |> output 1
 
-
-
         let orderUpdate (update: int[]) =
             let urules =
                 orderRules
