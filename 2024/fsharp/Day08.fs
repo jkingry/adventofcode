@@ -2,7 +2,6 @@ namespace AdventOfCode.FSharp.Y2024
 
 // Day 8
 module Day08 =
-    open Checked
     open AdventOfCode.FSharp.Util
 
     let getAntinodes (nodes: (int*int) seq) =
