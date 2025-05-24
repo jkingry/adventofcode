@@ -27,7 +27,6 @@ module Day01 =
 
         dupe.Value |> string
 
-
     let part3 (input: string) =
         let x = parse input
 
@@ -42,7 +41,34 @@ module Day01 =
 
         f 0 0 Set.empty |> string
 
-    let run (input: byte array) output =
+    let runOld (input: byte array) output =
         let textInput = text input
         part1 textInput |> output 1
         part2 textInput |> output 2
+
+    let run (input: byte array) output =
+        let nums = input |> parseInts
+
+        nums |> Array.sum |> string |> output 1
+
+        let infiniteNums = 
+            seq 
+                {
+                    while true do
+                        yield! nums
+                }
+
+        let sums =  infiniteNums |> Seq.scan (fun s n -> s + n) 0
+
+        let mutable seen = Set.empty
+        let firstDupe = 
+            sums 
+            |> Seq.skipWhile (fun s -> 
+                if seen |> Set.contains s |> not then
+                    seen <- seen |> Set.add s
+                    true
+                else 
+                    false)
+            |> Seq.head
+
+        firstDupe |> string |> output 2

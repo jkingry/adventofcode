@@ -320,7 +320,7 @@ module Util =
     let bsplit (splitBy: byte) (b: byte[]) =
         let lenEstimate = b.Length / 81
         let mutable res = []
-        let item = System.Collections.Generic.List<byte>(lenEstimate)
+        let item = List<byte> lenEstimate
 
         for i = 0 to b.Length - 1 do
             let c = b.[i]
@@ -684,6 +684,7 @@ module Util =
 
         while pos' < (s.Length - 1)
               && s[pos'] <> '-'B
+              && s[pos'] <> '+'B
               && not ('0'B <= s[pos'] && s[pos'] <= '9'B) do
             pos' <- pos' + 1
 
@@ -691,6 +692,9 @@ module Util =
             if s[pos'] = '-'B then
                 pos' <- pos' + 1
                 -1
+            elif s[pos'] = '+'B then
+                pos' <- pos' + 1
+                1
             else
                 1
 
