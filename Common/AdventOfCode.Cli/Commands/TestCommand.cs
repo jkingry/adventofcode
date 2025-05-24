@@ -88,6 +88,7 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
         {
             var fastestMs = double.PositiveInfinity;
             var slowestMs = double.NegativeInfinity;
+            var success = false;
 
             foreach (var solution in day)
             {
@@ -109,13 +110,17 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
 
                 if (IsAllOk(output))
                 {
+                    success = true;
                     fastestMs = Math.Min(fastestMs, output.ElapsedMs);
                     slowestMs = Math.Max(slowestMs, output.ElapsedMs);
                 }
             }
 
-            fastestTotalMs += fastestMs;
-            slowestTotalMs += slowestMs;
+            if (success)
+            {
+                fastestTotalMs += fastestMs;
+                slowestTotalMs += slowestMs;
+            }
         }
 
         var byFastestTime = outputs
