@@ -79,6 +79,11 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
         AnsiConsole.WriteLine("By day:");
         AnsiConsole.WriteLine("{0,4} {1,3} {2,9} {3,-3}", "Year", "Day", "Time", "[S]");
 
+        bool IsAllOk(SolutionOutputs output)
+        {
+            return output.PartOutputs.All(p => p.Result == ResultType.Ok);
+        }
+
         foreach (var day in selected.GroupBy(s => (s.Year, s.Day)).OrderBy(g => g.Key))
         {
             var fastestMs = double.PositiveInfinity;
@@ -102,8 +107,11 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
                     output.Name,
                     MultipleToString(output.ElapsedMs, fastestMs));
 
-                fastestMs = Math.Min(fastestMs, output.ElapsedMs);
-                slowestMs = Math.Max(slowestMs, output.ElapsedMs);
+                if (IsAllOk(output))
+                {
+                    fastestMs = Math.Min(fastestMs, output.ElapsedMs);
+                    slowestMs = Math.Max(slowestMs, output.ElapsedMs);
+                }
             }
 
             fastestTotalMs += fastestMs;
@@ -111,6 +119,7 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
         }
 
         var byFastestTime = outputs
+            .Where(IsAllOk)
             .GroupBy(o => (o.Year, o.Day))
             .Select(o => o.MinBy(o => o.ElapsedMs) ?? throw new InvalidOperationException("No min found"))
             .OrderBy(o => o.ElapsedMs)
@@ -175,9 +184,9 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
         return input.Split(',')
             .SelectMany(term => term.Split('-') switch
             {
-            ["*"] => Enumerable.Range(1, 2050),
-            [var x] => new[] { int.Parse(x) },
-            [var a, var b] => Enumerable.Range(int.Parse(a), int.Parse(b) - int.Parse(a) + 1),
+                ["*"] => Enumerable.Range(1, 2050),
+                [var x] => new[] { int.Parse(x) },
+                [var a, var b] => Enumerable.Range(int.Parse(a), int.Parse(b) - int.Parse(a) + 1),
                 _ => throw new InvalidOperationException($"Failed to parse: {term}")
             });
     }
