@@ -23,8 +23,7 @@ module Day07 =
             false
         else
             match values with
-            | x :: xs -> 
-                ops |> Array.exists (fun op -> canSolve ops rem (op v  x) xs)
+            | x :: xs -> ops |> Array.exists (fun op -> canSolve ops rem (op v x) xs)
             | [] -> rem = v
 
     let concat a b =
@@ -40,10 +39,7 @@ module Day07 =
     let run (input: byte[]) (output: int -> string -> unit) =
         let equations = input |> bsplit '\n'B |> Array.map parseLine
 
-        let part1Operations = [|
-            (+)
-            (*)
-        |]
+        let part1Operations = [| (+); (*) |]
 
         equations
         |> Array.filter (solve part1Operations)
@@ -52,11 +48,7 @@ module Day07 =
         |> string
         |> output 1
 
-        let part2Operations = [|
-            (+)
-            (*)
-            concat
-        |]
+        let part2Operations = [| (+); (*); concat |]
 
         equations
         |> Array.filter (solve part2Operations)
@@ -71,8 +63,7 @@ module Day07 =
             false
         else
             match values with
-            | x :: xs -> 
-                (canSolvePart1 rem (v + x) xs) || (canSolvePart1 rem (v * x) xs)
+            | x :: xs -> (canSolvePart1 rem (v + x) xs) || (canSolvePart1 rem (v * x) xs)
             | [] -> rem = v
 
     let rec canSolvePart2 rem v values =
@@ -80,8 +71,10 @@ module Day07 =
             false
         else
             match values with
-            | x :: xs -> 
-                (canSolvePart2 rem (v + x) xs) || (canSolvePart2 rem (v * x) xs) || (canSolvePart2 rem (concat v x) xs)
+            | x :: xs ->
+                (canSolvePart2 rem (v + x) xs)
+                || (canSolvePart2 rem (v * x) xs)
+                || (canSolvePart2 rem (concat v x) xs)
             | [] -> rem = v
 
     let solveStaticOps f (rem, values) =

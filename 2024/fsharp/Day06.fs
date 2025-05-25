@@ -101,87 +101,85 @@ module Day06 =
 
         let part1 = visited |> Seq.map fst |> Seq.distinct |> Seq.length
         let part2 = found.Count
-        part1,part2
+        part1, part2
 
     let xrun (input: byte array) (output: int -> string -> unit) =
         let lab =
-            input 
-            |> text 
-            |> splitLine 
-            |> Array.map (fun s -> s.ToCharArray()) 
-            |> array2D
+            input |> text |> splitLine |> Array.map (fun s -> s.ToCharArray()) |> array2D
 
         let startPos = lab |> Array2D.findIndex (fun c -> c = '^')
         let startDir = 0
 
-        let (part1,part2) = runRobotLoop2 lab (isWall lab) Set.empty (startPos, startDir)
+        let (part1, part2) = runRobotLoop2 lab (isWall lab) Set.empty (startPos, startDir)
 
-        part1 
-        |> string
-        |> output 1
+        part1 |> string |> output 1
 
-        part2
-        |> string
-        |> output 2
+        part2 |> string |> output 2
 
 
-    type WallMap = 
-        {
-            Rows: (int*int) array array
-            Cols: (int*int) array array
-        }
+    type WallMap =
+        { Rows: (int * int) array array
+          Cols: (int * int) array array }
 
-    let mapToWallsList (lab: char[,]) : WallMap=
+    let mapToWallsList (lab: char[,]) : WallMap =
         let mutable rows = Array.zeroCreate (Array2D.length1 lab)
-        for rowIndex = 0 to (Array2D.length1 lab) - 1 do            
+
+        for rowIndex = 0 to (Array2D.length1 lab) - 1 do
             let mutable row = []
             let mutable lastWall = -1
+
             for colIndex = 0 to (Array2D.length2 lab) - 1 do
-                let c = lab[rowIndex,colIndex]
+                let c = lab[rowIndex, colIndex]
+
                 if c = '#' then
-                    row <- (lastWall, colIndex - 1)::row
+                    row <- (lastWall, colIndex - 1) :: row
                     lastWall <- colIndex + 1
-            row <- (lastWall, (Array2D.length2 lab))::row
+
+            row <- (lastWall, (Array2D.length2 lab)) :: row
             rows[rowIndex] <- row |> List.rev |> List.toArray
-        
+
         let mutable cols = Array.zeroCreate (Array2D.length2 lab)
+
         for colIndex = 0 to (Array2D.length2 lab) - 1 do
             let mutable col = []
             let mutable lastWall = -1
-            for rowIndex = 0 to (Array2D.length1 lab) - 1 do            
-                let c = lab[rowIndex,colIndex]
+
+            for rowIndex = 0 to (Array2D.length1 lab) - 1 do
+                let c = lab[rowIndex, colIndex]
+
                 if c = '#' then
-                    col <- (lastWall, rowIndex - 1)::col
+                    col <- (lastWall, rowIndex - 1) :: col
                     lastWall <- rowIndex + 1
-            col <- (lastWall, (Array2D.length1 lab))::col
+
+            col <- (lastWall, (Array2D.length1 lab)) :: col
             cols[colIndex] <- col |> List.rev |> List.toArray
-        
+
         { Rows = rows; Cols = cols }
 
-    let addWall (walls: WallMap) (wr,wc) =
+    let addWall (walls: WallMap) (wr, wc) =
         let origRow = walls.Rows[wr] |> Array.copy
-        let rowIndex = walls.Rows[wr] |> Array.findIndex (fun (f,t) -> f <= wc && wc <= t)
-        let (a,b) = walls.Rows[wr][rowIndex]
+        let rowIndex = walls.Rows[wr] |> Array.findIndex (fun (f, t) -> f <= wc && wc <= t)
+        let (a, b) = walls.Rows[wr][rowIndex]
         walls.Rows[wr][rowIndex] <- (a, wc - 1)
-        walls.Rows[wr] <- walls.Rows[wr] |> Array.insertAt (rowIndex + 1) (wc + 1,b)
+        walls.Rows[wr] <- walls.Rows[wr] |> Array.insertAt (rowIndex + 1) (wc + 1, b)
         // printfn "%A" walls.Rows[wr]
 
         let origCol = walls.Cols[wc] |> Array.copy
-        let colIndex = walls.Cols[wc] |> Array.findIndex (fun (f,t) -> f <= wr && wr <= t)
-        let (a,b) = walls.Cols[wc][colIndex]
+        let colIndex = walls.Cols[wc] |> Array.findIndex (fun (f, t) -> f <= wr && wr <= t)
+        let (a, b) = walls.Cols[wc][colIndex]
         walls.Cols[wc][colIndex] <- (a, wr - 1)
-        walls.Cols[wc] <- walls.Cols[wc] |> Array.insertAt (colIndex + 1) (wr + 1,b)
+        walls.Cols[wc] <- walls.Cols[wc] |> Array.insertAt (colIndex + 1) (wr + 1, b)
         // printfn "%A" walls.Cols[wc]
 
-        (wr,wc),origRow,origCol
+        (wr, wc), origRow, origCol
 
-    let undoAddWall (walls: WallMap) ((wr,wc),origRow,origCol) =
+    let undoAddWall (walls: WallMap) ((wr, wc), origRow, origCol) =
         walls.Rows[wr] <- origRow
         walls.Cols[wc] <- origCol
-        
-    let getIntermediatePoints (dest,_) (src, d) =
+
+    let getIntermediatePoints (dest, _) (src, d) =
         seq {
-            let dir = DIRECTIONS[d] 
+            let dir = DIRECTIONS[d]
 
             let mutable c = src
 
@@ -189,22 +187,19 @@ module Day06 =
                 yield c
                 c <- c @+ dir
         }
-    
-    let checkBounds (walls: WallMap) r c  =
+
+    let checkBounds (walls: WallMap) r c =
         r >= 0 && c >= 0 && r < walls.Rows.Length && c < walls.Cols.Length
 
-    let getMove ((r,c),d) (walls: WallMap) =
+    let getMove ((r, c), d) (walls: WallMap) =
         let next =
             match d with
-            | 1 -> 
-                r, walls.Rows[r] |> Array.find (fun (f,t) -> f <= c && c <= t) |> snd
-            | 3 -> 
-                r, walls.Rows[r] |> Array.findBack (fun (f,t) -> f <= c && c <= t) |> fst
-            | 0 -> 
-                walls.Cols[c] |> Array.findBack (fun (f,t) -> f <= r && r <= t) |> fst, c
-            | 2 -> 
-                walls.Cols[c] |> Array.find (fun (f,t) -> f <= r && r <= t) |> snd, c
+            | 1 -> r, walls.Rows[r] |> Array.find (fun (f, t) -> f <= c && c <= t) |> snd
+            | 3 -> r, walls.Rows[r] |> Array.findBack (fun (f, t) -> f <= c && c <= t) |> fst
+            | 0 -> walls.Cols[c] |> Array.findBack (fun (f, t) -> f <= r && r <= t) |> fst, c
+            | 2 -> walls.Cols[c] |> Array.find (fun (f, t) -> f <= r && r <= t) |> snd, c
             | _ -> raise Unreachable
+
         next, (d + 1) % DIRECTIONS.Length
 
     let runRobotLoop4 (walls: WallMap) startPos =
@@ -221,7 +216,7 @@ module Day06 =
 
             if pos |> fst ||> checkBounds walls |> not then
                 exited <- true
-            
+
             if visited |> Set.contains pos then
                 looped <- true
                 exited <- true
@@ -248,52 +243,49 @@ module Day06 =
                     tried <- tried |> Set.add p
                     // printfn "%A" p
                     let undo = addWall walls p
-                    if runRobotLoop4 walls pos then                 
+
+                    if runRobotLoop4 walls pos then
                         worked <- worked + 1
-                    undoAddWall walls undo       
+
+                    undoAddWall walls undo
 
             if dest |> fst ||> checkBounds walls |> not then
                 exited <- true
             else
                 let drc = fst dest
+
                 if tried |> Set.contains drc |> not then
                     tried <- tried |> Set.add drc
                     let undo = addWall walls drc
+
                     if runRobotLoop4 walls pos then
                         worked <- worked + 1
-                    undoAddWall walls undo     
 
-            visited <- dest::visited
+                    undoAddWall walls undo
+
+            visited <- dest :: visited
             pos <- dest
 
         let part1 =
             visited
             |> List.pairwise
-            |> Seq.collect (fun pair -> pair ||> getIntermediatePoints) 
+            |> Seq.collect (fun pair -> pair ||> getIntermediatePoints)
             |> Seq.distinct
             |> Seq.length
 
-        part1,worked
-    
+        part1, worked
+
     let run2 (input: byte array) (output: int -> string -> unit) =
         let lab =
-            input 
-            |> text 
-            |> splitLine 
-            |> Array.map (fun s -> s.ToCharArray()) 
-            |> array2D
+            input |> text |> splitLine |> Array.map (fun s -> s.ToCharArray()) |> array2D
 
         let walls = mapToWallsList lab
 
         let startPos = lab |> Array2D.findIndex (fun c -> c = '^')
         let startDir = 0
 
-        let (part1,part2) = runRobotLoop3 walls (startPos, startDir)
+        let (part1, part2) = runRobotLoop3 walls (startPos, startDir)
 
-        part1 
-        |> string
-        |> output 1
+        part1 |> string |> output 1
 
-        part2
-        |> string
-        |> output 2
+        part2 |> string |> output 2

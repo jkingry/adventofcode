@@ -51,23 +51,23 @@ module Day01 =
 
         nums |> Array.sum |> string |> output 1
 
-        let infiniteNums = 
-            seq 
-                {
-                    while true do
-                        yield! nums
-                }
+        let infiniteNums =
+            seq {
+                while true do
+                    yield! nums
+            }
 
-        let sums =  infiniteNums |> Seq.scan (fun s n -> s + n) 0
+        let sums = infiniteNums |> Seq.scan (fun s n -> s + n) 0
 
         let mutable seen = Set.empty
-        let firstDupe = 
-            sums 
-            |> Seq.skipWhile (fun s -> 
+
+        let firstDupe =
+            sums
+            |> Seq.skipWhile (fun s ->
                 if seen |> Set.contains s |> not then
                     seen <- seen |> Set.add s
                     true
-                else 
+                else
                     false)
             |> Seq.head
 
