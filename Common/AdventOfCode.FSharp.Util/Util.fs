@@ -709,6 +709,41 @@ module Util =
 
         (pos', sign * res)
 
+    let inline readIntToAny (s: System.IO.Stream) =
+        let mutable foundNonDigit = false
+
+        let mutable res = s.ReadByte()
+        let mutable c = byte res
+
+        while res >= 0 && c <> '-'B && c <> '+'B && not ('0'B <= c && c <= '9'B) do
+            res <- s.ReadByte()
+            c <- byte res
+
+        let sign =
+            if c = '-'B then
+                c <- s.ReadByte() |> byte
+                -1
+            elif c = '+'B then
+                c <- s.ReadByte() |> byte
+                1
+            else
+                1
+
+        let mutable readResult = 0
+
+        while (not foundNonDigit) && res >= 0 do
+            match c with
+            | x when '0'B <= x && x <= '9'B ->
+                readResult <- readResult * 10 + int (c - '0'B)
+                res <- s.ReadByte()
+                c <- byte res
+            | _ ->
+                s.Seek(-1, System.IO.SeekOrigin.Current) |> ignore
+                foundNonDigit <- true
+
+        sign * readResult
+
+
     let parseInts (s: byte[]) =
         let mutable i = 0
         let mutable res = []
