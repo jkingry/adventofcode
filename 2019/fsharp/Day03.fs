@@ -11,6 +11,7 @@ module Day03 =
             let mutable eof = false
             let mutable x = 0
             let mutable y = 0
+            let mutable d = 0
 
             while not (eol || eof) do
                 let res = input.ReadByte()
@@ -19,19 +20,20 @@ module Day03 =
                     eof <- true
                 else
                     let delta = input |> readIntToAny
+                    d <- d + delta
 
                     match byte res with
                     | 'R'B ->
-                        yield false, (y, x, x + delta)
+                        yield false, (y, x, x + delta, d)
                         x <- x + delta
                     | 'L'B ->
-                        yield false, (y, x - delta, x)
+                        yield false, (y, x, x - delta, d)
                         x <- x - delta
                     | 'U'B ->
-                        yield true, (x, y, y + delta)
+                        yield true, (x, y, y + delta, d)
                         y <- y + delta
                     | 'D'B ->
-                        yield true, (x, y - delta, y)
+                        yield true, (x, y, y - delta, d)
                         y <- y - delta
                     | _ -> failwithf "Invalid direction: %A" (char res)
 
@@ -63,7 +65,8 @@ module Day03 =
         let mutable vertical = Set.empty
         let mutable first = true
 
-        let mutable crossDistance = System.Int32.MaxValue
+        let mutable firstCrossManhatten = System.Int32.MaxValue
+        let mutable minCrossDistanceTravelled = System.Int32.MaxValue
 
         for wire in parse input do
             if first then
@@ -74,13 +77,26 @@ module Day03 =
 
                 first <- false
             else
-                for dir, (lvl2, f2, t2) in wire do
+                for dir, (lvl2, f2, t2, d2) in wire do
                     let segments = if dir then horizontal else vertical
+                    let min2 = min t2 f2
+                    let max2 = max t2 f2
 
-                    for lvl1, f1, t1 in segments do
-                        if f2 <= lvl1 && lvl1 <= t2 && f1 <= lvl2 && lvl2 <= t1 && (lvl1 <> 0 || lvl2 <> 0) then
-                            let dist = abs lvl1 + abs lvl2
-                            crossDistance <- min crossDistance dist
+                    for lvl1, f1, t1, d1 in segments do
+                        let min1 = min t1 f1
+                        let max1 = max t1 f1
 
-        crossDistance |> string |> output 1
-        0 |> string |> output 2
+                        if
+                            min2 <= lvl1
+                            && lvl1 <= max2
+                            && min1 <= lvl2
+                            && lvl2 <= max1
+                            && (lvl1 <> 0 || lvl2 <> 0)
+                        then
+                            let manhatten = abs lvl1 + abs lvl2
+                            let d = d1 + d2 - (abs (t2 - lvl1) + abs (t1 - lvl2))
+                            firstCrossManhatten <- min firstCrossManhatten manhatten
+                            minCrossDistanceTravelled <- min minCrossDistanceTravelled d
+
+        firstCrossManhatten |> string |> output 1
+        minCrossDistanceTravelled |> string |> output 2
