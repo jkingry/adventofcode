@@ -163,22 +163,40 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
             return new Color(color[0], color[1], color[2]);
         }
 
-        var years = byFastestTime.Select(o => o.Item)
+        var yearGroups = byFastestTime.Select(o => o.Item)
             .GroupBy(o => o.Year)
             .OrderBy(g => g.Key)
             .ToList();
 
-        if (years.Count > 1)
+        if (yearGroups.Count > 1)
         {
             var yearBreakdownChart = new BreakdownChart();
 
-            foreach (var yearGroup in years)
+            foreach (var yearGroup in yearGroups)
             {
                 var totalTime = yearGroup.Sum(o => o.ElapsedMs) / yearGroup.Count();
                 yearBreakdownChart.AddItem($"{yearGroup.Key}", totalTime, RandomColor());
             }
 
             AnsiConsole.Write(yearBreakdownChart);
+        }
+
+        var dayGroups = byFastestTime.Select(o => o.Item)
+            .GroupBy(o => o.Day)
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        if (dayGroups.Count > 1)
+        {
+            var dayBreakdownChart = new BreakdownChart();
+
+            foreach (var dayGroup in dayGroups)
+            {
+                var totalTime = dayGroup.Sum(o => o.ElapsedMs) / dayGroup.Count();
+                dayBreakdownChart.AddItem($"{dayGroup.Key}", totalTime, RandomColor());
+            }
+
+            AnsiConsole.Write(dayBreakdownChart);
         }
 
         return 0;
