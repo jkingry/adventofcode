@@ -33,7 +33,7 @@ public static class Day04
             { "pid", s => Regex.IsMatch(s, "^[0-9]{9}$") },
         };
 
-    public static void Run(byte[] input, Action<int, string> output)
+    public static void OldRun(byte[] input, Action<int, string> output)
     {
         var Input = Encoding.UTF8
             .GetString(input)
