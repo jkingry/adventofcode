@@ -166,16 +166,21 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
         var yearGroups = byFastestTime.Select(o => o.Item)
             .GroupBy(o => o.Year)
             .OrderBy(g => g.Key)
+            .Select(g => new
+            {
+                Year = g.Key,
+                AverageDuration = g.Sum(o => o.ElapsedMs) / g.Count()
+            })
             .ToList();
 
         if (yearGroups.Count > 1)
         {
             var yearBreakdownChart = new BreakdownChart();
+            var minDuration = yearGroups.Min(o => o.AverageDuration);
 
             foreach (var yearGroup in yearGroups)
             {
-                var totalTime = yearGroup.Sum(o => o.ElapsedMs) / yearGroup.Count();
-                yearBreakdownChart.AddItem($"{yearGroup.Key}", totalTime, RandomColor());
+                yearBreakdownChart.AddItem($"{yearGroup.Year}", yearGroup.AverageDuration / minDuration, RandomColor());
             }
 
             AnsiConsole.Write(yearBreakdownChart);
@@ -184,16 +189,21 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
         var dayGroups = byFastestTime.Select(o => o.Item)
             .GroupBy(o => o.Day)
             .OrderBy(g => g.Key)
+            .Select(g => new
+            {
+                Day = g.Key,
+                AverageDuration = g.Sum(o => o.ElapsedMs) / g.Count()
+            })
             .ToList();
 
         if (dayGroups.Count > 1)
         {
             var dayBreakdownChart = new BreakdownChart();
+            var minDuration = dayGroups.Min(o => o.AverageDuration);
 
             foreach (var dayGroup in dayGroups)
             {
-                var totalTime = dayGroup.Sum(o => o.ElapsedMs) / dayGroup.Count();
-                dayBreakdownChart.AddItem($"{dayGroup.Key}", totalTime, RandomColor());
+                dayBreakdownChart.AddItem($"{dayGroup.Day}", dayGroup.AverageDuration / minDuration, RandomColor());
             }
 
             AnsiConsole.Write(dayBreakdownChart);
