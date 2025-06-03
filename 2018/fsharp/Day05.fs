@@ -109,6 +109,8 @@ module Day05 =
 
         p'
 
+    let inline sameElement (a: byte) (b: byte) = a = b || a + 32uy = b || b + 32uy = a
+
     let inline canReact (a: byte) (b: byte) = a + 32uy = b || b + 32uy = a
 
     let findSmallestPolymer reactor polymer =
@@ -125,14 +127,11 @@ module Day05 =
 
         finalPolymer
         |> findSmallestPolymer (fun c polymer ->
-            polymer
-            |> List.filter (fun p -> p <> c && p + 32uy <> c)
-            |> fullyReactBytes
-            |> List.length)
+            polymer |> List.filter (sameElement c >> not) |> fullyReactBytes |> List.length)
         |> string
         |> output 2
 
-    let runReactionStack (input: byte seq) =
+    let fullyReactStack (input: byte seq) =
         input
         |> Seq.fold
             (fun unmatched c ->
@@ -142,20 +141,17 @@ module Day05 =
             []
 
     let runStack (input: byte array) output =
-        let finalPolymer = input |> runReactionStack
+        let finalPolymer = input |> fullyReactStack
 
         finalPolymer |> List.length |> string |> output 1
 
         finalPolymer
         |> findSmallestPolymer (fun c polymer ->
-            polymer
-            |> List.filter (fun p -> p <> c && p + 32uy <> c)
-            |> runReactionStack
-            |> List.length)
+            polymer |> List.filter (sameElement c >> not) |> fullyReactStack |> List.length)
         |> string
         |> output 2
 
-    let runReactionLoop (input: byte array) =
+    let fullyReactLoop (input: byte array) =
         let mutable unmatched = []
 
         for c in input do
@@ -165,16 +161,13 @@ module Day05 =
 
         unmatched |> List.toArray
 
-    let runStackLoop (input: byte array) output =
-        let finalPolymer = input |> runReactionLoop
+    let runLoop (input: byte array) output =
+        let finalPolymer = input |> fullyReactLoop
 
         finalPolymer |> Array.length |> string |> output 1
 
         finalPolymer
         |> findSmallestPolymer (fun c polymer ->
-            polymer
-            |> Array.filter (fun p -> p <> c && p + 32uy <> c)
-            |> runReactionLoop
-            |> Array.length)
+            polymer |> Array.filter (sameElement c >> not) |> fullyReactLoop |> Array.length)
         |> string
         |> output 2
