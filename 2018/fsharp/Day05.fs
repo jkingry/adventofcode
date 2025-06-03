@@ -93,7 +93,7 @@ module Day05 =
 
         polymer'
 
-    let fullyReactBytes polymer =
+    let fullyReactBytes (polymer: byte list) =
         let mutable p = polymer
         let mutable length = p |> List.length
 
@@ -109,6 +109,14 @@ module Day05 =
 
         p'
 
+    let inline canReact (a: byte) (b: byte) = a + 32uy = b || b + 32uy = a
+
+    let findSmallestPolymer reactor polymer =
+        polymer
+        |> Seq.map (fun c -> if c < 'a'B then c + 32uy else c)
+        |> Seq.distinct
+        |> Seq.map (fun c -> polymer |> reactor c)
+        |> Seq.min
 
     let runBytes (input: byte array) output =
         let finalPolymer = input |> Array.toList |> fullyReactBytes
@@ -116,16 +124,57 @@ module Day05 =
         finalPolymer |> List.length |> string |> output 1
 
         finalPolymer
-        |> Seq.map (fun c -> if c >= 'a'B then c - 32uy else c)
-        |> Seq.distinct
-        |> Seq.map (fun c ->
-            let newLength =
-                finalPolymer
-                |> List.filter (fun p -> p <> c && p <> c + 32uy)
-                |> fullyReactBytes
-                |> List.length
+        |> findSmallestPolymer (fun c polymer ->
+            polymer
+            |> List.filter (fun p -> p <> c && p + 32uy <> c)
+            |> fullyReactBytes
+            |> List.length)
+        |> string
+        |> output 2
 
-            newLength)
-        |> Seq.min
+    let runReactionStack (input: byte seq) =
+        input
+        |> Seq.fold
+            (fun unmatched c ->
+                match unmatched with
+                | x :: xs when canReact x c -> xs
+                | _ -> c :: unmatched)
+            []
+
+    let runStack (input: byte array) output =
+        let finalPolymer = input |> runReactionStack
+
+        finalPolymer |> List.length |> string |> output 1
+
+        finalPolymer
+        |> findSmallestPolymer (fun c polymer ->
+            polymer
+            |> List.filter (fun p -> p <> c && p + 32uy <> c)
+            |> runReactionStack
+            |> List.length)
+        |> string
+        |> output 2
+
+    let runReactionLoop (input: byte array) =
+        let mutable unmatched = []
+
+        for c in input do
+            match unmatched with
+            | x :: xs when canReact x c -> unmatched <- xs
+            | _ -> unmatched <- c :: unmatched
+
+        unmatched |> List.toArray
+
+    let runStackLoop (input: byte array) output =
+        let finalPolymer = input |> runReactionLoop
+
+        finalPolymer |> Array.length |> string |> output 1
+
+        finalPolymer
+        |> findSmallestPolymer (fun c polymer ->
+            polymer
+            |> Array.filter (fun p -> p <> c && p + 32uy <> c)
+            |> runReactionLoop
+            |> Array.length)
         |> string
         |> output 2
