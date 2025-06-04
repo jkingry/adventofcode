@@ -30,6 +30,11 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
         }
     }
 
+    private static Color GetColor(double amount)
+    {
+        return ColorUtil.HslToRgb(amount * 120, 100.0, 50.0);
+    }
+
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         var days = context.Data as IEnumerable<Solution>
@@ -170,36 +175,26 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
             .Index()
             .ToList();
 
-        var chart = new BarChart();
+        var chart = new BarChart().Label("By (fastest) time").Width(60);
         var minTime = byFastestTime.Min(o => o.Item.ElapsedMs);
         var maxTime = byFastestTime.Max(o => o.Item.ElapsedMs);
 
         foreach (var (index, output) in byFastestTime)
         {
-            var red = 255.0 * (output.ElapsedMs - minTime) / (maxTime - minTime);
-            var green = 255.0 - red;
-            var color = new Color((byte)red, (byte)green, 0);
+            var color = GetColor(1.0 - (1.0 * (output.ElapsedMs - minTime) / (maxTime - minTime)));
 
             chart.AddItem(
-                $"[bold]{index + 1}[/] [green]{output.Year}[/] {output.Day,2}",
+                $"[bold]{index + 1,7}[/] [green]{output.Year}[/] {output.Day,2}",
                 output.ElapsedMs,
                 color);
         }
 
         AnsiConsole.WriteLine();
-        AnsiConsole.WriteLine("By (fastest) time:");
         AnsiConsole.Write(chart);
         AnsiConsole.MarkupLineInterpolated($"{"Total",7} {fastestTotalMs,11:0.000} ms or {MultipleToString(slowestTotalMs, fastestTotalMs)} faster then slowest");
 
         var expectedMs = 250.0 * byFastestTime.Count;
         AnsiConsole.MarkupLineInterpolated($"{"Expect",7} {expectedMs,9:0.0} a difference of {fastestTotalMs - expectedMs:0.0}ms");
-
-        Color RandomColor()
-        {
-            var color = new byte[3];
-            Random.Shared.NextBytes(color);
-            return new Color(color[0], color[1], color[2]);
-        }
 
         var yearGroups = byFastestTime.Select(o => o.Item)
             .GroupBy(o => o.Year)
@@ -214,11 +209,14 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
         if (yearGroups.Count > 1)
         {
             var yearBreakdownChart = new BarChart().Width(60).Label("Year Avg. Duration (Log)");
-            var minDuration = yearGroups.Min(o => o.AverageDuration);
+            var minDuration = yearGroups.Min(o => Math.Log10(o.AverageDuration));
+            var maxDuration = yearGroups.Max(o => Math.Log10(o.AverageDuration));
+            var deltaDuration = maxDuration - minDuration;
 
             foreach (var yearGroup in yearGroups)
             {
-                yearBreakdownChart.AddItem($"{yearGroup.Year,6}", Math.Log10(yearGroup.AverageDuration), RandomColor());
+                var color = GetColor(1.0 - (Math.Log10(yearGroup.AverageDuration) - minDuration) / deltaDuration);
+                yearBreakdownChart.AddItem($"{yearGroup.Year,6}", Math.Log10(yearGroup.AverageDuration), color);
             }
 
             AnsiConsole.Write(yearBreakdownChart);
@@ -229,9 +227,7 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
 
         void AddChartLine(BarChart chart, string label, int completed, int expected)
         {
-            var green = 255.0 * completed / expected;
-            var red = 255.0 - green;
-            var color = new Color((byte)red, (byte)green, 0);
+            var color = GetColor(1.0 * completed / expected);
 
             chart.AddItem(
                 $"[bold]{label,6}[/] {completed,3} of {expected,3}",
@@ -263,11 +259,15 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
         if (dayGroups.Count > 1)
         {
             var dayBreakdownChart = new BarChart().Width(60).Label("Day Avg. Duration (Log)");
-            var minDuration = dayGroups.Min(o => o.AverageDuration);
+            var minDuration = dayGroups.Min(o => Math.Log10(o.AverageDuration));
+            var maxDuration = dayGroups.Max(o => Math.Log10(o.AverageDuration));
+            var deltaDuration = maxDuration - minDuration;
+
 
             foreach (var dayGroup in dayGroups)
             {
-                dayBreakdownChart.AddItem($"{dayGroup.Day,6}", Math.Log10(dayGroup.AverageDuration), RandomColor());
+                var color = GetColor(1.0 - (Math.Log10(dayGroup.AverageDuration) - minDuration) / deltaDuration);
+                dayBreakdownChart.AddItem($"{dayGroup.Day,6}", Math.Log10(dayGroup.AverageDuration), color);
             }
 
             AnsiConsole.Write(dayBreakdownChart);
