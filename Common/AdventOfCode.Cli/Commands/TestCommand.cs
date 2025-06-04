@@ -6,17 +6,45 @@ namespace AdventOfCode.Cli.Commands;
 
 internal class TestCommand : AsyncCommand<TestCommand.Settings>
 {
+    public static readonly TimeZoneInfo ContestTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
+    public static readonly DateTime ContestStartDate = new DateTime(2015, 12, 1, 0, 0, 0, DateTimeKind.Local);
+
+    /// <summary>
+    /// Returns a dummy solution for every possible date up until now
+    /// </summary>
+    private static IEnumerable<Solution> AllPossibleDates()
+    {
+        // Get current time in contest time zone
+        var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ContestTimeZone);
+        var current = ContestStartDate;
+
+        while (current < now)
+        {
+            yield return new Solution(current.Year, current.Day, "Dummy", (input, output) => { });
+
+            current = current.AddDays(1);
+            if (current > new DateTime(current.Year, current.Month, 25))
+            {
+                current = new DateTime(current.Year + 1, 12, 1);
+            }
+        }
+    }
+
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         var days = context.Data as IEnumerable<Solution>
             ?? throw new InvalidOperationException("No days available.");
+        var allDays = AllPossibleDates().ToList();
 
         var selected = new HashSet<Solution>();
+        var possible = new HashSet<Solution>();
+
 
         if (settings.Targets.Length == 0)
         {
             var maxYear = days.Max(d => d.Year);
             selected.UnionWith(days.Where(d => d.Year == maxYear));
+            possible.UnionWith(allDays.Where(d => d.Year == maxYear));
         }
         else
         {
@@ -31,6 +59,17 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
                 else
                 {
                     selected.UnionWith(matchedDays);
+                }
+
+                var (negatePossible, matchedPossibleDays) = ParseYearDays(allDays, target);
+
+                if (negate)
+                {
+                    possible.ExceptWith(matchedPossibleDays);
+                }
+                else
+                {
+                    possible.UnionWith(matchedPossibleDays);
                 }
             }
         }
@@ -154,7 +193,6 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
 
         var expectedMs = 250.0 * byFastestTime.Count;
         AnsiConsole.MarkupLineInterpolated($"{"Expect",7} {expectedMs,9:0.0} a difference of {fastestTotalMs - expectedMs:0.0}ms");
-        AnsiConsole.MarkupLineInterpolated($"{"Grade",7} {expectedMs / fastestTotalMs,11:0.00%}");
 
         Color RandomColor()
         {
@@ -175,16 +213,42 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
 
         if (yearGroups.Count > 1)
         {
-            var yearBreakdownChart = new BreakdownChart();
+            var yearBreakdownChart = new BarChart().Width(60).Label("Year Avg. Duration (Log)");
             var minDuration = yearGroups.Min(o => o.AverageDuration);
 
             foreach (var yearGroup in yearGroups)
             {
-                yearBreakdownChart.AddItem($"{yearGroup.Year}", yearGroup.AverageDuration / minDuration, RandomColor());
+                yearBreakdownChart.AddItem($"{yearGroup.Year,6}", Math.Log10(yearGroup.AverageDuration), RandomColor());
             }
 
             AnsiConsole.Write(yearBreakdownChart);
         }
+
+        var possibleYears = possible.Select(o => o.Year).Distinct().OrderBy(x => x).ToList();
+        var yearChart = new BarChart().Width(60).Label("Year Completion");
+
+        void AddChartLine(BarChart chart, string label, int completed, int expected)
+        {
+            var green = 255.0 * completed / expected;
+            var red = 255.0 - green;
+            var color = new Color((byte)red, (byte)green, 0);
+
+            chart.AddItem(
+                $"[bold]{label,6}[/] {completed,3} of {expected,3}",
+                100.0 * completed / expected,
+                color);
+        }
+
+        foreach (var year in possibleYears)
+        {
+            var completed = byFastestTime.Where(o => o.Item.Year == year).Count();
+            var yearExpected = possible.Where(o => o.Year == year).Count();
+            AddChartLine(yearChart, year.ToString(), completed, yearExpected);
+
+        }
+        AddChartLine(yearChart, "Total", byFastestTime.Count, possible.Count());
+
+        AnsiConsole.Write(yearChart);
 
         var dayGroups = byFastestTime.Select(o => o.Item)
             .GroupBy(o => o.Day)
@@ -198,16 +262,29 @@ internal class TestCommand : AsyncCommand<TestCommand.Settings>
 
         if (dayGroups.Count > 1)
         {
-            var dayBreakdownChart = new BreakdownChart();
+            var dayBreakdownChart = new BarChart().Width(60).Label("Day Avg. Duration (Log)");
             var minDuration = dayGroups.Min(o => o.AverageDuration);
 
             foreach (var dayGroup in dayGroups)
             {
-                dayBreakdownChart.AddItem($"{dayGroup.Day}", dayGroup.AverageDuration / minDuration, RandomColor());
+                dayBreakdownChart.AddItem($"{dayGroup.Day,6}", Math.Log10(dayGroup.AverageDuration), RandomColor());
             }
 
             AnsiConsole.Write(dayBreakdownChart);
         }
+
+        var possibleDays = possible.Select(o => o.Day).Distinct().OrderBy(x => x).ToList();
+        var dayChart = new BarChart().Width(60).Label("Day Completion");
+        foreach (var day in possibleDays)
+        {
+            var completed = byFastestTime.Where(o => o.Item.Day == day).Count();
+            var dayExpected = possible.Where(o => o.Day == day).Count();
+            AddChartLine(dayChart, day.ToString(), completed, dayExpected);
+
+        }
+        AddChartLine(dayChart, "Total", byFastestTime.Count, possible.Count());
+
+        AnsiConsole.Write(dayChart);
 
         return 0;
     }
