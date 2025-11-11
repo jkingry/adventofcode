@@ -623,9 +623,9 @@ module Util =
             initial
 
         let popCount (row: bits) =
-            let dest: int[] = Array.zeroCreate (((row.Count |> float) / 32.0) |> ceil |> int)
+            let dest: uint[] = Array.zeroCreate ((row.Count |> float) / 32.0 |> ceil |> int)
             row.CopyTo(dest, 0)
-            dest |> Array.map (uint >> System.Numerics.BitOperations.PopCount) |> Array.sum
+            dest |> Array.map System.Numerics.BitOperations.PopCount |> Array.sum
 
     let intersects aStart aEnd bStart bEnd = aStart <= bEnd && aEnd >= bStart
 
