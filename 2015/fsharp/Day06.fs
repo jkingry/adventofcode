@@ -4,37 +4,6 @@ namespace AdventOfCode.FSharp.Y2015
 module Day06 =
     open AdventOfCode.FSharp.Util
 
-    let mask = 1000 * 1000 |> bits
-
-    let turnOff (lights: bits) (top, left: int) (bottom, right: int) =
-        let row: bits = bits (1 + (right - left), true)
-        row.Length <- 1000 * 1000
-        left + (top * 1000) |> row.LeftShift |> ignore
-
-        for _ = 0 to bottom - top do
-            row.Not() |> ignore
-            lights.And(row) |> ignore
-            row.Not() |> ignore
-            row.LeftShift(1000) |> ignore
-
-    let turnOn (lights: bits) (top, left: int) (bottom, right: int) =
-        let row: bits = bits (1 + (right - left), true)
-        row.Length <- 1000 * 1000
-        left + (top * 1000) |> row.LeftShift |> ignore
-
-        for _ = 0 to bottom - top do
-            lights.Or(row) |> ignore
-            row.LeftShift(1000) |> ignore
-
-    let toggle (lights: bits) (top, left: int) (bottom, right: int) =
-        let row: bits = bits (1 + (right - left), true)
-        row.Length <- 1000 * 1000
-        left + (top * 1000) |> row.LeftShift |> ignore
-
-        for _ = 0 to bottom - top do
-            lights.Xor(row) |> ignore
-            row.LeftShift(1000) |> ignore
-
     type Pos = int * int
 
     type InstructionCommand =
@@ -58,23 +27,8 @@ module Day06 =
             | s -> failwithf "Invalid instruction: %s" s
         | _ -> failwithf "Invalid line: %s" line
 
-    (*
-    let run (input: byte array) (output: int -> string -> unit) =
-        let lights = 1000 * 1000 |> bits
-
-        input
-        |> text
-        |> splitLine
-        |> Seq.map parseLine
-        |> Seq.iter (function
-            | TurnOff(topLeft, bottomRight) -> turnOff lights topLeft bottomRight
-            | TurnOn(topLeft, bottomRight) -> turnOn lights topLeft bottomRight
-            | Toggle(topLeft, bottomRight) -> toggle lights topLeft bottomRight)
-
-        lights |> Bits.popCount |> string |> output 1
-*)
-
     type Rectangle = Pos * Pos
+
     type RectangleList<'a> = (Rectangle * 'a) list
 
     module Rect =
@@ -98,8 +52,11 @@ module Day06 =
             if x1a > x2b || x1b > x2a || y1a > y2b || y1b > y2a then
                 None
             else
-                Some((max x1a x1b, max y1a y1b), (min x2a x2b, min y2a y2b))
-
+                let x1r = max x1a x1b
+                let y1r = max y1a y1b
+                let x2r = min x2a x2b
+                let y2r = min y2a y2b
+                ((x1r, y1r), (x2r, y2r)) |> Some
 
         let remove (source: Rectangle) (section: Rectangle) : Rectangle seq =
             // Returns the remaining pieces of `source` after removing `section`
@@ -129,26 +86,25 @@ module Day06 =
             : RectangleList<'a> =
             let mutable result = []
 
-
             for entry in rects do
-                let entryRect, entryValue = entry
+                let entryRect, oldValue = entry
 
                 match Rect.overlap addRect entryRect with
                 | Some overlap ->
-                    match changer (Some entryValue) with
-                    | Some v -> result <- (overlap, v) :: result
+                    match changer (Some oldValue) with
+                    | Some newValue -> result <- (overlap, newValue) :: result
                     | None -> ()
 
                     if entryRect <> overlap then
                         // add remaining pieces
                         for remainder in Rect.remove entryRect overlap do
-                            result <- (remainder, entryValue) :: result
+                            result <- (remainder, oldValue) :: result
                 | None -> result <- entry :: result
 
             result
 
 
-    let runRects2 (input: byte array) (output: int -> string -> unit) =
+    let runRects (input: byte array) (output: int -> string -> unit) =
         let instructions = input |> text |> splitLine |> Seq.map parseLine
 
         let field = ((0, 0), (999, 999)), (false, 0)
