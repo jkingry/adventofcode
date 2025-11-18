@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace AdventOfCode.CSharp.Y2020;
 
 public static class Day05

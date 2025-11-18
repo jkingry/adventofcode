@@ -1,3 +1,6 @@
+using System.Text;
+using System.Text.RegularExpressions;
+
 namespace AdventOfCode.CSharp.Y2020;
 
 public static class Day14

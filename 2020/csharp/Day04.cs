@@ -1,6 +1,8 @@
 namespace AdventOfCode.CSharp.Y2020;
 
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 public static class Day04
 {
