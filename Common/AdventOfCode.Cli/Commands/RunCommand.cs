@@ -5,7 +5,7 @@ namespace AdventOfCode.Cli.Commands;
 
 internal class RunCommand : AsyncCommand<RunCommand.Settings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var days = context.Data as IEnumerable<Solution>
             ?? throw new InvalidOperationException("No days available.");

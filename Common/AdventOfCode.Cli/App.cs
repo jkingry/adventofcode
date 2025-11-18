@@ -7,7 +7,9 @@ public static class App
 {
     public static async Task<int> RunAsync(IEnumerable<Solution> days)
     {
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         var app = new CommandApp<RunCommand>().WithData(days);
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
 
         app.Configure(config =>
         {

@@ -6,7 +6,7 @@ namespace AdventOfCode.Cli.Commands;
 
 internal class BenchCommand : Command<BenchCommand.Settings>
 {
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         BenchmarkRunner.Run(Assembly.GetEntryAssembly() ?? throw new InvalidOperationException(), null, context.Remaining.Raw.ToArray());
 
