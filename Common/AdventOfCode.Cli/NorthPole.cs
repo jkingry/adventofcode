@@ -97,7 +97,7 @@ public class NorthPole
 
     private string GetSessionValue()
     {
-        return File.ReadAllText(GetSessionValuePath());
+        return File.ReadAllText(GetSessionValuePath()).Trim();
     }
 
     public string GetFolder(int year, int day)
