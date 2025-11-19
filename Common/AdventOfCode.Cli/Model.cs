@@ -9,7 +9,10 @@ public delegate void OutputThunk(int part, string output);
 
 public delegate void SolveThunk(byte[] input, Action<int, string> output);
 
-public record Solution(int Year, int Day, string Name, SolveThunk Run);
+public record Solution(int Year, int Day, string Name, SolveThunk Run)
+{
+    public override string ToString() => $"{Year}:{Day}";
+}
 
 public record PartOutput(ResultType Result, string? ResultText);
 

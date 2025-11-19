@@ -2,14 +2,12 @@ namespace AdventOfCode.Cli;
 
 class AdventOfCodeClient : HttpClient, IAdventOfCodeApi
 {
-    public const string UserAgent = "github.com/0.2 jkingry/adventofcode by joe-at-kingry.ca";
     public static readonly HttpRequestOptionsKey<FileType> FileTypeOption = new(nameof(FileType));
     public static readonly HttpRequestOptionsKey<int> YearOption = new HttpRequestOptionsKey<int>("year");
     public static readonly HttpRequestOptionsKey<int> DayOption = new HttpRequestOptionsKey<int>("day");
 
     public AdventOfCodeClient(HttpMessageHandler handler) : base(handler)
     {
-        DefaultRequestHeaders.Add("User-Agent", UserAgent);
     }
 
     public async Task<string?> GetDayHtmlPage(int year, int day)

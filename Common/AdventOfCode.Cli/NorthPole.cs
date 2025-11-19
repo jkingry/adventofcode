@@ -19,7 +19,27 @@ public class NorthPole
     public static (int, int)? ExecutingYearDay { get; private set; } = null;
     public static NorthPole? Instance { get; private set; } = null;
 
+    public NorthPoleOptions Options => _options;
+
     public IAdventOfCodeApi Client => _client.Value;
+
+    public IEnumerable<Solution> AllPossibleDates()
+    {
+        // Get current time in contest time zone
+        var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Options.GetContestTimeZone());
+        var current = Options.ContestStartDate;
+
+        while (current < now)
+        {
+            yield return new Solution(current.Year, current.Day, "Dummy", (input, output) => { });
+
+            current = current.AddDays(1);
+            if (current > new DateTime(current.Year, current.Month, 25))
+            {
+                current = new DateTime(current.Year + 1, 12, 1);
+            }
+        }
+    }
 
     internal static IEnumerable<string> GetDirectoryParents(string dir)
     {
@@ -52,10 +72,12 @@ public class NorthPole
             handler = h;
         }
 
-        return new AdventOfCodeClient(handler)
+        var client = new AdventOfCodeClient(handler)
         {
             BaseAddress = new Uri(_options.AdventOfCodeUrl)
         };
+        client.DefaultRequestHeaders.Add("User-Agent", _options.ApiUserAgent);
+        return client;
     }
 
     private string GetSessionValuePath()
