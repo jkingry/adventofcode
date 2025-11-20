@@ -46,6 +46,7 @@ jobs:
 
     - name: Write Cache
       uses: actions/cache/save@v4
+      if: always()
       with:
         key: session-${{ hashFiles('.adventofcode.session') }}-${{ hashFiles('**/inputs/**') }}
         path: 

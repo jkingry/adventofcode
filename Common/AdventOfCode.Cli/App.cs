@@ -266,83 +266,13 @@ public static class App
     {
         try
         {
-            NorthPole = NorthPoleBuilder.CreateNorthPole();
+            RootCommand rootCommand = CreateRootCommand(days);
 
-            var minYear = days.Min(d => d.Year);
-            var maxYear = days.Max(d => d.Year);
-            var minDay = days.Min(d => d.Day);
-            var maxDay = days.Max(d => d.Day);
+            var args = Environment.GetCommandLineArgs().Skip(1).ToArray();
 
-            var solutionParser = new SolutionParser(days, NorthPole);
+            var parseResult = rootCommand.Parse(args);
 
-            Argument<Solution[]> solutionsArgument = new("year:day")
-            {
-                Description = $"The year ({minYear}-{maxYear}) and/or the day ({minDay}-{maxDay}) to run",
-                DefaultValueFactory = results => solutionParser.ParseArguments(results, true),
-                CustomParser = results => solutionParser.ParseArguments(results, true),
-                Arity = ArgumentArity.ZeroOrMore
-            };
-
-            Option<InputType> inputTypeOption = new("--inputType", "-i")
-            {
-                DefaultValueFactory = _ => InputType.Official
-            };
-
-            Command runCommand = new("run", "Run the specified day's solution")
-            {
-                solutionsArgument,
-                inputTypeOption
-            };
-
-            runCommand.SetAction((parseResult, ct) => RunCommand(
-                parseResult.GetRequiredValue(solutionsArgument),
-                parseResult.GetValue(inputTypeOption),
-                ct));
-
-            Argument<Solution[]> multipleSolutionsArgument = new("year:day")
-            {
-                Description = $"The year ({minYear}-{maxYear}) and/or the day ({minDay}-{maxDay}) to run",
-                DefaultValueFactory = results => solutionParser.ParseArguments(results, false),
-                CustomParser = results => solutionParser.ParseArguments(results, false),
-                Arity = ArgumentArity.ZeroOrMore
-            };
-
-            Option<int> repeatsOption = new Option<int>("--repeats", "-r")
-            {
-                Description = "The number of times to repeat each solution for benchmarking purposes",
-                DefaultValueFactory = _ => 1
-            };
-
-            Command testCommand = new("test", "Test and benchmark solutions")
-            {
-                multipleSolutionsArgument,
-                repeatsOption
-            };
-
-            SolutionParser possiblesParser = new(NorthPole.AllPossibleDates(), NorthPole);
-
-            testCommand.SetAction((parseResult, ct) =>
-            {
-                var solutionsResult = parseResult.GetResult(multipleSolutionsArgument) ?? throw new InvalidOperationException("No solutions parsed");
-                var possibles = possiblesParser.ParseArguments(solutionsResult, false);
-
-                return TestCommand(
-                   parseResult.GetRequiredValue(multipleSolutionsArgument),
-                   possibles,
-                   parseResult.GetValue(repeatsOption),
-                   ct);
-            });
-
-            Command benchCommand = new("bench", "Benchmark solutions");
-            benchCommand.SetAction(parseResult =>
-                BenchmarkRunner.Run(Assembly.GetEntryAssembly() ?? throw new InvalidOperationException(), null, parseResult.UnmatchedTokens.ToArray()));
-
-            RootCommand rootCommand = new("Advent of Code CLI")
-            {
-                Subcommands = { runCommand, testCommand, benchCommand },
-            };
-
-            return rootCommand.Parse(Environment.GetCommandLineArgs().Skip(1).ToArray()).Invoke();
+            return await parseResult.InvokeAsync();
         }
         catch (InvalidSessionFileException ex)
         {
@@ -351,6 +281,87 @@ public static class App
 
             return 1;
         }
+    }
+
+    private static RootCommand CreateRootCommand(IEnumerable<Solution> days)
+    {
+        NorthPole = NorthPoleBuilder.CreateNorthPole();
+
+        var minYear = days.Min(d => d.Year);
+        var maxYear = days.Max(d => d.Year);
+        var minDay = days.Min(d => d.Day);
+        var maxDay = days.Max(d => d.Day);
+
+        var solutionParser = new SolutionParser(days, NorthPole);
+
+        Argument<Solution[]> solutionsArgument = new("year:day")
+        {
+            Description = $"The year ({minYear}-{maxYear}) and/or the day ({minDay}-{maxDay}) to run",
+            DefaultValueFactory = results => solutionParser.ParseArguments(results, true),
+            CustomParser = results => solutionParser.ParseArguments(results, true),
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+        Option<InputType> inputTypeOption = new("--inputType", "-i")
+        {
+            DefaultValueFactory = _ => InputType.Official
+        };
+
+        Command runCommand = new("run", "Run the specified day's solution")
+            {
+                solutionsArgument,
+                inputTypeOption
+            };
+
+        runCommand.SetAction((parseResult, ct) => RunCommand(
+            parseResult.GetRequiredValue(solutionsArgument),
+            parseResult.GetValue(inputTypeOption),
+            ct));
+
+        Argument<Solution[]> multipleSolutionsArgument = new("year:day")
+        {
+            Description = $"The year ({minYear}-{maxYear}) and/or the day ({minDay}-{maxDay}) to run",
+            DefaultValueFactory = results => solutionParser.ParseArguments(results, false),
+            CustomParser = results => solutionParser.ParseArguments(results, false),
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+        Option<int> repeatsOption = new Option<int>("--repeats", "-r")
+        {
+            Description = "The number of times to repeat each solution for benchmarking purposes",
+            DefaultValueFactory = _ => 1
+        };
+
+        Command testCommand = new("test", "Test and benchmark solutions")
+        {
+            multipleSolutionsArgument,
+            repeatsOption
+        };
+
+        SolutionParser possiblesParser = new(NorthPole.AllPossibleDates(), NorthPole);
+
+        testCommand.SetAction((parseResult, ct) =>
+        {
+            var solutionsResult = parseResult.GetResult(multipleSolutionsArgument) ?? throw new InvalidOperationException("No solutions parsed");
+            var possibles = possiblesParser.ParseArguments(solutionsResult, false);
+
+            return TestCommand(
+               parseResult.GetRequiredValue(multipleSolutionsArgument),
+               possibles,
+               parseResult.GetValue(repeatsOption),
+               ct);
+        });
+
+        Command benchCommand = new("bench", "Benchmark solutions");
+        benchCommand.SetAction(parseResult =>
+            BenchmarkRunner.Run(Assembly.GetEntryAssembly() ?? throw new InvalidOperationException(), null, parseResult.UnmatchedTokens.ToArray()));
+
+        RootCommand rootCommand = new("Advent of Code CLI")
+        {
+            Subcommands = { runCommand, testCommand, benchCommand },
+        };
+
+        return rootCommand;
     }
 
     private static Color GetColor(double amount)

@@ -5,7 +5,7 @@ using BenchmarkDotNet.Jobs;
 
 namespace AdventOfCode;
 
-[ShortRunJob(RuntimeMoniker.Net90, Jit.RyuJit, Platform.X64)]
+[ShortRunJob(RuntimeMoniker.Net10_0, Jit.RyuJit, Platform.X64)]
 [MemoryDiagnoser]
 [RPlotExporter]
 public class Y2024Benchmmarks
