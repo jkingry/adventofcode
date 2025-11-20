@@ -34,11 +34,8 @@ internal sealed class SolutionParser(IEnumerable<Solution> days, NorthPole? nort
         {
             if (defaultOneDay)
             {
-                var defaultDay = days.Where(d => d.Year == DefaultYear).MaxBy(d => d.Day);
-                if (defaultDay != null)
-                {
-                    selected.Add(defaultDay);
-                }
+                var maxDay = days.Where(d => d.Year == DefaultYear).Max(d => d.Day);
+                selected.UnionWith(days.Where(d => d.Year == DefaultYear && d.Day == maxDay));
             }
             else
             {

@@ -53,3 +53,43 @@ module Day08 =
 
         part1 |> string |> output 1
         part2 |> string |> output 2
+
+    let rec measure2 (x: string) =
+        let mutable part1 = 0
+        let mutable part2 = 2
+        let mutable state = 0
+
+        for c in x do
+            match c with
+            | '\"'
+            | '\\' -> part2 <- part2 + 2
+            | _ -> part2 <- part2 + 1
+
+            match state, c with
+            | 0, '\"' -> state <- 1
+            | 1, '\"' -> state <- -1
+            | 1, '\\' -> state <- 2
+            | 1, _ -> part1 <- part1 + 1
+            | 2, '\\'
+            | 2, '\"' ->
+                part1 <- part1 + 1
+                state <- 1
+            | 2, 'x' -> state <- 3
+            | 3, n when isHex n -> state <- 4
+            | 4, n when isHex n ->
+                part1 <- part1 + 1
+                state <- 1
+            | _, _ -> failwithf "invalid string: '%s'" x
+
+        x.Length - part1, part2 - x.Length
+
+    let runForLoop (input: byte array) (output: int -> string -> unit) =
+        let part1, part2 =
+            input
+            |> text
+            |> splitLine
+            |> Array.map measure2
+            |> Array.fold (fun (p1, p2) (s1, s2) -> p1 + s1, p2 + s2) (0, 0)
+
+        part1 |> string |> output 1
+        part2 |> string |> output 2
