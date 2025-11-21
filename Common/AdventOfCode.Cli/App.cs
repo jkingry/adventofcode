@@ -264,6 +264,24 @@ public static class App
         return 0;
     }
 
+    internal static async Task<int> ResetCommand(Solution[] solutions)
+    {
+        if (NorthPole == null)
+        {
+            throw new InvalidOperationException("NorthPole is not initialized.");
+        }
+
+        var uniqueYearDays = solutions.Select(d => (d.Year, d.Day)).Distinct();
+
+        foreach (var solution in uniqueYearDays)
+        {
+            var (year, day) = solution;
+            await NorthPole.ResetAsync(year, day);
+        }
+
+        return 0;
+    }
+
     public static async Task<int> RunAsync(IEnumerable<Solution> days)
     {
         try
@@ -358,9 +376,17 @@ public static class App
         benchCommand.SetAction(parseResult =>
             BenchmarkRunner.Run(Assembly.GetEntryAssembly() ?? throw new InvalidOperationException(), null, parseResult.UnmatchedTokens.ToArray()));
 
+        Command resetCommand = new("reset", "Reset the input for a specific day")
+        {
+            solutionsArgument
+        };
+
+        resetCommand.SetAction((parseResult, ct) =>
+            ResetCommand(parseResult.GetRequiredValue(solutionsArgument)));
+
         RootCommand rootCommand = new("Advent of Code CLI")
         {
-            Subcommands = { runCommand, testCommand, benchCommand },
+            Subcommands = { runCommand, testCommand, benchCommand, resetCommand },
         };
 
         return rootCommand;

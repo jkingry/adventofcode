@@ -279,4 +279,24 @@ public class NorthPole
 
         return new SolutionOutputs(solution.Year, solution.Day, solution.Name, results, w.Elapsed.TotalMilliseconds / options.Repeats);
     }
+
+    /// <summary>
+    /// Reset the solutions for a specific day
+    /// </summary>
+    /// <param name="year"></param>
+    /// <param name="day"></param>
+    internal async Task ResetAsync(int year, int day)
+    {
+        // Delete HTML file if it exists
+        var inputPath = GetCachePath(FileType.HtmlPage, year, day);
+        if (File.Exists(inputPath))
+        {
+            AnsiConsole.WriteLine($"Deleting cached HTML page: {inputPath}");
+            File.Delete(inputPath);
+        }
+
+        // Re-calculate expected
+        await GetExpected(OutputType.Official, year, day, 1);
+        await GetExpected(OutputType.Official, year, day, 2);
+    }
 }
