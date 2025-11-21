@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2015
 
-// Day N
+// Day 9: All in a Single Night
 module Day09 =
     open AdventOfCode.FSharp.Util
 
