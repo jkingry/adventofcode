@@ -1,4 +1,5 @@
 using AdventOfCode.Cli;
+
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;

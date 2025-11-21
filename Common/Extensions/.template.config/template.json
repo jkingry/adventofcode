@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Me",
+    "classifications": [
+        "Common",
+        "Code",
+        "aoc"
+    ],
+    "identity": "AdventOfCode.Cli.Day",
+    "name": "AdventOfCode Day template",
+    "shortName": "aocday",
+    "tags": {
+        "language": "F#",
+        "type": "item"
+    },
+    "symbols": {
+        "Day": {
+            "type": "parameter",
+            "description": "The day to create",
+            "datatype": "int",
+            "defaultValue": "1"
+        },
+        "DefaultNamespace": {
+            "type": "bind",
+            "binding": "msbuild:RootNamespace",
+            "replaces": "AdventOfCode.FSharp.Y1000",
+            "defaultValue": "AdventOfCode.FSharp.Y2050"
+        },
+        "moduleName": {
+            "type": "generated",
+            "generator": "regex",
+            "datatype": "string",
+            "replaces": "Day00",
+            "fileRename": "DayN",
+            "parameters": {
+                "source": "Day",
+                "steps": [
+                    {
+                        "regex": "^([0-9])$",
+                        "replacement": "Day0$1"
+                    },
+                    {
+                        "regex": "^([0-9]){2}$",
+                        "replacement": "Day$1"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+
 using Spectre.Console;
 
 namespace AdventOfCode.Cli;

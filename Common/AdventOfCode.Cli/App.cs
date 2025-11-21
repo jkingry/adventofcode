@@ -1,6 +1,8 @@
 using System.CommandLine;
 using System.Reflection;
+
 using BenchmarkDotNet.Running;
+
 using Spectre.Console;
 
 namespace AdventOfCode.Cli;
