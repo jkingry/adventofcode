@@ -1,4 +1,5 @@
 using System.CommandLine.Parsing;
+using System.Text.RegularExpressions;
 
 namespace AdventOfCode.Cli;
 
@@ -93,63 +94,124 @@ internal sealed class SolutionParser(IEnumerable<Solution> days, NorthPole? nort
         {
             case 1:
                 {
-                    var values = ParseRangeList(parts[0]).ToList();
+                    var part = parts[0];
 
-                    if (values.Max() <= 25)
+                    var matcher = ParseRangeList(parts[0]);
+
+                    switch (matcher.Type)
                     {
-                        return d => d.Year == maxYear && values.Contains(d.Day);
+                        case MatchType.All:
+                            return _ => true;
+                        case MatchType.Number:
+                            return d => matcher.IsMatch(d.Year) || (d.Year == maxYear && matcher.IsMatch(d.Day));
+                        case MatchType.Regex:
+                            return d => d.Year == maxYear && matcher.IsMatch(d.Name);
+                        default:
+                            throw new InvalidOperationException($"Unknown match type: {matcher.Type}");
                     }
-
-                    return d => values.Contains(d.Year);
                 }
             case 2:
                 {
-                    var yearValues = ParseRangeList(parts[0]).ToList();
-                    var dayValues = ParseRangeList(parts[1]).ToList();
+                    var yearOrDayMatcher = ParseRangeList(parts[0]);
+                    var dayOrNameMatcher = ParseRangeList(parts[1]);
 
-                    return d => yearValues.Contains(d.Year) && dayValues.Contains(d.Day);
+                    switch (dayOrNameMatcher.Type)
+                    {
+                        case MatchType.Number:
+                            return d => yearOrDayMatcher.IsMatch(d.Year) && dayOrNameMatcher.IsMatch(d.Day);
+                        case MatchType.Regex:
+                            return d => d.Year == maxYear && yearOrDayMatcher.IsMatch(d.Day) && dayOrNameMatcher.IsMatch(d.Name);
+                        case MatchType.All:
+                            return d => yearOrDayMatcher.IsMatch(d.Year) || (d.Year == maxYear && yearOrDayMatcher.IsMatch(d.Day));
+                        default:
+                            throw new InvalidOperationException($"Unknown match type: {dayOrNameMatcher.Type}");
+                    }
+                }
+            case 3:
+                {
+                    var yearMatcher = ParseRangeList(parts[0]);
+                    var dayMatcher = ParseRangeList(parts[1]);
+                    var nameMatcher = ParseRangeList(parts[2]);
+
+                    if (yearMatcher.Type == MatchType.Regex || dayMatcher.Type == MatchType.Regex)
+                    {
+                        throw new InvalidOperationException($"Year and Day parts cannot be regex: {input}");
+                    }
+
+                    return d => yearMatcher.IsMatch(d.Year) && dayMatcher.IsMatch(d.Day) && nameMatcher.IsMatch(d.Name);
                 }
             default:
                 throw new InvalidOperationException($"Too many parts: {input}");
         }
     }
 
-    private static IEnumerable<int> ParseRangeList(string input)
+    enum MatchType
     {
-        int[] ParseSingle(string input)
+        All,
+        Number,
+        Regex
+    }
+
+    record MatchRange
+    {
+        public MatchType Type { get; init; }
+        public Func<object, bool> IsMatch { get; init; } = _ => false;
+    }
+
+    private static MatchRange ParseRangeList(string input)
+    {
+        MatchRange ParseSingle(string input)
         {
             if (!int.TryParse(input, out var value))
             {
-                throw new InvalidOperationException($"Failed to parse integer: {input}");
+                return new MatchRange { Type = MatchType.Regex, IsMatch = obj => (string)obj == "*" || Regex.IsMatch((string)obj, input, RegexOptions.IgnoreCase) };
             }
-            return [value];
+
+            return new MatchRange { Type = MatchType.Number, IsMatch = obj => (int)obj == value };
         }
 
-        int[] ParseRange(string start, string end)
+        MatchRange ParseRange(string start, string end)
         {
             if (!int.TryParse(start, out var startValue))
             {
-                throw new InvalidOperationException($"Failed to parse integer: {start}");
+                throw new InvalidOperationException($"Failed to parse range start: {start}");
             }
             if (!int.TryParse(end, out var endValue))
             {
-                throw new InvalidOperationException($"Failed to parse integer: {end}");
+                throw new InvalidOperationException($"Failed to parse range end: {end}");
             }
             if (endValue < startValue)
             {
                 throw new InvalidOperationException($"Invalid range: {start}-{end}");
             }
-            return Enumerable.Range(startValue, endValue - startValue + 1).ToArray();
+            return new MatchRange { Type = MatchType.Number, IsMatch = obj => startValue <= (int)obj && (int)obj <= endValue };
         }
 
 
-        return input.Split(',')
-            .SelectMany(term => term.Split('-') switch
+        var matchers = input.Split(',')
+            .Select(term => term.Split('-') switch
             {
-                ["*"] => Enumerable.Range(1, 2050),
+                ["*"] => new MatchRange { Type = MatchType.All, IsMatch = _ => true },
                 [var x] => ParseSingle(x),
                 [var a, var b] => ParseRange(a, b),
                 _ => throw new InvalidOperationException($"Failed to parse: {term}")
-            });
+            })
+            .ToList();
+
+        if (matchers.Count == 1)
+        {
+            return matchers[0];
+        }
+
+        if (matchers.Any(m => m.Type != matchers[0].Type))
+        {
+            throw new InvalidOperationException($"Mixed match types in: {input}");
+        }
+
+        return new MatchRange
+        {
+            Type = matchers[0].Type,
+            IsMatch = obj => matchers.Any(m => m.IsMatch(obj))
+        };
     }
 }

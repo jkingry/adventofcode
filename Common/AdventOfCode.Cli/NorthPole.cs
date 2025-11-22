@@ -32,7 +32,7 @@ public class NorthPole
 
         while (current < now)
         {
-            yield return new Solution(current.Year, current.Day, "Dummy", (input, output) => { });
+            yield return new Solution(current.Year, current.Day, "*", (input, output) => { });
 
             current = current.AddDays(1);
             if (current > new DateTime(current.Year, current.Month, 25))
