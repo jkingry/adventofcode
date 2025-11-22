@@ -1,7 +1,7 @@
-namespace AdventOfCode.FSharp.Y1000
+namespace AdventOfCode.FSharp.Y2015
 
-// Day N
-module Day00 =
+// Day 11
+module Day11 =
     open AdventOfCode.FSharp.Util
 
     let run (input: byte array) (output: int -> string -> unit) =

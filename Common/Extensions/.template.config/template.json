@@ -26,25 +26,29 @@
             "replaces": "AdventOfCode.FSharp.Y1000",
             "defaultValue": "AdventOfCode.FSharp.Y2050"
         },
-        "moduleName": {
+        "dayValueOneDigit": {
             "type": "generated",
             "generator": "regex",
             "datatype": "string",
-            "replaces": "Day00",
-            "fileRename": "DayN",
             "parameters": {
                 "source": "Day",
                 "steps": [
                     {
                         "regex": "^([0-9])$",
-                        "replacement": "Day0$1"
-                    },
-                    {
-                        "regex": "^([0-9]){2}$",
-                        "replacement": "Day$1"
+                        "replacement": "0$1"
                     }
                 ]
             }
+        },
+        "dayValue": {
+            "type": "generated",
+            "generator": "coalesce",
+            "parameters": {
+                "sourceVariableName": "dayValueOneDigit",
+                "fallbackVariableName": "Day"
+            },
+            "replaces": "NN",
+            "fileRename": "NN"
         }
     }
 }
