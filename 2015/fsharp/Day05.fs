@@ -3,6 +3,7 @@ namespace AdventOfCode.FSharp.Y2015
 // Day 5: Doesn't He Have Intern-Elves For This?  https://adventofcode.com/2015/day/5
 module Day05 =
     open AdventOfCode.FSharp.Util
+    open System
 
     let INVALID = '!'B
 
@@ -64,14 +65,12 @@ module Day05 =
 
         foundPair && foundSep
 
-
     let run (input: byte array) (output: int -> string -> unit) =
         let lines = input |> bsplit '\n'B
 
         lines |> Seq.filter IsNiceString |> Seq.length |> string |> output 1
 
         lines |> Seq.filter IsNiceString2 |> Seq.length |> string |> output 2
-
 
     let combineFolder3 (fa, fb, fc) (a, b, c) x = (fa a x), (fb b x), (fc c x)
 
@@ -143,3 +142,94 @@ module Day05 =
 
         lines |> Seq.map IsNiceString3 |> Seq.sum |> string |> output 1
         lines |> Seq.map IsNiceString4 |> Seq.sum |> string |> output 2
+
+    let trySlice (r: Range) (input: ReadOnlySpan<'T>) =
+        let lineStart = r.Start.GetOffset input.Length
+        let lineEnd = r.End.GetOffset input.Length
+        let lineLength = lineEnd - lineStart
+
+        if lineLength > 0 then
+            input.Slice(lineStart, lineLength)
+        else
+            ReadOnlySpan<'T>.Empty
+
+    let isNicePart1 (line: ReadOnlySpan<byte>) =
+        let mutable vowelCount = 0
+        let mutable prevChar = INVALID
+        let mutable hasDouble = false
+        let mutable isBad = false
+        let mutable index = 0
+
+        while not isBad && index < line.Length do
+            let c = line[index]
+
+            match prevChar, c with
+            | 'a'B, 'b'B
+            | 'c'B, 'd'B
+            | 'p'B, 'q'B
+            | 'x'B, 'y'B -> isBad <- true
+            | _, 'a'B
+            | _, 'e'B
+            | _, 'i'B
+            | _, 'o'B
+            | _, 'u'B -> vowelCount <- vowelCount + 1
+            | _ -> ()
+
+            if c = prevChar then
+                hasDouble <- true
+
+            prevChar <- c
+            index <- index + 1
+
+        not isBad && hasDouble && vowelCount >= 3
+
+    let isNicePart2 (line: ReadOnlySpan<byte>) =
+        let mutable p2 = INVALID
+        let mutable p1 = INVALID
+
+        let mutable foundPair = false
+        let mutable foundSep = false
+
+        let mutable index = 0
+
+        while not (foundPair && foundSep) && index < line.Length do
+            let c = line[index]
+            foundSep <- foundSep || p2 = c
+
+            let mutable searchIndex = 0
+            let mutable p1Match = false
+
+            while not foundPair && 0 <= searchIndex && searchIndex < index - 1 do
+                let searchChar = line[searchIndex]
+
+                if p1Match && c = searchChar then
+                    foundPair <- true
+                else
+                    p1Match <- p1 = searchChar
+
+                searchIndex <- searchIndex + 1
+
+            p2 <- p1
+            p1 <- c
+            index <- index + 1
+
+        foundPair && foundSep
+
+    let runSpan (input: byte array) (output: int -> string -> unit) =
+        let inputSpan = ReadOnlySpan<byte> input
+
+        let mutable part1 = 0
+        let mutable part2 = 0
+
+        for r in inputSpan.Split '\n'B do
+            let lineSpan = trySlice r inputSpan
+
+            if lineSpan.Length > 0 then
+                if isNicePart1 lineSpan then
+                    part1 <- part1 + 1
+
+                if isNicePart2 lineSpan then
+                    part2 <- part2 + 1
+
+        part1 |> string |> output 1
+        part2 |> string |> output 2

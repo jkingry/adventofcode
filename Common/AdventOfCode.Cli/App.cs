@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 
 using BenchmarkDotNet.Running;
 
@@ -183,15 +184,16 @@ public static class App
 
         if (yearGroups.Count > 1)
         {
-            var yearBreakdownChart = new BarChart().Width(60).Label("Year Avg. Duration (Log)");
+            var yearBreakdownChart = new BarChart().Width(60).Label("Year Avg. Duration (Log Diff)");
             var minDuration = yearGroups.Min(o => Math.Log10(o.AverageDuration));
             var maxDuration = yearGroups.Max(o => Math.Log10(o.AverageDuration));
             var deltaDuration = maxDuration - minDuration;
 
             foreach (var yearGroup in yearGroups)
             {
-                var color = GetColor(1.0 - (Math.Log10(yearGroup.AverageDuration) - minDuration) / deltaDuration);
-                yearBreakdownChart.AddItem($"{yearGroup.Year,6}", Math.Log10(yearGroup.AverageDuration), color);
+                var diff = Math.Log10(yearGroup.AverageDuration) - minDuration;
+                var color = GetColor(1.0 - diff / deltaDuration);
+                yearBreakdownChart.AddItem($"{yearGroup.Year,6}", diff, color);
             }
 
             AnsiConsole.Write(yearBreakdownChart);
@@ -227,22 +229,23 @@ public static class App
             .Select(g => new
             {
                 Day = g.Key,
+                Count = g.Count(),
                 AverageDuration = g.Sum(o => o.ElapsedMs) / g.Count()
             })
             .ToList();
 
         if (dayGroups.Count > 1)
         {
-            var dayBreakdownChart = new BarChart().Width(60).Label("Day Avg. Duration (Log)");
+            var dayBreakdownChart = new BarChart().Width(60).Label("Day Avg. Duration (Log Diff)");
             var minDuration = dayGroups.Min(o => Math.Log10(o.AverageDuration));
             var maxDuration = dayGroups.Max(o => Math.Log10(o.AverageDuration));
             var deltaDuration = maxDuration - minDuration;
 
-
             foreach (var dayGroup in dayGroups)
             {
-                var color = GetColor(1.0 - (Math.Log10(dayGroup.AverageDuration) - minDuration) / deltaDuration);
-                dayBreakdownChart.AddItem($"{dayGroup.Day,6}", Math.Log10(dayGroup.AverageDuration), color);
+                var diff = Math.Log10(dayGroup.AverageDuration) - minDuration;
+                var color = GetColor(1.0 - diff / deltaDuration);
+                dayBreakdownChart.AddItem($"{dayGroup.Day,6}", diff, color);
             }
 
             AnsiConsole.Write(dayBreakdownChart);

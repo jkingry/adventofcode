@@ -295,6 +295,15 @@ public class NorthPole
             File.Delete(inputPath);
         }
 
+        var inputFolder = GetFolder(year, day);
+
+        // Find all *.cache files and delete them
+        foreach (var cacheFile in Directory.GetFiles(inputFolder, "*.cache", SearchOption.TopDirectoryOnly))
+        {
+            AnsiConsole.WriteLine($"Deleting cached file: {cacheFile}");
+            File.Delete(cacheFile);
+        }
+
         // Re-calculate expected
         await GetExpected(OutputType.Official, year, day, 1);
         await GetExpected(OutputType.Official, year, day, 2);
