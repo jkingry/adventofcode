@@ -801,3 +801,30 @@ module Util =
             if a > b then a <- a % b else b <- b % a
 
         a ||| b
+
+    let inline trySlice (r: Range) (input: ReadOnlySpan<'T>) =
+        let lineStart = r.Start.GetOffset input.Length
+        let lineEnd = r.End.GetOffset input.Length
+        let lineLength = lineEnd - lineStart
+
+        if lineLength > 0 then
+            input.Slice(lineStart, lineLength)
+        else
+            ReadOnlySpan<'T>.Empty
+
+    let inline parseIntSpan (s: ReadOnlySpan<byte>) =
+        let mutable res = 0
+        let mutable sign = 1
+        let mutable pos = 0
+
+        while pos < s.Length do
+            let c = s[pos]
+
+            match c with
+            | '-'B -> sign <- -1
+            | c when '0'B <= c && c <= '9'B -> res <- res * 10 + int (c - '0'B)
+            | _ -> failwithf "Bad Format at '%c'" (char c)
+
+            pos <- pos + 1
+
+        sign * res

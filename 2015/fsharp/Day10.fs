@@ -33,6 +33,7 @@ module Day10 =
 
         result |> List.rev
 
+    [<TailCall>]
     let rec repeat f n i =
         if n > 0 then repeat f (n - 1) (f i) else i
 
@@ -174,21 +175,21 @@ module Day10 =
 
             List.concat [ prefix; [ element ]; suffix ]
 
-    let decay (elements: string list) =
-        elements |> List.map (fun v -> atomicDecayMap |> Map.find v) |> List.concat
+    let decay (compound: string list) =
+        compound |> List.map (fun v -> atomicDecayMap |> Map.find v) |> List.concat
 
     let atomicLength (element: string) =
         let _, value, _ = atomicTable |> Array.find (fun (e, _, _) -> e = element)
         value.Length
 
-    let elementsSize (elements: string list) =
-        elements |> List.map atomicLength |> List.sum
+    let compoundLength (compound: string list) =
+        compound |> List.map atomicLength |> List.sum
 
     let runAtoms (input: byte array) (output: int -> string -> unit) =
         let initial = input |> text |> trim |> stringToElements
 
         let part1 = repeat decay 40 initial
 
-        part1 |> elementsSize |> string |> output 1
+        part1 |> compoundLength |> string |> output 1
 
-        part1 |> repeat decay 10 |> elementsSize |> string |> output 2
+        part1 |> repeat decay 10 |> compoundLength |> string |> output 2

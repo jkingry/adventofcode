@@ -143,16 +143,6 @@ module Day05 =
         lines |> Seq.map IsNiceString3 |> Seq.sum |> string |> output 1
         lines |> Seq.map IsNiceString4 |> Seq.sum |> string |> output 2
 
-    let trySlice (r: Range) (input: ReadOnlySpan<'T>) =
-        let lineStart = r.Start.GetOffset input.Length
-        let lineEnd = r.End.GetOffset input.Length
-        let lineLength = lineEnd - lineStart
-
-        if lineLength > 0 then
-            input.Slice(lineStart, lineLength)
-        else
-            ReadOnlySpan<'T>.Empty
-
     let isNicePart1 (line: ReadOnlySpan<byte>) =
         let mutable vowelCount = 0
         let mutable prevChar = INVALID

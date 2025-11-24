@@ -127,16 +127,6 @@ module Day08 =
 
         n
 
-    let trySlice (r: Range) (input: ReadOnlySpan<'T>) =
-        let lineStart = r.Start.GetOffset input.Length
-        let lineEnd = r.End.GetOffset input.Length
-        let lineLength = lineEnd - lineStart
-
-        if lineLength > 0 then
-            input.Slice(lineStart, lineLength)
-        else
-            ReadOnlySpan<'T>.Empty
-
     let runSpans (input: byte array) (output: int -> string -> unit) =
         let inputSpan = ReadOnlySpan<byte> input
 
