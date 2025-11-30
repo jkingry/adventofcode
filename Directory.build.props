@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <ParallelCompilation>true</ParallelCompilation>
+        <Deterministic>false</Deterministic> <!-- Note: deterministic builds don't get the benefits of parallel compilation -->
+    </PropertyGroup>
+</Project>

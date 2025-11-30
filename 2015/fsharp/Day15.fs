@@ -1,6 +1,6 @@
 namespace AdventOfCode.FSharp.Y2015
 
-// Day 15
+// Day 15: Science for Hungry People
 module Day15 =
     open AdventOfCode.FSharp.Util
 
@@ -222,9 +222,9 @@ module Day15 =
             fullScore ingredients amounts
 
     let part2Score (ingredients: Ingredient array) (value: int array) =
-        // this is cheating and using hte values of 2;2;8;8 for the calories
-        // for this to actually work it would need to actual calculate this relation
-        // and figure out which variables to use
+        // This is cheating and using the values of 2;2;8;8 for the calories.
+        // For this to actually work it would need to actual calculate this relation
+        // and figure out which variables to use.
         // (eg, don't use two ingredients with the same calorie count)
         let amounts = [| value[0]; 60 - value[0]; value[1]; 40 - value[1] |]
 
