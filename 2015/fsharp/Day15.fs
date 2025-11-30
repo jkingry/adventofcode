@@ -222,6 +222,10 @@ module Day15 =
             fullScore ingredients amounts
 
     let part2Score (ingredients: Ingredient array) (value: int array) =
+        // this is cheating and using hte values of 2;2;8;8 for the calories
+        // for this to actually work it would need to actual calculate this relation
+        // and figure out which variables to use
+        // (eg, don't use two ingredients with the same calorie count)
         let amounts = [| value[0]; 60 - value[0]; value[1]; 40 - value[1] |]
 
         if Array.min amounts <= 0 then
@@ -231,6 +235,8 @@ module Day15 =
 
     let runBetter (input: byte array) (output: int -> string -> unit) =
         let ingredients = input |> text |> splitLine |> Array.map parseLine
+
+        // Not a "FULL" solution as doesn't scale to number of ingredients
 
         solveMax (part1Score ingredients) 100 [| 25; 25; 25 |] |> string |> output 1
 
