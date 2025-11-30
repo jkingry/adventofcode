@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="FParsec" />
     <PackageReference Include="FSharpx.Collections" />
+    <PackageReference Include="MathNet.Numerics.FSharp" />
   </ItemGroup>
 
   <ItemGroup>
