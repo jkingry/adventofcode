@@ -828,3 +828,20 @@ module Util =
             pos <- pos + 1
 
         sign * res
+
+    let inline parseInt64Span (s: ReadOnlySpan<byte>) =
+        let mutable res = 0L
+        let mutable sign = 1L
+        let mutable pos = 0
+
+        while pos < s.Length do
+            let c = s[pos]
+
+            match c with
+            | '-'B -> sign <- -1L
+            | c when '0'B <= c && c <= '9'B -> res <- res * 10L + int64 (c - '0'B)
+            | _ -> failwithf "Bad Format at '%c'" (char c)
+
+            pos <- pos + 1
+
+        sign * res
