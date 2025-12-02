@@ -1,6 +1,7 @@
 namespace AdventOfCode.FSharp.Y2025
 
-// Day 1
+// Day 1: Secret Entrance
+
 module Day01 =
     open AdventOfCode.FSharp.Util
     open System
@@ -52,17 +53,24 @@ module Day01 =
         zeroClickCount |> string |> output 2
 
     let run (input: byte array) (output: int -> string -> unit) =
-        input
-        |> bsplit '\n'B
-        |> Array.scan
-            (fun position line ->
-                let _, delta = parseIntToAny line 1
-                let delta = delta * if line[0] = 'L'B then -1 else 1
-                (position + delta) % 100)
-            50
-        |> Array.fold (fun total position -> total + if position = 0 then 1 else 0) 0
-        |> string
-        |> output 1
+        let part1, part2 =
+            input
+            |> bsplit '\n'B
+            |> Array.scan
+                (fun (position, _) line ->
+                    let _, delta = parseIntToAny line 1
+                    let delta = delta * if line[0] = 'L'B then -1 else 1
+                    position |> rotateDial delta)
+                (50, 0)
+            |> Array.fold
+                (fun (totalZeros, totalZeroClicks) (position, zeroClicks) ->
+                    let totalZeros = totalZeros + if position = 0 then 1 else 0
+                    let totalZeroClicks = totalZeroClicks + zeroClicks
+                    totalZeros, totalZeroClicks)
+                (0, 0)
+
+        part1 |> string |> output 1
+        part2 |> string |> output 2
 
     let runDumb (input: byte array) (output: int -> string -> unit) =
         let deltas =
