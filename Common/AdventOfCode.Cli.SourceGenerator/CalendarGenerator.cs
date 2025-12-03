@@ -24,12 +24,24 @@ public sealed class CalendarGenerator : IIncrementalGenerator
             {
                 return GetSolutions(m.Right, m.Left);
             })
-            .Collect()
+            .Collect();
+
+        var localPipelien =
+            context.CompilationProvider
+            .SelectMany(static (compilation, _) =>
+            {
+                return GetSolutions(compilation);
+            })
+            .Collect();
+
+        var fullPipeline = pipeline
+            .Combine(localPipelien)
             .Combine(rootNamespace);
 
-        context.RegisterSourceOutput(pipeline, static (productionContext, options) =>
+
+        context.RegisterSourceOutput(fullPipeline, static (productionContext, options) =>
         {
-            var solutions = options.Left;
+            var solutions = options.Left.Left.Concat(options.Left.Right);
             var rootNamespace = options.Right;
 
             productionContext.AddSource("AdventOfCode.Cli.Calendar.g", GenerateCalendarClass(rootNamespace, solutions));
@@ -109,6 +121,16 @@ public sealed class CalendarGenerator : IIncrementalGenerator
 
         if (assemblySymbol == null)
             yield break;
+
+        foreach (var solution in GetSolutions(assemblySymbol.GlobalNamespace))
+        {
+            yield return solution;
+        }
+    }
+
+    private static IEnumerable<SolutionInfo> GetSolutions(Compilation compilation)
+    {
+        var assemblySymbol = compilation.Assembly;
 
         foreach (var solution in GetSolutions(assemblySymbol.GlobalNamespace))
         {
