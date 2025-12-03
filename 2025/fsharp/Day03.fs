@@ -44,11 +44,9 @@ module Day03 =
                 j <- j + 1
 
         let mutable joltage = 0L
-        let mutable magnitude = 1L
 
-        for j = digitCount - 1 downto 0 do
-            joltage <- joltage + digits[j] * magnitude
-            magnitude <- magnitude * 10L
+        for j = 0 to digitCount - 1 do
+            joltage <- joltage * 10L + digits[j]
 
         joltage
 
