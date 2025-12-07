@@ -5,10 +5,10 @@ module Day02 =
     open AdventOfCode.FSharp.Util
     open System
 
-    let inline digitCount (value: int64) = (value |> double |> log10 |> int) + 1
+    let inline countDigits (value: int64) = (value |> double |> log10 |> int) + 1
 
     let inline isRepeat patternLength (value: int64) : bool =
-        let digits = digitCount value
+        let digits = countDigits value
 
         if digits % patternLength <> 0 then
             false
@@ -35,7 +35,7 @@ module Day02 =
 
 
     let inline findRepeats (value: int64) =
-        let digits = digitCount value
+        let digits = countDigits value
 
         if digits = 1 then
             None
@@ -118,3 +118,95 @@ module Day02 =
 
         part1 |> string |> output 1
         part2 |> string |> output 2
+
+    let checkRepeat value repeatCount =
+        let digits = value |> double |> log10 |> floor
+        let digits = digits + 1.0
+
+        let repeatCount = repeatCount |> double
+
+        if digits % repeatCount <> 0 then
+            false
+        else
+            let scale = 10.0 ** (digits / repeatCount) |> int64
+            let kernel = value % scale
+
+            if kernel = 0 || value % kernel <> 0 then
+                false
+            else
+                let dividend = value / kernel
+                let actual = dividend * (scale - 1L) + 1L |> double |> log10
+                actual = digits
+
+    let findRepeat value =
+        match countDigits value with
+        | 1 -> None
+        | n -> [ 2..n ] |> List.tryFind (checkRepeat value)
+
+    let runNoLoop (input: byte array) (output: int -> string -> unit) =
+        let part1, part2 =
+            input
+            |> text
+            |> parseRanges
+            |> Seq.map (fun (v1, v2) -> seq { v1..v2 })
+            |> Seq.concat
+            |> Seq.choose (fun v ->
+                match findRepeat v with
+                | Some 2 -> (v, v) |> Some
+                | Some _ -> (0L, v) |> Some
+                | _ -> None)
+            |> Seq.fold (fun (part1, part2) (a, b) -> part1 + a, part2 + b) (0L, 0L)
+
+        part1 |> string |> output 1
+        part2 |> string |> output 2
+
+    let findRepeatsOfSize digits a b patternSize =
+        let patternSize = double patternSize
+
+        let remainder = digits - patternSize
+        let patternMagnitude = 10.0 ** patternSize
+        let p = digits / patternSize
+        let factor = (patternMagnitude ** p - 1.0) / (patternMagnitude - 1.0) |> int64
+
+        // printfn "digits: %f, a: %d, b:%d, repeatSize: %f" digits a b repeatSize
+        // printfn "remainder: %f, n: %f, p: %f, factor: %d" remainder n p factor
+
+        let patternMagnitude = int64 patternMagnitude
+
+        seq {
+            let mutable kernel =
+                a / (10.0 ** remainder |> int64) |> max (patternMagnitude / 10L)
+
+            let mutable v = kernel * factor
+            // printfn "repeat: %d, v: %d" repeat v
+
+            while v <= b && kernel < patternMagnitude do
+                if v >= a then
+                    yield v
+
+                kernel <- kernel + 1L
+                v <- kernel * factor
+        }
+
+    let findRepeatsFast a b =
+        let adigits = countDigits a
+        let bdigits = countDigits b
+
+        [ adigits..bdigits ]
+        |> Seq.map (fun digits ->
+            [ digits / 2 .. -1 .. 1 ]
+            |> Seq.filter (fun r -> digits % r = 0)
+            |> Seq.map (findRepeatsOfSize digits a b)
+            |> Seq.concat)
+        |> Seq.concat
+        |> Seq.distinct
+
+    let runPrefix (input: byte array) (output: int -> string -> unit) =
+        input
+        |> text
+        |> parseRanges
+        |> Seq.map (fun (v1, v2) -> findRepeatsFast v1 v2)
+        |> Seq.concat
+        |> Seq.sum
+        |> string
+        |> output 2
