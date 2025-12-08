@@ -165,11 +165,10 @@ module Day02 =
 
         let remainder = digits - patternSize
         let patternMagnitude = 10.0 ** patternSize
-        let p = digits / patternSize
-        let factor = (patternMagnitude ** p - 1.0) / (patternMagnitude - 1.0) |> int64
+        let exponent = digits / patternSize
 
-        // printfn "digits: %f, a: %d, b:%d, repeatSize: %f" digits a b repeatSize
-        // printfn "remainder: %f, n: %f, p: %f, factor: %d" remainder n p factor
+        let factor =
+            (patternMagnitude ** exponent - 1.0) / (patternMagnitude - 1.0) |> int64
 
         let patternMagnitude = int64 patternMagnitude
 
@@ -178,7 +177,6 @@ module Day02 =
                 a / (10.0 ** remainder |> int64) |> max (patternMagnitude / 10L)
 
             let mutable v = kernel * factor
-            // printfn "repeat: %d, v: %d" repeat v
 
             while v <= b && kernel < patternMagnitude do
                 if v >= a then
@@ -195,18 +193,30 @@ module Day02 =
         [ adigits..bdigits ]
         |> Seq.map (fun digits ->
             [ digits / 2 .. -1 .. 1 ]
-            |> Seq.filter (fun r -> digits % r = 0)
-            |> Seq.map (findRepeatsOfSize digits a b)
+            |> Seq.filter (fun patternSize -> digits % patternSize = 0)
+            |> Seq.map (fun patternSize ->
+                let oneRepeat = digits = patternSize * 2
+                findRepeatsOfSize digits a b patternSize |> Seq.map (fun v -> v, oneRepeat))
             |> Seq.concat)
         |> Seq.concat
-        |> Seq.distinct
+        |> Seq.distinctBy fst
 
     let runPrefix (input: byte array) (output: int -> string -> unit) =
-        input
-        |> text
-        |> parseRanges
-        |> Seq.map (fun (v1, v2) -> findRepeatsFast v1 v2)
-        |> Seq.concat
-        |> Seq.sum
-        |> string
-        |> output 2
+        let part1, part2 =
+            input
+            |> text
+            |> parseRanges
+            |> Seq.map (fun (v1, v2) -> findRepeatsFast v1 v2)
+            |> Seq.concat
+            |> Seq.fold
+                (fun (part1, part2) (v, includePart1) ->
+                    let part1 = if includePart1 then part1 + v else part1
+
+                    let part2 = part2 + v
+
+                    part1, part2)
+                (0L, 0L)
+
+        part1 |> string |> output 1
+
+        part2 |> string |> output 2
