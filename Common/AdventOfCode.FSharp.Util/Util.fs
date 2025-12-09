@@ -627,7 +627,7 @@ module Util =
             row.CopyTo(dest, 0)
             dest |> Array.map System.Numerics.BitOperations.PopCount |> Array.sum
 
-    let intersects aStart aEnd bStart bEnd = aStart <= bEnd && aEnd >= bStart
+    let inline intersects aStart aEnd bStart bEnd = aStart <= bEnd && aEnd >= bStart
 
     let rec distribute e =
         function
