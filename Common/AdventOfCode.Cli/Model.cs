@@ -51,6 +51,8 @@ public record LatestSolutionFile
 
 public record SolutionFile
 {
+    public string? InformationVersion { get; init; }
+    public string? BuildConfiguration { get; init; }
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
     public List<SolutionOutputs> Solutions { get; init; } = [];
 }

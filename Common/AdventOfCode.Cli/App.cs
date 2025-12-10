@@ -118,7 +118,13 @@ public static class App
             var success = false;
 
             var latestResult = new LatestSolutionFile();
-            var fullResult = new SolutionFile { Timestamp = runTimestamp };
+            var (InformationVersion, BuildConfiguration) = NorthPole.GetBuildInformation();
+            var fullResult = new SolutionFile
+            {
+                InformationVersion = InformationVersion,
+                BuildConfiguration = BuildConfiguration,
+                Timestamp = runTimestamp
+            };
 
             foreach (var solution in day)
             {

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -325,5 +326,20 @@ public class NorthPole
         // Re-calculate expected
         await GetExpected(OutputType.Official, year, day, 1);
         await GetExpected(OutputType.Official, year, day, 2);
+    }
+
+    public (string InformationVersion, string BuildConfiguration) GetBuildInformation()
+    {
+        var infoVersion = Assembly.GetExecutingAssembly()
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+            .OfType<System.Reflection.AssemblyInformationalVersionAttribute>()
+            .FirstOrDefault()?.InformationalVersion ?? "unknown";
+
+        var buildConfiguration = Assembly.GetExecutingAssembly()
+            .GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false)
+            .OfType<AssemblyConfigurationAttribute>()
+            .FirstOrDefault()?.Configuration ?? "unknown";
+
+        return (infoVersion, buildConfiguration);
     }
 }
