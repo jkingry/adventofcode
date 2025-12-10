@@ -1,6 +1,8 @@
 using System.CommandLine;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using BenchmarkDotNet.Running;
 
@@ -35,13 +37,15 @@ public static class App
 
             var output = await NorthPole.RunAsync(solution, options);
 
-            var (result, actual) = output.PartOutputs[0];
+            var result = output.PartOutputs[0].Result;
+            var actual = output.PartOutputs[0].ResultText;
 
             AnsiConsole.MarkupLineInterpolated($" {output.ElapsedMs,8:0.000} {1,4} {result,7} {actual}");
 
             for (var part = 1; part < output.PartOutputs.Length; ++part)
             {
-                (result, actual) = output.PartOutputs[part];
+                result = output.PartOutputs[part].Result;
+                actual = output.PartOutputs[part].ResultText;
 
                 AnsiConsole.MarkupLineInterpolated($"{string.Empty,29} {part + 1,4} {result,7} {actual}");
             }
@@ -104,11 +108,17 @@ public static class App
             return output.PartOutputs.All(p => p.Result == ResultType.Ok);
         }
 
+        var runTimestamp = DateTime.UtcNow;
+
+
         foreach (var day in selected.GroupBy(s => (s.Year, s.Day)).OrderBy(g => g.Key))
         {
             var fastestMs = double.PositiveInfinity;
             var slowestMs = double.NegativeInfinity;
             var success = false;
+
+            var latestResult = new LatestSolutionFile();
+            var fullResult = new SolutionFile { Timestamp = runTimestamp };
 
             foreach (var solution in day)
             {
@@ -134,6 +144,17 @@ public static class App
                     fastestMs = Math.Min(fastestMs, output.ElapsedMs);
                     slowestMs = Math.Max(slowestMs, output.ElapsedMs);
                 }
+
+                fullResult.Solutions.Add(output);
+                latestResult.Solutions.Add(new LatestSolutionOutputs
+                {
+                    Year = output.Year,
+                    Day = output.Day,
+                    Name = output.Name,
+                    PartOutputs = output.PartOutputs
+                        .Select((value, index) => (value, index))
+                        .ToDictionary(k => k.index + 1, v => v.value)
+                });
             }
 
             if (success)
@@ -141,6 +162,16 @@ public static class App
                 fastestTotalMs += fastestMs;
                 slowestTotalMs += slowestMs;
             }
+
+            var latestResultJson = JsonSerializer.Serialize(
+                latestResult, SourceGenerationContext.Default.LatestSolutionFile);
+            var latestJsonPath = NorthPole.GetCachePath(FileType.LatestResultJson, day.Key.Year, day.Key.Day);
+            File.WriteAllText(latestJsonPath, latestResultJson);
+
+            var timestampResultJson = JsonSerializer.Serialize(
+                fullResult, SourceGenerationContext.Default.SolutionFile);
+            var timestampJsonPath = NorthPole.GetCachePath(FileType.TimestampResultJson, day.Key.Year, day.Key.Day, null, runTimestamp);
+            File.WriteAllText(timestampJsonPath, timestampResultJson);
         }
 
         var byFastestTime = outputs

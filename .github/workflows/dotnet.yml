@@ -48,7 +48,7 @@ jobs:
       uses: actions/cache/save@v4
       if: always()
       with:
-        key: session-${{ hashFiles('.adventofcode.session') }}-${{ hashFiles('**/inputs/**') }}
+        key: session-${{ hashFiles('.adventofcode.session') }}-test
         path: 
           '**/inputs/**'
 

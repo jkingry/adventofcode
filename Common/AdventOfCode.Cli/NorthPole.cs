@@ -32,9 +32,16 @@ public class NorthPole
 
         while (current < now)
         {
-            yield return new Solution(current.Year, current.Day, "*", (input, output) => { });
+            yield return new Solution
+            {
+                Year = current.Year,
+                Day = current.Day,
+                Name = "*",
+                Run = (input, output) => { }
+            };
 
             current = current.AddDays(1);
+
             if (current > new DateTime(current.Year, current.Month, 25))
             {
                 current = new DateTime(current.Year + 1, 12, 1);
@@ -126,12 +133,12 @@ public class NorthPole
         return sessionDir != null ? Path.Combine(sessionDir, defaultPath) : defaultPath;
     }
 
-    public string GetCachePath(FileType inputType, int year, int day, int? part = null)
+    public string GetCachePath(FileType inputType, int year, int day, int? part = null, DateTime? timestamp = null)
     {
         string inputFolder = GetFolder(year, day);
         var paths =
             from pattern in _options.FileNamePatterns[inputType]
-            let filename = string.Format(pattern, year, day, part)
+            let filename = string.Format(pattern, year, day, part, timestamp)
             select Path.Combine(inputFolder, filename);
 
         var path = paths.FirstOrDefault(p => File.Exists(p));
@@ -263,7 +270,7 @@ public class NorthPole
         var results = new PartOutput[maxActualOutput + 1];
         for (var part = 0; part < results.Length; ++part)
         {
-            var expectedType = (OutputType)(((FileType)options.InputType & ~FileType.Input) | FileType.Output);
+            var expectedType = (OutputType)((int)options.InputType + 1);
             var expected = await GetExpected(expectedType, solution.Year, solution.Day, part + 1);
 
             var actual = actualOutputs[part];
@@ -274,10 +281,21 @@ public class NorthPole
                 actual != expected ? ResultType.Error :
                 ResultType.Ok;
 
-            results[part] = new PartOutput(result, actual);
+            results[part] = new PartOutput
+            {
+                Result = result,
+                ResultText = actual,
+            };
         }
 
-        return new SolutionOutputs(solution.Year, solution.Day, solution.Name, results, w.Elapsed.TotalMilliseconds / options.Repeats);
+        return new SolutionOutputs
+        {
+            Year = solution.Year,
+            Day = solution.Day,
+            Name = solution.Name,
+            PartOutputs = results,
+            ElapsedMs = w.Elapsed.TotalMilliseconds / options.Repeats
+        };
     }
 
     /// <summary>

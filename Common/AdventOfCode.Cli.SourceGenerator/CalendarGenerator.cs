@@ -209,7 +209,12 @@ public sealed class CalendarGenerator : IIncrementalGenerator
                 throw new NotSupportedException();
         }
 
-        var dayDefinition = $"new Solution(Year: {year}, Day: {day}, Name: \"{name}\", Run: {runMethodName}),";
+        var dayDefinition = $$"""
+                new Solution 
+                {
+                    Year = {{year}}, Day = {{day}}, Name = "{{name}}", Run = {{runMethodName}},
+                },
+        """;
 
         return (dayDefinition, runMethod);
     }
@@ -241,10 +246,10 @@ public sealed class CalendarGenerator : IIncrementalGenerator
 			{
 				public static readonly Solution[] Days =
 				[
-					{{dayDefinitions}}
+				{{dayDefinitions}}
 				];
 
-				{{runMethods}}
+			{{runMethods}}
 			}
 			""";
     }
