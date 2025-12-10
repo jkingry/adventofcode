@@ -4,19 +4,16 @@ namespace AdventOfCode.Cli;
 public enum FileType
 {
     HtmlPage = 0,
-    Input = 1,
-    Output = 2,
-    Official = 4,
-    Example = 8,
-    Other = 16,
 
-    OfficialInput = Official | Input,
-    ExampleInput = Example | Input,
-    OtherInput = Other | Input,
+    OfficialInput = 1,
+    ExampleInput = 3,
+    OtherInput = 5,
 
-    OfficialOutput = Official | Output,
-    ExampleOutput = Example | Output,
-    OtherOutput = Other | Output
+    OfficialOutput = 2,
+    ExampleOutput = 4,
+    OtherOutput = 6,
+    LatestResultJson = 100,
+    TimestampResultJson = 101,
 }
 
 public enum InputType

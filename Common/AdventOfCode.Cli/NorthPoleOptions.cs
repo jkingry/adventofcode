@@ -32,6 +32,8 @@ public class NorthPoleOptions
             [FileType.OfficialOutput] = ["input.s{2}.txt"],
             [FileType.ExampleOutput] = ["example.s{2}.txt"],
             [FileType.OtherOutput] = ["other.s{2}.txt"],
+            [FileType.LatestResultJson] = ["latest.json"],
+            [FileType.TimestampResultJson] = ["result-{3:yyyyMMddTHHmmss}.json"],
         };
 
     public string AdventOfCodeUrl { get; set; } = "https://adventofcode.com";
