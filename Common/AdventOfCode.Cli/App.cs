@@ -54,11 +54,39 @@ public static class App
         return 0;
     }
 
-    internal static async Task<int> TestCommand(IEnumerable<Solution> selected, IEnumerable<Solution> possible, int repeats = 1, CancellationToken cancellationToken = default)
+    internal static async Task<int> TestCommand(IEnumerable<Solution> selected, IEnumerable<Solution> possible, int repeats = 1, bool fastestOnly = false, bool completeOnly = false, CancellationToken cancellationToken = default)
     {
         if (NorthPole == null)
         {
             throw new InvalidOperationException("NorthPole is not initialized.");
+        }
+
+        IReadOnlyList<SolutionOutputs>? previousResults = null;
+
+        if (completeOnly)
+        {
+            previousResults ??= NorthPole?.GetPreviousResults(selected) ?? throw new InvalidOperationException("NorthPole is not initialized.");
+
+            // complete days
+            var completed = previousResults
+                .Where(s => s.PartOutputs.All(p => p.Result == ResultType.Ok))
+                .Select(s => (s.Year, s.Day, s.Name))
+                .ToHashSet();
+
+            selected = selected.Where(s => completed.Contains((s.Year, s.Day, s.Name)));
+        }
+
+        if (fastestOnly)
+        {
+            previousResults ??= NorthPole?.GetPreviousResults(selected) ?? throw new InvalidOperationException("NorthPole is not initialized.");
+
+            var fastest = previousResults
+                .GroupBy(s => (s.Year, s.Day))
+                .Select(g => g.MinBy(s => s.ElapsedMs) ?? throw new InvalidOperationException("No min found"))
+                .Select(g => (g.Year, g.Day, g.Name))
+                .ToHashSet();
+
+            selected = selected.Where(s => fastest.Contains((s.Year, s.Day, s.Name)));
         }
 
         var options = new RunOptions
@@ -392,10 +420,22 @@ public static class App
             DefaultValueFactory = _ => 1
         };
 
+        Option<bool> fastestOption = new Option<bool>("--fastest", "-f")
+        {
+            Description = "Only show the fastest solution for each day"
+        };
+
+        Option<bool> completeOption = new Option<bool>("--complete", "-c")
+        {
+            Description = "Only show days with all solutions correct"
+        };
+
         Command testCommand = new("test", "Test and benchmark solutions")
         {
             multipleSolutionsArgument,
-            repeatsOption
+            repeatsOption,
+            fastestOption,
+            completeOption
         };
 
         SolutionParser possiblesParser = new(NorthPole.AllPossibleDates(), NorthPole);
@@ -409,6 +449,8 @@ public static class App
                parseResult.GetRequiredValue(multipleSolutionsArgument),
                possibles,
                parseResult.GetValue(repeatsOption),
+               parseResult.GetValue(fastestOption),
+               parseResult.GetValue(completeOption),
                ct);
         });
 

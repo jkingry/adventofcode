@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 using Spectre.Console;
@@ -341,5 +342,42 @@ public class NorthPole
             .FirstOrDefault()?.Configuration ?? "unknown";
 
         return (infoVersion, buildConfiguration);
+    }
+
+    public IReadOnlyList<SolutionOutputs> GetPreviousResults(IEnumerable<Solution> solutions)
+    {
+        var results = new List<SolutionOutputs>();
+
+        var groupedSolutions = solutions
+            .GroupBy(s => new { s.Year, s.Day })
+            .Select(g => g.First());
+
+
+        var formatString = _options.FileNamePatterns[FileType.TimestampResultJson].First();
+        var fileNamePattern = Regex.Replace(formatString, @"\{(0|1|2|3)(:[^}]*?)?\}", "*");
+
+        foreach (var solution in groupedSolutions)
+        {
+            var folderPath = GetFolder(solution.Year, solution.Day);
+
+            var filePath = Directory.GetFiles(folderPath, fileNamePattern, SearchOption.TopDirectoryOnly)
+                .OrderByDescending(f => f)
+                .FirstOrDefault();
+
+            if (filePath == null)
+            {
+                continue;
+            }
+
+            var json = File.ReadAllText(filePath);
+            var solutionFile = JsonSerializer.Deserialize(json, SourceGenerationContext.Default.SolutionFile);
+
+            if (solutionFile != null)
+            {
+                results.AddRange(solutionFile.Solutions);
+            }
+        }
+
+        return results;
     }
 }
