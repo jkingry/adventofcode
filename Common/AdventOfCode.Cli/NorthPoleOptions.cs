@@ -42,5 +42,10 @@ public class NorthPoleOptions
     public int? DefaultYear { get; set; }
     public string ContestTimeZone { get; set; } = "America/Toronto";
     public DateTime ContestStartDate { get; set; } = new DateTime(2015, 12, 1, 0, 0, 0, DateTimeKind.Local);
+    public int ContestDefaultEndDay { get; set; } = 25;
+    public Dictionary<int, int> ContestEndDaysByYear { get; set; } = new()
+    {
+        [2025] = 12,
+    };
     public TimeZoneInfo GetContestTimeZone() => TimeZoneInfo.FindSystemTimeZoneById(ContestTimeZone);
 }

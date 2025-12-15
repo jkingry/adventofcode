@@ -44,7 +44,9 @@ public class NorthPole
 
             current = current.AddDays(1);
 
-            if (current > new DateTime(current.Year, current.Month, 25))
+            var endDay = Options.ContestEndDaysByYear.GetValueOrDefault(current.Year, Options.ContestDefaultEndDay);
+
+            if (current > new DateTime(current.Year, current.Month, endDay))
             {
                 current = new DateTime(current.Year + 1, 12, 1);
             }
