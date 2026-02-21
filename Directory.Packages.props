@@ -6,17 +6,17 @@
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="FParsec" Version="1.1.1" />
-    <PackageVersion Include="FSharp.Core" Version="10.0.101" />
+    <PackageVersion Include="FSharp.Core" Version="10.0.103" />
     <PackageVersion Include="FSharp.Quotations.Evaluator" Version="2.1.0" />
     <PackageVersion Include="FSharpx.Collections" Version="3.1.0" />
     <PackageVersion Include="MathNet.Numerics.FSharp" Version="5.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.1" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.3" />
   </ItemGroup>
 </Project>

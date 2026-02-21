@@ -1,8 +1,6 @@
 using System.CommandLine;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 using BenchmarkDotNet.Running;
 
@@ -279,8 +277,8 @@ public static class App
 
         foreach (var year in possibleYears)
         {
-            var completed = byFastestTime.Where(o => o.Item.Year == year).Count();
-            var yearExpected = possible.Where(o => o.Year == year).Count();
+            var completed = byFastestTime.Count(o => o.Item.Year == year);
+            var yearExpected = possible.Count(o => o.Year == year);
             AddChartLine(yearChart, year.ToString(), completed, yearExpected);
 
         }
@@ -360,11 +358,14 @@ public static class App
 
             var parseResult = rootCommand.Parse(args);
 
-            return await parseResult.InvokeAsync();
+            return await parseResult.InvokeAsync(new InvocationConfiguration
+            {
+                EnableDefaultExceptionHandler = false
+            });
         }
         catch (InvalidSessionFileException ex)
         {
-            Console.Error.WriteLine("Please visit http://adventofcode.com and login to create a session cookie.");
+            Console.Error.WriteLine("\nPlease visit http://adventofcode.com and login to create a session cookie.");
             Console.Error.WriteLine($"Then save the cookie to a file named '{ex.Message}' in this directory.");
 
             return 1;
@@ -396,10 +397,10 @@ public static class App
         };
 
         Command runCommand = new("run", "Run the specified day's solution")
-            {
-                solutionsArgument,
-                inputTypeOption
-            };
+        {
+            solutionsArgument,
+            inputTypeOption
+        };
 
         runCommand.SetAction((parseResult, ct) => RunCommand(
             parseResult.GetRequiredValue(solutionsArgument),
