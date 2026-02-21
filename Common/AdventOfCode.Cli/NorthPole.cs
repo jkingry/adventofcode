@@ -26,6 +26,9 @@ public class NorthPole
 
     public IAdventOfCodeApi Client => _client.Value;
 
+    /// <summary>
+    /// Generate a list of all possible year/day combinations based on the current date and the contest start date. This can be used to find solutions for all released puzzles.
+    /// </summary>
     public IEnumerable<Solution> AllPossibleDates()
     {
         // Get current time in contest time zone
@@ -353,7 +356,6 @@ public class NorthPole
         var groupedSolutions = solutions
             .GroupBy(s => new { s.Year, s.Day })
             .Select(g => g.First());
-
 
         var formatString = _options.FileNamePatterns[FileType.TimestampResultJson].First();
         var fileNamePattern = Regex.Replace(formatString, @"\{(0|1|2|3)(:[^}]*?)?\}", "*");

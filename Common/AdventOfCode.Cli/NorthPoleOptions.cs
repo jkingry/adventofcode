@@ -14,6 +14,10 @@ public class NorthPoleOptions
 
     public int DefaultOutputs { get; set; } = 5;
     public string SessionFileName { get; set; } = ".adventofcode.session";
+
+    /// <summary>
+    /// Patterns for input folders, with {0} = year and {1} = day. The first pattern that matches an existing folder will be used.
+    /// </summary>    
     public string[] InputFolderPatterns { get; set; } =
         [
             "{0:0000}/inputs/{1:00}",
