@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Y2024Benchmarks.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 

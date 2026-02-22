@@ -2,6 +2,9 @@ using System.CommandLine;
 using System.Reflection;
 using System.Text.Json;
 
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
+
 using BenchmarkDotNet.Running;
 
 using Spectre.Console;
@@ -50,6 +53,31 @@ public static class App
         }
 
         return 0;
+    }
+
+    internal static void BenchCommand(IEnumerable<Solution> selected, string[] args)
+    {
+        var previousResults = NorthPole?.GetPreviousResults(selected) ?? throw new InvalidOperationException("NorthPole is not initialized.");
+
+        // complete days
+        var completed = previousResults
+            .Where(s => s.PartOutputs.All(p => p.Result == ResultType.Ok))
+            .Select(s => $"Run{s.Year}_{s.Day}_{s.Name}")
+            .ToHashSet();
+
+        if (!completed.Any())
+        {
+            AnsiConsole.MarkupLine("No completed solutions found to benchmark.");
+            return;
+        }
+
+        var config = ManualConfig.Create(DefaultConfig.Instance)
+            .AddFilter(new BenchmarkDotNet.Filters.NameFilter(name => completed.Contains(name)));
+
+        BenchmarkRunner.Run(
+            Assembly.GetEntryAssembly() ?? throw new InvalidOperationException(), 
+            config, 
+            args);
     }
 
     internal static async Task<int> TestCommand(IEnumerable<Solution> selected, IEnumerable<Solution> possible, int repeats = 1, bool fastestOnly = false, bool completeOnly = false, CancellationToken cancellationToken = default)
@@ -455,11 +483,21 @@ public static class App
                ct);
         });
 
-        Command benchCommand = new("bench", "Benchmark solutions");
+        Command benchCommand = new("bench", "Benchmark solutions")
+        {
+            multipleSolutionsArgument
+        };
+        
         benchCommand.SetAction(parseResult =>
-            BenchmarkRunner.Run(Assembly.GetEntryAssembly() ?? throw new InvalidOperationException(), null, parseResult.UnmatchedTokens.ToArray()));
+        {
+            var solutionsResult = parseResult.GetResult(multipleSolutionsArgument) ?? throw new InvalidOperationException("No solutions parsed");
+            BenchCommand(
+                parseResult.GetRequiredValue(multipleSolutionsArgument),
+                parseResult.UnmatchedTokens.ToArray());
+            return 0;
+        });
 
-        Command resetCommand = new("reset", "Reset the input for a specific day")
+    Command resetCommand = new("reset", "Reset the input for a specific day")
         {
             solutionsArgument
         };
