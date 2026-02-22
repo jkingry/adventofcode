@@ -19,8 +19,8 @@ public class NorthPole
         _client = new Lazy<IAdventOfCodeApi>(CreateClient);
     }
 
-    public static (int, int)? ExecutingYearDay { get; private set; } = null;
-    public static NorthPole? Instance { get; private set; } = null;
+    public static (int, int)? ExecutingYearDay { get; set; } = null;
+    public static NorthPole? Instance { get; set; } = null;
 
     public NorthPoleOptions Options => _options;
 

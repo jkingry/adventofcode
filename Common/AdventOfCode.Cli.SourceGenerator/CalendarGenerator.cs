@@ -284,7 +284,11 @@ public sealed class CalendarGenerator : IIncrementalGenerator
             string.Join("\n", methods.Select(m => $$"""
                 [Benchmark(Baseline = {{(baselineMethods.Contains(m) ? "true" : "false")}})]
                 [BenchmarkCategory("{{m.Year}}", "{{m.Day}}")]
-                public void Run{{m.Year}}_{{m.Day}}_{{m.MethodName}}() => Calendar.Run{{m.Year}}_{{m.Day}}_{{m.MethodName}}(_input{{m.Year}}_{{m.Day}}, HandleOutput);
+                public void Run{{m.Year}}_{{m.Day}}_{{m.MethodName}}() 
+                {
+                    NorthPole.ExecutingYearDay = ({{m.Year}}, {{m.Day}});
+                    Calendar.Run{{m.Year}}_{{m.Day}}_{{m.MethodName}}(_input{{m.Year}}_{{m.Day}}, HandleOutput);
+                }
             """));
 
         return $$"""
@@ -322,6 +326,7 @@ public sealed class CalendarGenerator : IIncrementalGenerator
                 [GlobalSetup]
                 public void Setup()
                 {
+                    NorthPole.Instance = _pole;
                     {{inputSetups}}
                 }
 
