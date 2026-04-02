@@ -75,8 +75,8 @@ public static class App
             .AddFilter(new BenchmarkDotNet.Filters.NameFilter(name => completed.Contains(name)));
 
         BenchmarkRunner.Run(
-            Assembly.GetEntryAssembly() ?? throw new InvalidOperationException(), 
-            config, 
+            Assembly.GetEntryAssembly() ?? throw new InvalidOperationException(),
+            config,
             args);
     }
 
@@ -487,7 +487,7 @@ public static class App
         {
             multipleSolutionsArgument
         };
-        
+
         benchCommand.SetAction(parseResult =>
         {
             var solutionsResult = parseResult.GetResult(multipleSolutionsArgument) ?? throw new InvalidOperationException("No solutions parsed");
@@ -497,7 +497,7 @@ public static class App
             return 0;
         });
 
-    Command resetCommand = new("reset", "Reset the input for a specific day")
+        Command resetCommand = new("reset", "Reset the input for a specific day")
         {
             solutionsArgument
         };

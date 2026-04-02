@@ -12,10 +12,13 @@ module Day08 =
         let points =
             input
             |> bsplit '\n'B
-            |> Array.map (parseInts >> Array.map int64)
-            |> Array.map (function
-                | [| a; b; c |] -> a, b, c
-                | _ -> failwith "invalid line")
+            |> Array.map (
+                parseInts
+                >> Array.map int64
+                >> function
+                    | [| a; b; c |] -> a, b, c
+                    | _ -> failwith "invalid line"
+            )
 
         let mutable q =
             points
@@ -30,10 +33,10 @@ module Day08 =
 
         let getTop3SizeMetric circuits =
             circuits
-            |> List.map Set.count
-            |> List.sortDescending
-            |> List.take 3
-            |> List.reduce (fun a b -> a * b)
+            |> Seq.map Set.count
+            |> Seq.sortDescending
+            |> Seq.take 3
+            |> Seq.reduce (fun a b -> a * b)
 
         let mutable part1Top3SizeMetric = None
         let mutable part2LastPoints = None
