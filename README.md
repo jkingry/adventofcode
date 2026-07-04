@@ -1,5 +1,5 @@
 # adventofcode
 
-Code from adventures in [Advent of Code](https://adventofcode.com/). 
+Code from adventures in [Advent of Code](https://adventofcode.com/).
 
-Started participating in Nov 2021. 
+Started participating in Nov 2021.

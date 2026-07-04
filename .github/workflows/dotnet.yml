@@ -15,14 +15,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
         global-json-file: global.json
+        cache: true
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore --locked-mode
 
     - name: Build
       run: dotnet build --no-restore --configuration Release 
@@ -33,7 +34,7 @@ jobs:
       run: echo "$AOC_SESSION" > .adventofcode.session
 
     - name: Read Cache Inputs
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@v6
       with:
         key: session-${{ hashFiles('.adventofcode.session') }}-test
         restore-keys: |
@@ -45,7 +46,7 @@ jobs:
       run: dotnet run --configuration Release --no-build -- test *:*
 
     - name: Write Cache
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@v6
       if: always()
       with:
         key: session-${{ hashFiles('.adventofcode.session') }}-test

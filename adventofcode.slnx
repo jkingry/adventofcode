@@ -1,0 +1,31 @@
+<Solution>
+  <Folder Name="/2016/" />
+  <Folder Name="/2016/csharp/">
+    <Project Path="2016/csharp/AdventOfCode.CSharp.Y2016.csproj" />
+  </Folder>
+  <Folder Name="/2017/" />
+  <Folder Name="/2017/csharp/">
+    <Project Path="2017/csharp/AdventOfCode.CSharp.Y2017.csproj" />
+  </Folder>
+  <Folder Name="/2018/" />
+  <Folder Name="/2018/csharp/">
+    <Project Path="2018/csharp/AdventOfCode.CSharp.Y2018.csproj" />
+  </Folder>
+  <Folder Name="/2019/" />
+  <Folder Name="/2019/csharp/">
+    <Project Path="2019/csharp/AdventOfCode.CSharp.Y2019.csproj" />
+  </Folder>
+  <Folder Name="/2020/" />
+  <Folder Name="/2020/csharp/">
+    <Project Path="2020/csharp/AdventOfCode.CSharp.Y2020.csproj" />
+  </Folder>
+  <Folder Name="/2021/" />
+  <Folder Name="/2021/csharp/">
+    <Project Path="2021/csharp/AdventOfCode.CSharp.Y2021.csproj" />
+  </Folder>
+  <Folder Name="/Common/">
+    <Project Path="Common/AdventOfCode.Cli.SourceGenerator/AdventOfCode.Cli.SourceGenerator.csproj" />
+    <Project Path="Common/AdventOfCode.Cli/AdventOfCode.Cli.csproj" />
+  </Folder>
+  <Project Path="AdventOfCode.csproj" />
+</Solution>
