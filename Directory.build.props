@@ -4,6 +4,6 @@
         <!-- Note: deterministic builds don't get the benefits of parallel compilation -->
         <Deterministic>false</Deterministic> 
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-	<DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+	    <DisableImplicitLibraryPacksFolder>true</DisableImplicitLibraryPacksFolder>
     </PropertyGroup>    
 </Project>
