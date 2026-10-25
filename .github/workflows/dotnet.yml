@@ -35,9 +35,10 @@ jobs:
     - name: Read Cache Inputs
       uses: actions/cache/restore@v6
       with:
-        key: session-${{ hashFiles('.adventofcode.session') }}-test
+        key: aoc-inputs-${{ github.run_id }}
         restore-keys: |
-          session-${{ hashFiles('.adventofcode.session') }}-
+          aoc-inputs-
+          session-
         path: 
           '**/inputs/**'
     
@@ -48,7 +49,7 @@ jobs:
       uses: actions/cache/save@v6
       if: always()
       with:
-        key: session-${{ hashFiles('.adventofcode.session') }}-test
+        key: aoc-inputs-${{ github.run_id }}
         path: 
           '**/inputs/**'
 
