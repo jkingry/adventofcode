@@ -5,12 +5,14 @@ module Day11 =
     open AdventOfCode.FSharp.Util
 
     type Monkey =
-        { mutable items: int list
-          mutable inspections: int
-          operation: int64 -> int64
-          test: int
-          destTrue: int
-          destFalse: int }
+        {
+            mutable items: int list
+            mutable inspections: int
+            operation: int64 -> int64
+            test: int
+            destTrue: int
+            destFalse: int
+        }
 
     let run (input: byte[]) (output: int -> string -> unit) =
         let monkeys =
@@ -43,12 +45,14 @@ module Day11 =
                 let destTrue = line[4].Split(' ') |> Array.last |> int
                 let destFalse = line[5].Split(' ') |> Array.last |> int
 
-                { items = startingItems |> List.ofArray
-                  inspections = 0
-                  operation = op
-                  test = test
-                  destTrue = destTrue
-                  destFalse = destFalse })
+                {
+                    items = startingItems |> List.ofArray
+                    inspections = 0
+                    operation = op
+                    test = test
+                    destTrue = destTrue
+                    destFalse = destFalse
+                })
 
         let product a =
             a |> Array.map int64 |> Array.reduce (fun a b -> a * b)
@@ -103,13 +107,15 @@ module Day11 =
         |> output 2
 
     type FMonkey =
-        { mutable count: int
-          items: int[]
-          mutable inspections: int
-          operation: int64 -> int64
-          test: int
-          destTrue: int
-          destFalse: int }
+        {
+            mutable count: int
+            items: int[]
+            mutable inspections: int
+            operation: int64 -> int64
+            test: int
+            destTrue: int
+            destFalse: int
+        }
 
     // use arrays and counts to track items
     let runFast (input: byte[]) (output: int -> string -> unit) =
@@ -143,13 +149,15 @@ module Day11 =
                 let destTrue = line[4].Split(' ') |> Array.last |> int
                 let destFalse = line[5].Split(' ') |> Array.last |> int
 
-                { count = startingItems.Length
-                  items = startingItems
-                  inspections = 0
-                  operation = op
-                  test = test
-                  destTrue = destTrue
-                  destFalse = destFalse })
+                {
+                    count = startingItems.Length
+                    items = startingItems
+                    inspections = 0
+                    operation = op
+                    test = test
+                    destTrue = destTrue
+                    destFalse = destFalse
+                })
 
         let product a =
             a |> Array.map int64 |> Array.reduce (fun a b -> a * b)

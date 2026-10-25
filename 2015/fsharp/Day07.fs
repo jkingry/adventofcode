@@ -38,8 +38,10 @@ module Day07 =
         | x -> x |> failwithf "Invalid line format: %s"
 
     type WireLayout =
-        { mutable State: Map<string, uint16>
-          Layout: Map<string, WireSpec> }
+        {
+            mutable State: Map<string, uint16>
+            Layout: Map<string, WireSpec>
+        }
 
     and WireSpec = WireLayout -> uint16
 

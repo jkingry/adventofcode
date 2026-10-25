@@ -13,8 +13,10 @@ module Day10 =
         | Transfer of source: int * loTarget: Destination * hiTarget: Destination
 
     type Bot =
-        { values: int list
-          targets: (Destination * Destination) option }
+        {
+            values: int list
+            targets: (Destination * Destination) option
+        }
 
     let EmptyBot = { values = []; targets = None }
 
@@ -61,7 +63,8 @@ module Day10 =
                     | { targets = _; values = [ a ] } as x ->
                         Some
                             { x with
-                                values = [ (min a value); (max a value) ] }
+                                values = [ (min a value); (max a value) ]
+                            }
                     | _ -> failwith "Invalid instruction")
 
             let b = bots' |> Map.find bot
@@ -69,8 +72,10 @@ module Day10 =
 
     and tryActivate (bot: Bot) (bots: Map<int, Bot>, outputs: Map<int, int>) =
         match bot with
-        | { values = [ lo; hi ]
-            targets = Some(loTarget, hiTarget) } -> (bots, outputs) |> add loTarget lo |> add hiTarget hi
+        | {
+              values = [ lo; hi ]
+              targets = Some(loTarget, hiTarget)
+          } -> (bots, outputs) |> add loTarget lo |> add hiTarget hi
         | _ -> bots, outputs
 
     let applyInstruction (bots: Map<int, Bot>, outputs: Map<int, int>) (instruction: Instr) =
@@ -84,7 +89,8 @@ module Day10 =
 
                     Some
                         { temp with
-                            targets = Some(loTarget, hiTarget) })
+                            targets = Some(loTarget, hiTarget)
+                        })
 
             let bot = bots' |> Map.find source
             (bots', outputs) |> tryActivate bot

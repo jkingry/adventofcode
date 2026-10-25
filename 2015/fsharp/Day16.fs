@@ -7,28 +7,32 @@ module Day16 =
     open System.Text.RegularExpressions
 
     type Detection =
-        { children: int option
-          cats: int option
-          samoyeds: int option
-          akitas: int option
-          pomeranians: int option
-          vizslas: int option
-          goldfish: int option
-          trees: int option
-          cars: int option
-          perfumes: int option }
+        {
+            children: int option
+            cats: int option
+            samoyeds: int option
+            akitas: int option
+            pomeranians: int option
+            vizslas: int option
+            goldfish: int option
+            trees: int option
+            cars: int option
+            perfumes: int option
+        }
 
     let EmptyDetection =
-        { akitas = None
-          cars = None
-          cats = None
-          children = None
-          goldfish = None
-          perfumes = None
-          pomeranians = None
-          samoyeds = None
-          trees = None
-          vizslas = None }
+        {
+            akitas = None
+            cars = None
+            cats = None
+            children = None
+            goldfish = None
+            perfumes = None
+            pomeranians = None
+            samoyeds = None
+            trees = None
+            vizslas = None
+        }
 
     let linePattern = Regex "Sue (\d+): (?:([a-z]+): (\d+)(?:, )?)+"
 

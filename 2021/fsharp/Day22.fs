@@ -29,8 +29,10 @@ module Day22 =
         |> List.map (fun line ->
             match line with
             | Regex "(on|off) x=(-?\d+)..(-?\d+),y=(-?\d+)..(-?\d+),z=(-?\d+)..(-?\d+)" [ onoff; x1; x2; y1; y2; z1; z2 ] ->
-                { value = (onoff = "on")
-                  cube = ((int64 x1), (int64 y1), (int64 z1)), ((int64 x2) + 1L, (int64 y2) + 1L, (int64 z2) + 1L) }
+                {
+                    value = (onoff = "on")
+                    cube = ((int64 x1), (int64 y1), (int64 z1)), ((int64 x2) + 1L, (int64 y2) + 1L, (int64 z2) + 1L)
+                }
             | _ -> failwith "invalid")
 
     let rec runInstructions (depth: int) (instructions: list<Instruction>) =

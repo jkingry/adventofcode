@@ -92,7 +92,7 @@ module Day13 =
         | Failure(errorMsg, _, _) -> failwithf "Failure: %s" errorMsg
 
     let runFParsec (input: byte[]) (output: int -> string -> unit) =
-        let fvalue, fvalueRef = createParserForwardedToRef<Packet, unit> ()
+        let fvalue, fvalueRef = createParserForwardedToRef<Packet, unit>()
         let pnumber = pint32 |>> PNum
         let plist = pstring "[" >>. sepBy fvalue (pstring ",") .>> pstring "]" |>> PList
         fvalueRef.Value <- choice [ pnumber; plist ]

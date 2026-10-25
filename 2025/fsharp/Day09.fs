@@ -17,12 +17,14 @@ module Day09 =
             )
 
         let corners =
-            [ redTiles |> Array.minBy (fun (a, b) -> a + b)
-              redTiles |> Array.maxBy (fun (a, b) -> a + b)
-              redTiles |> Array.minBy fst
-              redTiles |> Array.maxBy fst
-              redTiles |> Array.minBy snd
-              redTiles |> Array.maxBy snd ]
+            [
+                redTiles |> Array.minBy (fun (a, b) -> a + b)
+                redTiles |> Array.maxBy (fun (a, b) -> a + b)
+                redTiles |> Array.minBy fst
+                redTiles |> Array.maxBy fst
+                redTiles |> Array.minBy snd
+                redTiles |> Array.maxBy snd
+            ]
 
         List.allPairs corners corners
         |> List.filter (fun (a, b) -> a <> b)

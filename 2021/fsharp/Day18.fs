@@ -91,7 +91,7 @@ module Day18 =
     let run data (output: int -> string -> unit) =
         let input = data |> text
 
-        let fvalue, fvalueRef = createParserForwardedToRef<SnailFish, unit> ()
+        let fvalue, fvalueRef = createParserForwardedToRef<SnailFish, unit>()
         let pnumber = pint32 |>> FNumber
 
         let rec ppair =

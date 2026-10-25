@@ -8,20 +8,24 @@ module Day15 =
         "^(.+): capacity (-?\d+), durability (-?\d+), flavor (-?\d+), texture (-?\d+), calories (\d+)$"
 
     type Ingredient =
-        { capacity: int
-          durability: int
-          flavor: int
-          texture: int
-          calories: int }
+        {
+            capacity: int
+            durability: int
+            flavor: int
+            texture: int
+            calories: int
+        }
 
     let parseLine (line: string) =
         match line with
         | Regex linePattern [ ingredient; capacity; durability; flavor; texture; calories ] ->
-            { capacity = int capacity
-              durability = int durability
-              flavor = int flavor
-              texture = int texture
-              calories = int calories }
+            {
+                capacity = int capacity
+                durability = int durability
+                flavor = int flavor
+                texture = int texture
+                calories = int calories
+            }
         | _ -> failwithf "invalid line: %s" line
 
     let maxTeaspoons = 100

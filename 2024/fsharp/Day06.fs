@@ -118,8 +118,10 @@ module Day06 =
 
 
     type WallMap =
-        { Rows: (int * int) array array
-          Cols: (int * int) array array }
+        {
+            Rows: (int * int) array array
+            Cols: (int * int) array array
+        }
 
     let mapToWallsList (lab: char[,]) : WallMap =
         let mutable rows = Array.zeroCreate (Array2D.length1 lab)

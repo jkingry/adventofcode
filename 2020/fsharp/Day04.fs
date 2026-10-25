@@ -73,13 +73,15 @@ module Day04 =
     let inline (@>>) x y = x >> Result.bind y
 
     let requiredFields: (Map<string, string> -> Result<unit, string>) list =
-        [ "byr" // (Birth Year)
-          "iyr" // (Issue Year)
-          "eyr" // (Expiration Year)
-          "hgt" // (Height)
-          "hcl" // (Hair Color)
-          "ecl" // (Eye Color)
-          "pid" ] // (Passport ID)
+        [
+            "byr" // (Birth Year)
+            "iyr" // (Issue Year)
+            "eyr" // (Expiration Year)
+            "hgt" // (Height)
+            "hcl" // (Hair Color)
+            "ecl" // (Eye Color)
+            "pid"
+        ] // (Passport ID)
         |> List.map (fun f -> reqField f @>> ignoreResult)
 
     let fieldValidPassport = validAll requiredFields
@@ -87,16 +89,20 @@ module Day04 =
     let eyeColors = [ "amb"; "blu"; "brn"; "gry"; "grn"; "hzl"; "oth" ]
 
     let valueValidators =
-        [ reqField "byr" @>> validNumber @>> validRange 1920 2002
-          reqField "iyr" @>> validNumber @>> validRange 2010 2020
-          reqField "eyr" @>> validNumber @>> validRange 2020 2030
-          reqField "hgt"
-          @>> validAny
-                  [ validRegex1 @"^(\d+)cm$" @>> validNumber @>> validRange 150 193
-                    validRegex1 @"^(\d+)in$" @>> validNumber @>> validRange 59 76 ]
-          reqField "hcl" @>> validRegex1 @"^#([0-9a-f]{6})$" @>> ignoreResult
-          reqField "ecl" @>> validOption eyeColors
-          reqField "pid" @>> validRegex1 @"^([0-9]{9})$" @>> ignoreResult ]
+        [
+            reqField "byr" @>> validNumber @>> validRange 1920 2002
+            reqField "iyr" @>> validNumber @>> validRange 2010 2020
+            reqField "eyr" @>> validNumber @>> validRange 2020 2030
+            reqField "hgt"
+            @>> validAny
+                    [
+                        validRegex1 @"^(\d+)cm$" @>> validNumber @>> validRange 150 193
+                        validRegex1 @"^(\d+)in$" @>> validNumber @>> validRange 59 76
+                    ]
+            reqField "hcl" @>> validRegex1 @"^#([0-9a-f]{6})$" @>> ignoreResult
+            reqField "ecl" @>> validOption eyeColors
+            reqField "pid" @>> validRegex1 @"^([0-9]{9})$" @>> ignoreResult
+        ]
 
     let valueValidPassport = validAll valueValidators
 

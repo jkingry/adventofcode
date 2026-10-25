@@ -7,9 +7,11 @@ module Day23 =
     open System.Collections.Generic
 
     type Node =
-        { mutable prev: Node option
-          v: int
-          mutable next: Node option }
+        {
+            mutable prev: Node option
+            v: int
+            mutable next: Node option
+        }
 
     let cs (c: int) (cups: Map<int, Node>) =
         seq {

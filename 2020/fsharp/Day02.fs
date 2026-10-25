@@ -4,19 +4,23 @@ module Day02 =
     open AdventOfCode.FSharp.Util
 
     type Pline =
-        { min: int
-          max: int
-          c: char
-          input: string }
+        {
+            min: int
+            max: int
+            c: char
+            input: string
+        }
 
     let parse line =
         match line with
         | Regex @"(\d+)\-(\d+) ([a-z])\: ([a-z]+)" [ mint; maxt; ct; input ] ->
             Some
-                { min = int mint
-                  max = int maxt
-                  c = ct.[0]
-                  input = input }
+                {
+                    min = int mint
+                    max = int maxt
+                    c = ct.[0]
+                    input = input
+                }
         | _ -> None
 
     let part1 input =

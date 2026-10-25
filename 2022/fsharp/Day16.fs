@@ -18,12 +18,13 @@ module Day16 =
         |> Array.map (function
             | Regex LineRegex [ src; rate; dest; dests ] ->
                 src,
-                { rate = int rate
-                  dests =
-                    if dest.Length > 0 then
-                        [| dest |]
-                    else
-                        (dests.Split ',' |> Array.map (fun s -> s.Trim()))
+                {
+                    rate = int rate
+                    dests =
+                        if dest.Length > 0 then
+                            [| dest |]
+                        else
+                            (dests.Split ',' |> Array.map (fun s -> s.Trim()))
 
                 }
             | line -> failwithf "Failed parsing: %s" line)

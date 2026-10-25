@@ -35,7 +35,8 @@ module Day02 =
             | "forward" ->
                 { p with
                     h = p.h + x
-                    depth = p.depth + (p.aim * x) }
+                    depth = p.depth + (p.aim * x)
+                }
             | s -> failwith (sprintf "Unexpected command '%s'" s)
 
         let part2 = commands |> executeInput executeCommand2 |> string

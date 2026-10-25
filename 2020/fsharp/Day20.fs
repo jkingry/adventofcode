@@ -60,14 +60,16 @@ module Day20 =
         let r, c = pos
 
         let hborders =
-            [ puzzle
-              |> Map.tryFind (r, c - 1)
-              |> Option.bind (fun t -> Some t.tile.[*, n - 1])
-              puzzle |> Map.tryFind (r, c + 1) |> Option.bind (fun t -> Some t.tile.[*, 0])
-              puzzle
-              |> Map.tryFind (r - 1, c)
-              |> Option.bind (fun t -> Some t.tile.[n - 1, *])
-              puzzle |> Map.tryFind (r + 1, c) |> Option.bind (fun t -> Some t.tile.[0, *]) ]
+            [
+                puzzle
+                |> Map.tryFind (r, c - 1)
+                |> Option.bind (fun t -> Some t.tile.[*, n - 1])
+                puzzle |> Map.tryFind (r, c + 1) |> Option.bind (fun t -> Some t.tile.[*, 0])
+                puzzle
+                |> Map.tryFind (r - 1, c)
+                |> Option.bind (fun t -> Some t.tile.[n - 1, *])
+                puzzle |> Map.tryFind (r + 1, c) |> Option.bind (fun t -> Some t.tile.[0, *])
+            ]
 
         let ismatch t =
             permute t.tile

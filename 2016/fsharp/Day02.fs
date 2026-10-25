@@ -8,13 +8,15 @@ module Day02 =
 
     let keypad2 =
         array2D
-            [| "xxxxxxx"
-               "xxx1xxx"
-               "xx234xx"
-               "x56789x"
-               "xxABCxx"
-               "xxxDxxx"
-               "xxxxxxx" |]
+            [|
+                "xxxxxxx"
+                "xxx1xxx"
+                "xx234xx"
+                "x56789x"
+                "xxABCxx"
+                "xxxDxxx"
+                "xxxxxxx"
+            |]
 
     let run (input: byte array) output =
 

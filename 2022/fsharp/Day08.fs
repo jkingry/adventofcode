@@ -144,7 +144,8 @@ module Day08 =
                 frombot[v] <-
                     { frombot[v] with
                         bot = 0
-                        score = frombot[v].score * lft * top }
+                        score = frombot[v].score * lft * top
+                    }
 
                 for i in 0..9 do
                     if i <= v then

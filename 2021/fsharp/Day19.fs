@@ -71,10 +71,12 @@ module Day19 =
             let pb2x, pb2y = bdmap |> Map.find d2 |> List.exactlyOne
 
             let p =
-                [ (pb1x, pb1y, pb2x, pb2y)
-                  (pb1x, pb1y, pb2y, pb2x)
-                  (pb1y, pb1x, pb2x, pb2y)
-                  (pb1y, pb1x, pb2y, pb2x) ]
+                [
+                    (pb1x, pb1y, pb2x, pb2y)
+                    (pb1x, pb1y, pb2y, pb2x)
+                    (pb1y, pb1x, pb2x, pb2y)
+                    (pb1y, pb1x, pb2y, pb2x)
+                ]
 
             p
             |> List.tryPick (fun (b1x, b1y, b2x, b2y) ->
