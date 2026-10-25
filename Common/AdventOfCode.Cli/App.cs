@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Jobs;
 
 using BenchmarkDotNet.Running;
@@ -72,7 +73,8 @@ public static class App
         }
 
         var config = ManualConfig.Create(DefaultConfig.Instance)
-            .AddFilter(new BenchmarkDotNet.Filters.NameFilter(name => completed.Contains(name)));
+            .AddFilter(new BenchmarkDotNet.Filters.NameFilter(name => completed.Contains(name)))
+            .AddExporter(JsonExporter.Full);
 
         BenchmarkRunner.Run(
             Assembly.GetEntryAssembly() ?? throw new InvalidOperationException(),
