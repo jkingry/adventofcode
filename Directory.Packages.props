@@ -6,7 +6,7 @@
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="FParsec" Version="1.1.1" />
-    <PackageVersion Include="FSharp.Core" Version="10.1.301" />
+    <PackageVersion Include="FSharp.Core" Version="10.1.402" />
     <PackageVersion Include="FSharp.Quotations.Evaluator" Version="2.1.0" />
     <PackageVersion Include="FSharpx.Collections" Version="3.1.0" />
     <PackageVersion Include="MathNet.Numerics.FSharp" Version="5.0.0" />
