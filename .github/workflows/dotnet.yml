@@ -13,6 +13,12 @@ on:
 permissions:
   contents: read
 
+# Runs share one input cache that only grows; overlapping runs would each
+# restore the same snapshot and redo the same slow, rate-limited downloads.
+concurrency:
+  group: aoc-inputs
+  cancel-in-progress: false
+
 jobs:
   build:
 
@@ -40,7 +46,7 @@ jobs:
     - name: Read Cache Inputs
       uses: actions/cache/restore@v6
       with:
-        key: aoc-inputs-${{ github.run_id }}
+        key: aoc-inputs-${{ github.run_id }}-${{ github.run_attempt }}
         restore-keys: |
           aoc-inputs-
           session-
@@ -59,7 +65,7 @@ jobs:
       uses: actions/cache/save@v6
       if: always()
       with:
-        key: aoc-inputs-${{ github.run_id }}
+        key: aoc-inputs-${{ github.run_id }}-${{ github.run_attempt }}
         path: 
           '**/inputs/**'
 
