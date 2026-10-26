@@ -96,6 +96,23 @@ def chart(day_rows, names):
             + "".join(axis) + "".join(parts) + "</svg>")
 
 
+def days_in_event(year):
+    return 12 if year >= 2025 else 25
+
+
+def badge_svg(label, value, color):
+    """Flat shields-style badge; widths estimated from character counts."""
+    lw, vw = 10 + 6.6 * len(label), 10 + 6.6 * len(value)
+    w = lw + vw
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w:.0f}" height="20" role="img" aria-label="{label}: {value}">'
+            f'<title>{label}: {value}</title>'
+            f'<clipPath id="r"><rect width="{w:.0f}" height="20" rx="3"/></clipPath>'
+            f'<g clip-path="url(#r)"><rect width="{lw:.0f}" height="20" fill="#555"/>'
+            f'<rect x="{lw:.0f}" width="{vw:.0f}" height="20" fill="{color}"/></g>'
+            f'<g fill="#fff" text-anchor="middle" font-family="Verdana,DejaVu Sans,sans-serif" font-size="11">'
+            f'<text x="{lw / 2:.0f}" y="14">{label}</text><text x="{lw + vw / 2:.0f}" y="14">{value}</text></g></svg>')
+
+
 def page(title, body, years):
     nav = '<nav><a href="index.html">All years</a>' + "".join(
         f'<a href="{y}.html">{y}</a>' for y in years) + "</nav>"
@@ -146,6 +163,10 @@ def main():
             by_day[r["day"]].append(r["mean"])
         summary.append(f'<tr><td><a href="{y}.html">{y}</a></td><td>{len(by_day)}</td>'
                        f"<td>{fmt_time(sum(min(v) for v in by_day.values()))}</td></tr>")
+        done, total = len(by_day), days_in_event(y)
+        os.makedirs(f"{out_dir}/badges", exist_ok=True)
+        with open(f"{out_dir}/badges/{y}.svg", "w", encoding="utf-8") as f:
+            f.write(badge_svg(f"AoC {y}", f"{done}/{total}", "#2fa36b" if done >= total else "#d4a017"))
         with open(f"{out_dir}/{y}.html", "w", encoding="utf-8") as f:
             f.write(year_page(y, by_year[y], years, stamp))
     summary.append("</table>")
