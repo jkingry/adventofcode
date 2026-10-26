@@ -1,13 +1,18 @@
-"""Builds a static site (one page per year, inline SVG charts) from BenchmarkDotNet JSON results.
+"""Caches per-day benchmark results by source hash and builds a static site from them.
 
-usage: benchmark_site.py <results-dir> <output-dir>
+usage:
+  benchmark_site.py stale <cache-dir>               print `year:day,day ...` selectors for days needing a rerun
+  benchmark_site.py merge <results-dir> <cache-dir>  store fresh BenchmarkDotNet JSON results in the cache
+  benchmark_site.py site <cache-dir> <output-dir>    build the pages and badges from up-to-date cache entries
 """
 import collections
 import datetime
 import glob
+import hashlib
 import html
 import json
 import math
+import os
 import re
 import sys
 
@@ -41,22 +46,83 @@ def fmt_bytes(b):
     return f"{b:,.0f} B"
 
 
-def load(results_dir):
-    rows = []
-    for path in glob.glob(f"{results_dir}/**/*-report-full*.json", recursive=True) + \
-            glob.glob(f"{results_dir}/**/*-report.json", recursive=True):
+def source_hashes():
+    """sha256 per (year, day) of the day's source, its year project file and the shared inputs."""
+    def digest(paths):
+        h = hashlib.sha256()
+        for p in sorted(paths):
+            h.update(p.replace("\\", "/").encode())
+            with open(p, "rb") as f:
+                h.update(f.read().replace(b"\r\n", b"\n"))
+        return h.hexdigest()
+
+    shared = [p for pat in ("global.json", "Directory.Packages.props", "Directory.Build.props",
+                            "Common/AdventOfCode.FSharp.Util/*.fs", "Common/AdventOfCode.FSharp.Util/*.fsproj")
+              for p in glob.glob(pat)]
+    shared_digest = digest(shared)
+    hashes = {}
+    for path in glob.glob("20??/*/Day??.*"):
+        m = re.match(r"^(\d{4})[/\\][^/\\]+[/\\]Day(\d{2})\.(fs|cs)$", path)
+        if not m:
+            continue
+        year, day = int(m[1]), int(m[2])
+        project = glob.glob(os.path.dirname(path) + "/*.fsproj") + glob.glob(os.path.dirname(path) + "/*.csproj")
+        hashes.setdefault((year, day), []).extend([path, *project])
+    return {k: hashlib.sha256((shared_digest + digest(v)).encode()).hexdigest() for k, v in hashes.items()}
+
+
+def entry_path(cache_dir, year, day):
+    return f"{cache_dir}/{year}_{day:02d}.json"
+
+
+def read_entry(cache_dir, year, day):
+    try:
+        with open(entry_path(cache_dir, year, day), encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def stale(cache_dir):
+    by_year = collections.defaultdict(list)
+    for (year, day), h in sorted(source_hashes().items()):
+        entry = read_entry(cache_dir, year, day)
+        if not entry or entry.get("hash") != h:
+            by_year[year].append(day)
+    print(" ".join(f"{y}:{','.join(map(str, days))}" for y, days in by_year.items()))
+
+
+def merge(results_dir, cache_dir):
+    hashes = source_hashes()
+    by_day = collections.defaultdict(list)
+    for path in glob.glob(f"{results_dir}/**/*-report-full*.json", recursive=True) +             glob.glob(f"{results_dir}/**/*-report.json", recursive=True):
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
         for b in data["Benchmarks"]:
             m = NAME_RE.match(b["Method"])
             if not m or not b.get("Statistics"):
                 continue
-            rows.append({
-                "year": int(m[1]), "day": int(m[2]), "name": m[3],
+            by_day[(int(m[1]), int(m[2]))].append({
+                "name": m[3],
                 "mean": b["Statistics"]["Mean"],
                 "stddev": b["Statistics"].get("StandardDeviation", 0),
                 "alloc": (b.get("Memory") or {}).get("BytesAllocatedPerOperation", 0),
             })
+    os.makedirs(cache_dir, exist_ok=True)
+    for (year, day), results in by_day.items():
+        if (year, day) in hashes:
+            with open(entry_path(cache_dir, year, day), "w", encoding="utf-8") as f:
+                json.dump({"hash": hashes[(year, day)], "results": results}, f)
+    print(f"cached {len(by_day)} days")
+
+
+def load(cache_dir):
+    """Rows from cache entries whose source hash still matches the checked-out code."""
+    rows = []
+    for (year, day), h in sorted(source_hashes().items()):
+        entry = read_entry(cache_dir, year, day)
+        if entry and entry.get("hash") == h:
+            rows.extend({"year": year, "day": day, **r} for r in entry["results"])
     return rows
 
 
@@ -144,8 +210,8 @@ def year_page(year, rows, years, stamp):
 
 
 def main():
-    results_dir, out_dir = sys.argv[1:3]
-    rows = load(results_dir)
+    cache_dir, out_dir = sys.argv[2:4]
+    rows = load(cache_dir)
     if not rows:
         sys.exit("no benchmark results found")
     by_year = collections.defaultdict(list)
@@ -154,7 +220,6 @@ def main():
     years = sorted(by_year)
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    import os
     os.makedirs(out_dir, exist_ok=True)
     summary = ["<table><tr><th>Year</th><th>Days</th><th>Fastest total</th></tr>"]
     for y in years:
@@ -177,4 +242,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    command = sys.argv[1] if len(sys.argv) > 1 else ""
+    if command == "stale" and len(sys.argv) == 3:
+        stale(sys.argv[2])
+    elif command == "merge" and len(sys.argv) == 4:
+        merge(sys.argv[2], sys.argv[3])
+    elif command == "site" and len(sys.argv) == 4:
+        main()
+    else:
+        sys.exit(__doc__)

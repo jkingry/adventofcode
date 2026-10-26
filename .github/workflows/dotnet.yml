@@ -53,13 +53,34 @@ jobs:
         path: 
           '**/inputs/**'
     
+    # Results are cached per day, keyed by a hash of the day's source (plus its project and shared code),
+    # so only days whose code changed are tested and benchmarked.
+    - name: Read Benchmark Cache
+      uses: actions/cache/restore@v6
+      with:
+        key: aoc-bench-${{ github.run_id }}
+        restore-keys: |
+          aoc-bench-
+        path: .bench-cache
+
+    - name: Find days to run
+      id: stale
+      run: echo "days=$(python3 .github/scripts/benchmark_site.py stale .bench-cache)" >> "$GITHUB_OUTPUT"
+
     - name: Run tests
-      run: dotnet run --configuration Release --no-build -- test *:*
+      if: steps.stale.outputs.days != ''
+      env:
+        DAYS: ${{ steps.stale.outputs.days }}
+      run: dotnet run --configuration Release --no-build -- test $DAYS
 
     # Benchmarks only run on main (not for PRs); `bench` only covers days whose tests above passed.
     - name: Run benchmarks
-      if: github.ref == 'refs/heads/main'
-      run: dotnet run --configuration Release --no-build -- bench *:*
+      if: github.ref == 'refs/heads/main' && steps.stale.outputs.days != ''
+      env:
+        DAYS: ${{ steps.stale.outputs.days }}
+      run: |
+        dotnet run --configuration Release --no-build -- bench $DAYS
+        python3 .github/scripts/benchmark_site.py merge BenchmarkDotNet.Artifacts/results .bench-cache
 
     - name: Write Cache
       uses: actions/cache/save@v6
@@ -69,9 +90,16 @@ jobs:
         path: 
           '**/inputs/**'
 
+    - name: Write Benchmark Cache
+      uses: actions/cache/save@v6
+      if: github.ref == 'refs/heads/main' && !cancelled()
+      with:
+        key: aoc-bench-${{ github.run_id }}-${{ github.run_attempt }}
+        path: .bench-cache
+
     - name: Build benchmark site
       if: github.ref == 'refs/heads/main'
-      run: python3 .github/scripts/benchmark_site.py BenchmarkDotNet.Artifacts/results _site
+      run: python3 .github/scripts/benchmark_site.py site .bench-cache _site
 
     - name: Upload raw benchmark results
       if: github.ref == 'refs/heads/main'
@@ -79,6 +107,7 @@ jobs:
       with:
         name: benchmark-results
         path: BenchmarkDotNet.Artifacts/results
+        if-no-files-found: ignore
 
     - name: Upload Pages artifact
       if: github.ref == 'refs/heads/main'
